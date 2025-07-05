@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Mic, Home, BarChart3 } from 'lucide-react';
+import { ProfileDropdown } from './ProfileDropdown';
 
 interface NavigationProps {
   activeTab: 'home' | 'stats';
@@ -53,16 +54,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
               </div>
               
               {/* User Profile */}
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 gradient-secondary rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {getInitials(user?.firstName, user?.lastName)}
-                  </span>
-                </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-700">
-                  {user?.firstName || 'User'}
-                </span>
-              </div>
+              <ProfileDropdown />
             </div>
           </div>
         </div>

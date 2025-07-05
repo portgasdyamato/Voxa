@@ -4,7 +4,6 @@ import { useTodayTasks, useTaskStats, useTasks } from '@/hooks/useTasks';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
 import { TaskCard } from '@/components/TaskCard';
-import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { ClipboardList, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 
 export default function Home() {
@@ -74,10 +73,7 @@ export default function Home() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
-      {/* Top Navigation */}
-      <div className="flex justify-end mb-4">
-        <ProfileDropdown />
-      </div>
+
 
       {/* Welcome Header */}
       <div className="text-center space-y-2 mb-6">

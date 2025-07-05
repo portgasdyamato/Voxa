@@ -4,7 +4,6 @@ import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
 import { StatsCharts } from '@/components/StatsCharts';
 import { Button } from '@/components/ui/button';
-import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { TrendingUp, CheckCircle, Clock, Target } from 'lucide-react';
 
 export default function Stats() {
@@ -74,10 +73,7 @@ export default function Stats() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
-      {/* Top Navigation */}
-      <div className="flex justify-end mb-4">
-        <ProfileDropdown />
-      </div>
+
 
       {/* Header */}
       <div className="text-center space-y-2 mb-6">
