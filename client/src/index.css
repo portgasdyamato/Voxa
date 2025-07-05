@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Custom colors for voice task manager */
+  --light-blue-50: hsl(195, 100%, 97%);
+  --light-blue-100: hsl(195, 100%, 94%);
+  --light-blue-200: hsl(195, 100%, 87%);
+  --light-blue-300: hsl(195, 100%, 77%);
+  --light-blue-400: hsl(195, 100%, 69%);
+  --light-blue-500: hsl(198, 89%, 60%);
+  --light-blue-600: hsl(199, 89%, 48%);
+  --light-blue-700: hsl(200, 98%, 39%);
+  --light-blue-800: hsl(201, 96%, 32%);
+  --light-blue-900: hsl(202, 80%, 24%);
+  
+  --lavender-50: hsl(270, 100%, 98%);
+  --lavender-100: hsl(269, 100%, 95%);
+  --lavender-200: hsl(269, 100%, 92%);
+  --lavender-300: hsl(269, 100%, 83%);
+  --lavender-400: hsl(270, 95%, 75%);
+  --lavender-500: hsl(271, 91%, 65%);
+  --lavender-600: hsl(271, 81%, 56%);
+  --lavender-700: hsl(272, 72%, 47%);
+  --lavender-800: hsl(272, 67%, 39%);
+  --lavender-900: hsl(273, 85%, 32%);
+  
+  --soft-pink-50: hsl(327, 73%, 97%);
+  --soft-pink-100: hsl(326, 78%, 95%);
+  --soft-pink-200: hsl(326, 85%, 90%);
+  --soft-pink-300: hsl(327, 87%, 81%);
+  --soft-pink-400: hsl(329, 86%, 70%);
+  --soft-pink-500: hsl(330, 81%, 60%);
+  --soft-pink-600: hsl(333, 71%, 51%);
+  --soft-pink-700: hsl(335, 78%, 42%);
+  --soft-pink-800: hsl(336, 74%, 35%);
+  --soft-pink-900: hsl(336, 69%, 30%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background: linear-gradient(135deg, var(--light-blue-50) 0%, var(--lavender-50) 50%, var(--soft-pink-50) 100%);
+    min-height: 100vh;
+    color: var(--foreground);
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--light-blue-500) 0%, var(--lavender-500) 100%);
+  }
+  
+  .gradient-secondary {
+    background: linear-gradient(135deg, var(--lavender-400) 0%, var(--soft-pink-400) 100%);
+  }
+  
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Custom animations */
+@keyframes pulse-recording {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-recording {
+  animation: pulse-recording 1s ease-in-out infinite;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .pb-mobile-nav {
+    padding-bottom: 4rem;
+  }
+}
