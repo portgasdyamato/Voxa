@@ -4,6 +4,7 @@ import { useTodayTasks, useTaskStats, useTasks } from '@/hooks/useTasks';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
 import { TaskCard } from '@/components/TaskCard';
+import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { ClipboardList, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 
 export default function Home() {
@@ -75,12 +76,7 @@ export default function Home() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
       {/* Top Navigation */}
       <div className="flex justify-end mb-4">
-        <button
-          onClick={() => window.location.href = '/api/logout'}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          Logout
-        </button>
+        <ProfileDropdown />
       </div>
 
       {/* Welcome Header */}
