@@ -4,19 +4,28 @@ import { useTodayTasks, useTaskStats, useTasks } from '@/hooks/useTasks';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
 import { TaskCard } from '@/components/TaskCard';
-import { ClipboardList, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, TrendingUp, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 export default function Home() {
   const { user, isLoading: userLoading } = useAuth();
   const [showAllTasks, setShowAllTasks] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
   const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
   const { data: stats, isLoading: statsLoading, error: statsError } = useTaskStats();
   const { toast } = useToast();
 
-  const tasksData = showAllTasks ? allTasks : todayTasks;
+  const rawTasksData = showAllTasks ? allTasks : todayTasks;
   const tasksLoading = showAllTasks ? allTasksLoading : todayTasksLoading;
   const tasksError = showAllTasks ? allTasksError : todayTasksError;
+
+  // Filter tasks based on search query
+  const tasksData = rawTasksData?.filter(task => 
+    searchQuery === '' || 
+    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    task.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   // Handle unauthorized errors
   useEffect(() => {

@@ -121,7 +121,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/stats', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const stats = await storage.getTaskStats(userId);
+      const period = req.query.period || 'week'; // week, month, quarter
+      const stats = await storage.getTaskStats(userId, period as string);
       res.json(stats);
     } catch (error) {
       console.error("Error fetching stats:", error);

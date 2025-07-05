@@ -14,9 +14,14 @@ export function useTodayTasks() {
   });
 }
 
-export function useTaskStats() {
+export function useTaskStats(period: string = 'week') {
   return useQuery<TaskStats>({
-    queryKey: ['/api/stats'],
+    queryKey: ['/api/stats', period],
+    queryFn: async () => {
+      const response = await fetch(`/api/stats?period=${period}`);
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      return response.json();
+    },
   });
 }
 

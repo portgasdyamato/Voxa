@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTaskStats } from '@/hooks/useTasks';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, CheckCircle, Clock, Target } from 'lucide-react';
 
 export default function Stats() {
-  const { data: stats, isLoading, error } = useTaskStats();
+  const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const { data: stats, isLoading, error } = useTaskStats(selectedPeriod);
   const { toast } = useToast();
 
   // Handle unauthorized errors
@@ -83,13 +84,25 @@ export default function Stats() {
 
       {/* Filter Controls */}
       <div className="flex flex-wrap gap-2 justify-center mb-6">
-        <Button className="bg-blue-600 text-white hover:bg-blue-700">
+        <Button 
+          onClick={() => setSelectedPeriod('week')}
+          className={selectedPeriod === 'week' ? "bg-blue-600 text-white hover:bg-blue-700" : ""}
+          variant={selectedPeriod === 'week' ? "default" : "outline"}
+        >
           This Week
         </Button>
-        <Button variant="outline" className="border-blue-200 text-gray-700 hover:bg-blue-50">
+        <Button 
+          onClick={() => setSelectedPeriod('month')}
+          className={selectedPeriod === 'month' ? "bg-blue-600 text-white hover:bg-blue-700" : "border-blue-200 text-gray-700 hover:bg-blue-50"}
+          variant={selectedPeriod === 'month' ? "default" : "outline"}
+        >
           This Month
         </Button>
-        <Button variant="outline" className="border-blue-200 text-gray-700 hover:bg-blue-50">
+        <Button 
+          onClick={() => setSelectedPeriod('quarter')}
+          className={selectedPeriod === 'quarter' ? "bg-blue-600 text-white hover:bg-blue-700" : "border-blue-200 text-gray-700 hover:bg-blue-50"}
+          variant={selectedPeriod === 'quarter' ? "default" : "outline"}
+        >
           Last 3 Months
         </Button>
       </div>

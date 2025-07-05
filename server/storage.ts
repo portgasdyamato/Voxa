@@ -24,13 +24,19 @@ export interface IStorage {
   createTask(userId: string, task: InsertTask): Promise<Task>;
   updateTask(userId: string, taskId: number, updates: UpdateTask): Promise<Task>;
   deleteTask(userId: string, taskId: number): Promise<void>;
-  getTaskStats(userId: string): Promise<{
+  getTaskStats(userId: string, period?: string): Promise<{
     total: number;
     completed: number;
     pending: number;
     highPriority: number;
     mediumPriority: number;
     lowPriority: number;
+    completionRate: number;
+    currentStreak: number;
+    longestStreak: number;
+    weeklyData: Array<{ day: string; completed: number; total: number }>;
+    completedToday: number;
+    completedThisWeek: number;
   }>;
 }
 
@@ -137,7 +143,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
   }
 
-  async getTaskStats(userId: string): Promise<{
+  async getTaskStats(userId: string, period: string = 'week'): Promise<{
     total: number;
     completed: number;
     pending: number;
@@ -151,6 +157,7 @@ export class DatabaseStorage implements IStorage {
     completedToday: number;
     completedThisWeek: number;
   }> {
+    // Get all user tasks for comprehensive analysis
     const userTasks = await db
       .select()
       .from(tasks)
@@ -168,8 +175,8 @@ export class DatabaseStorage implements IStorage {
     // Calculate streak
     const { currentStreak, longestStreak } = this.calculateStreaks(userTasks);
 
-    // Calculate weekly data (last 7 days)
-    const weeklyData = this.getWeeklyCompletionData(userTasks);
+    // Calculate period data (based on selected period)
+    const weeklyData = this.getPeriodCompletionData(userTasks, period);
 
     // Today's completed tasks
     const today = new Date();
@@ -307,6 +314,120 @@ export class DatabaseStorage implements IStorage {
     });
 
     return weeklyData;
+  }
+
+  private getDateRangeForPeriod(period: string): { start: Date; end: Date } {
+    const now = new Date();
+    const end = new Date(now);
+    let start = new Date(now);
+
+    switch (period) {
+      case 'month':
+        start.setMonth(now.getMonth() - 1);
+        break;
+      case 'quarter':
+        start.setMonth(now.getMonth() - 3);
+        break;
+      case 'week':
+      default:
+        start.setDate(now.getDate() - 7);
+        break;
+    }
+
+    return { start, end };
+  }
+
+  private getPeriodCompletionData(tasks: Task[], period: string): Array<{ day: string; completed: number; total: number }> {
+    if (period === 'week') {
+      return this.getWeeklyCompletionData(tasks);
+    } else if (period === 'month') {
+      return this.getMonthlyCompletionData(tasks);
+    } else if (period === 'quarter') {
+      return this.getQuarterlyCompletionData(tasks);
+    }
+    return this.getWeeklyCompletionData(tasks);
+  }
+
+  private getMonthlyCompletionData(tasks: Task[]): Array<{ day: string; completed: number; total: number }> {
+    const today = new Date();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const monthlyData: Array<{ day: string; completed: number; total: number }> = [];
+
+    // Create data for each day in the current month
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayStr = i < 10 ? `0${i}` : `${i}`;
+      monthlyData.push({ day: dayStr, completed: 0, total: 0 });
+    }
+
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    // Filter tasks from this month
+    const thisMonthTasks = tasks.filter(task => {
+      if (task.createdAt) {
+        const taskDate = new Date(task.createdAt);
+        return taskDate >= startOfMonth && taskDate <= endOfMonth;
+      }
+      return false;
+    });
+
+    thisMonthTasks.forEach(task => {
+      if (task.createdAt) {
+        const taskDate = new Date(task.createdAt);
+        const dayIndex = taskDate.getDate() - 1;
+        
+        if (dayIndex >= 0 && dayIndex < monthlyData.length) {
+          monthlyData[dayIndex].total++;
+          if (task.completed) {
+            monthlyData[dayIndex].completed++;
+          }
+        }
+      }
+    });
+
+    return monthlyData;
+  }
+
+  private getQuarterlyCompletionData(tasks: Task[]): Array<{ day: string; completed: number; total: number }> {
+    const today = new Date();
+    const quarterlyData: Array<{ day: string; completed: number; total: number }> = [];
+
+    // Create data for each week in the last 3 months (12 weeks)
+    for (let i = 12; i >= 1; i--) {
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - (i * 7));
+      const weekLabel = `W${13 - i}`;
+      quarterlyData.push({ day: weekLabel, completed: 0, total: 0 });
+    }
+
+    const startOfQuarter = new Date(today);
+    startOfQuarter.setMonth(today.getMonth() - 3);
+
+    // Filter tasks from last 3 months
+    const quarterTasks = tasks.filter(task => {
+      if (task.createdAt) {
+        const taskDate = new Date(task.createdAt);
+        return taskDate >= startOfQuarter;
+      }
+      return false;
+    });
+
+    quarterTasks.forEach(task => {
+      if (task.createdAt) {
+        const taskDate = new Date(task.createdAt);
+        const weeksDiff = Math.floor((today.getTime() - taskDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+        const weekIndex = 11 - Math.min(weeksDiff, 11);
+        
+        if (weekIndex >= 0 && weekIndex < quarterlyData.length) {
+          quarterlyData[weekIndex].total++;
+          if (task.completed) {
+            quarterlyData[weekIndex].completed++;
+          }
+        }
+      }
+    });
+
+    return quarterlyData;
   }
 }
 

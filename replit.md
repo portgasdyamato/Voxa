@@ -98,6 +98,9 @@ Voice Task Manager is a fullstack web application that enables users to create, 
 ```
 Changelog:
 - July 05, 2025. Initial setup
+- July 05, 2025. Enhanced stats with real-time analytics, streak tracking, and period filtering
+- July 05, 2025. Added profile management with edit functionality and dropdown navigation
+- July 05, 2025. Implemented task search/filtering and completed full functionality
 ```
 
 ## User Preferences
