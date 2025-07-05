@@ -68,8 +68,8 @@ export default function Stats() {
     );
   }
 
-  const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-  const avgDaily = stats.total > 0 ? (stats.total / 7).toFixed(1) : '0.0';
+  const completionRate = stats?.completionRate || 0;
+  const avgDaily = stats?.total ? (stats.total / 7).toFixed(1) : '0.0';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
@@ -136,7 +136,7 @@ export default function Stats() {
             <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
               <Target className="w-6 h-6 text-white" />
             </div>
-            <p className="text-2xl font-bold text-gray-800">12</p>
+            <p className="text-2xl font-bold text-gray-800">{stats.currentStreak}</p>
             <p className="text-sm text-gray-600">Day Streak</p>
           </div>
         </div>

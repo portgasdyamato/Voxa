@@ -7,15 +7,9 @@ interface StatsChartsProps {
 }
 
 export function StatsCharts({ stats }: StatsChartsProps) {
-  const completionData = useMemo(() => [
-    { name: 'Mon', completed: 4 },
-    { name: 'Tue', completed: 6 },
-    { name: 'Wed', completed: 3 },
-    { name: 'Thu', completed: 8 },
-    { name: 'Fri', completed: 5 },
-    { name: 'Sat', completed: 7 },
-    { name: 'Sun', completed: 4 },
-  ], []);
+  const completionData = useMemo(() => {
+    return stats.weeklyData || [];
+  }, [stats.weeklyData]);
 
   const priorityData = useMemo(() => [
     { name: 'High', value: stats.highPriority, color: '#EC4899' },

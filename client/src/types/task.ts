@@ -17,6 +17,12 @@ export interface TaskStats {
   highPriority: number;
   mediumPriority: number;
   lowPriority: number;
+  completionRate: number;
+  currentStreak: number;
+  longestStreak: number;
+  weeklyData: Array<{ day: string; completed: number; total: number }>;
+  completedToday: number;
+  completedThisWeek: number;
 }
 
 export interface CreateTaskData {
