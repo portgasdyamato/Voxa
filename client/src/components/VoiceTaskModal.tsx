@@ -3,7 +3,7 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useCreateTask } from '@/hooks/useTasks';
 import { detectPriority } from '@/lib/priorityDetection';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Mic, X } from 'lucide-react';
 
@@ -82,7 +82,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         title: transcript.slice(0, 100), // Limit title length
         description: transcript.length > 100 ? transcript.slice(100) : undefined,
         priority,
-        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Due tomorrow
+        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Due tomorrow
       });
 
       toast({
@@ -131,6 +131,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
+        <DialogTitle className="sr-only">Voice Task Input</DialogTitle>
+        <DialogDescription className="sr-only">
+          Create a new task using voice recognition
+        </DialogDescription>
         <div className="text-center space-y-4">
           <div className="w-20 h-20 gradient-primary rounded-full flex items-center justify-center mx-auto">
             <Mic className="w-10 h-10 text-white" />

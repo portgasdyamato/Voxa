@@ -23,5 +23,5 @@ export interface CreateTaskData {
   title: string;
   description?: string;
   priority: 'high' | 'medium' | 'low';
-  dueDate?: Date;
+  dueDate?: Date | string;
 }

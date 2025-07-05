@@ -48,11 +48,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/tasks', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Creating task with data:", req.body);
+      
+      // Convert dueDate string to Date if provided
+      if (req.body.dueDate) {
+        req.body.dueDate = new Date(req.body.dueDate);
+      }
+      
       const taskData = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(userId, taskData);
       res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation errors:", error.errors);
         res.status(400).json({ message: "Invalid task data", errors: error.errors });
       } else {
         console.error("Error creating task:", error);
