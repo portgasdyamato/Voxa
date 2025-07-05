@@ -72,7 +72,13 @@ export class DatabaseStorage implements IStorage {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    return await db
+    console.log("Date range query:", {
+      startOfDay: startOfDay.toISOString(),
+      endOfDay: endOfDay.toISOString(),
+      inputDate: date.toISOString()
+    });
+
+    const result = await db
       .select()
       .from(tasks)
       .where(
@@ -83,6 +89,10 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(asc(tasks.completed), desc(tasks.priority));
+
+    console.log("Tasks found in date range:", result.map(t => ({ id: t.id, title: t.title, dueDate: t.dueDate })));
+    
+    return result;
   }
 
   async createTask(userId: string, task: InsertTask): Promise<Task> {
