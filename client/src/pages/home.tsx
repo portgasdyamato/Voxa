@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTodayTasks, useTaskStats } from '@/hooks/useTasks';
+import { useTodayTasks, useTaskStats, useTasks } from '@/hooks/useTasks';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
 import { TaskCard } from '@/components/TaskCard';
@@ -8,9 +8,15 @@ import { ClipboardList, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 
 export default function Home() {
   const { user, isLoading: userLoading } = useAuth();
-  const { data: todayTasks, isLoading: tasksLoading, error: tasksError } = useTodayTasks();
+  const [showAllTasks, setShowAllTasks] = useState(false);
+  const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
+  const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
   const { data: stats, isLoading: statsLoading, error: statsError } = useTaskStats();
   const { toast } = useToast();
+
+  const tasksData = showAllTasks ? allTasks : todayTasks;
+  const tasksLoading = showAllTasks ? allTasksLoading : todayTasksLoading;
+  const tasksError = showAllTasks ? allTasksError : todayTasksError;
 
   // Handle unauthorized errors
   useEffect(() => {
@@ -62,8 +68,8 @@ export default function Home() {
     );
   }
 
-  const pendingTasks = todayTasks?.filter(task => !task.completed) || [];
-  const completedTasks = todayTasks?.filter(task => task.completed) || [];
+  const pendingTasks = tasksData?.filter(task => !task.completed) || [];
+  const completedTasks = tasksData?.filter(task => task.completed) || [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
@@ -80,16 +86,23 @@ export default function Home() {
       {/* Today's Tasks */}
       <div className="space-y-4 mb-8">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Today's Tasks</h3>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
-            View All
+          <h3 className="text-lg font-semibold text-gray-800">
+            {showAllTasks ? 'All Tasks' : 'Today\'s Tasks'}
+          </h3>
+          <button 
+            onClick={() => setShowAllTasks(!showAllTasks)}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+          >
+            {showAllTasks ? 'Show Today' : 'View All'}
           </button>
         </div>
 
-        {todayTasks?.length === 0 ? (
+        {tasksData?.length === 0 ? (
           <div className="glass-effect rounded-xl p-8 text-center">
             <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-600 mb-2">No tasks for today</h4>
+            <h4 className="text-lg font-medium text-gray-600 mb-2">
+              {showAllTasks ? 'No tasks yet' : 'No tasks for today'}
+            </h4>
             <p className="text-gray-500">Use the microphone button to add your first task!</p>
           </div>
         ) : (

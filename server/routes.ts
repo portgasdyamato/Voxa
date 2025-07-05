@@ -37,7 +37,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const today = new Date();
+      console.log("Today's date for query:", today);
       const tasks = await storage.getTasksByDate(userId, today);
+      console.log("Today's tasks found:", tasks.length);
       res.json(tasks);
     } catch (error) {
       console.error("Error fetching today's tasks:", error);

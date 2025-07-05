@@ -82,7 +82,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         title: transcript.slice(0, 100), // Limit title length
         description: transcript.length > 100 ? transcript.slice(100) : undefined,
         priority,
-        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Due tomorrow
+        dueDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).toISOString(), // Due today
       });
 
       toast({

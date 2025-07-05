@@ -8,7 +8,7 @@ import {
   type UpdateTask,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -78,7 +78,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(tasks.userId, userId),
-          eq(tasks.dueDate, startOfDay)
+          gte(tasks.dueDate, startOfDay),
+          lte(tasks.dueDate, endOfDay)
         )
       )
       .orderBy(asc(tasks.completed), desc(tasks.priority));
