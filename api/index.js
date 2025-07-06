@@ -2,13 +2,20 @@ import "dotenv/config";
 import express from "express";
 import { registerRoutes } from "../server/routes.js";
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Initialize the app once
+let app;
+let initialized = false;
 
-// Initialize the app
-const init = async () => {
+const initializeApp = async () => {
+  if (initialized && app) {
+    return app;
+  }
+
   try {
+    app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: false }));
+
     // Register routes
     await registerRoutes(app);
     
@@ -20,6 +27,7 @@ const init = async () => {
       res.status(status).json({ message });
     });
     
+    initialized = true;
     return app;
   } catch (error) {
     console.error('Failed to initialize API:', error);
@@ -27,8 +35,13 @@ const init = async () => {
   }
 };
 
-// Export the initialized app
+// Export the handler for Vercel
 export default async (req, res) => {
-  const app = await init();
-  return app(req, res);
+  try {
+    const app = await initializeApp();
+    return app(req, res);
+  } catch (error) {
+    console.error('Handler error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };

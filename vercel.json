@@ -3,8 +3,9 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist/public",
   "functions": {
-    "api/index.js": {
-      "runtime": "nodejs18.x"
+    "api/*.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 30
     }
   },
   "routes": [
@@ -16,5 +17,8 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
