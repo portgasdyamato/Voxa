@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -38,38 +39,39 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // Register routes and get back the configured app
+  const configuredApp = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  // Error handling middleware
+  configuredApp.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  const nodeEnv = process.env.NODE_ENV?.trim();
-  console.log("NODE_ENV:", JSON.stringify(nodeEnv));
-  if (nodeEnv === "development") {
-    console.log("Setting up Vite dev server...");
-    await setupVite(app, server);
-  } else {
-    console.log("Serving static files...");
-    serveStatic(app);
-  }
+  // Only create HTTP server and setup dev/prod environment if not in Vercel
+  if (process.env.VERCEL !== '1') {
+    const server = createServer(configuredApp);
+    
+    const nodeEnv = process.env.NODE_ENV?.trim();
+    console.log("NODE_ENV:", JSON.stringify(nodeEnv));
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+    if (nodeEnv === "development") {
+      console.log("Setting up Vite dev server...");
+      await setupVite(configuredApp, server);
+    } else {
+      console.log("Serving static files...");
+      serveStatic(configuredApp);
+    }
+
+    const port = 5000;
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  }
 })();

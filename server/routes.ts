@@ -1,11 +1,10 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupGoogleAuth, isAuthenticated } from "./googleAuth";
 import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
 import { z } from "zod";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<Express> {
   // Setup Google OAuth authentication
   await setupGoogleAuth(app);
 
@@ -189,6 +188,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // Return the app instead of creating HTTP server (Vercel handles that)
+  return app;
 }
