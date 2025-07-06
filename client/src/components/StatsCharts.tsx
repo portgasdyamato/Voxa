@@ -21,12 +21,12 @@ export function StatsCharts({ stats }: StatsChartsProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="glass-effect rounded-xl shadow-sm p-6 border border-blue-100/50">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Task Completion Rate</h3>
+      <div className="glass-effect rounded-xl shadow-sm p-6 border border-blue-100/50 dark:border-purple-200/30">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Task Completion Rate</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={completionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+              <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
@@ -36,8 +36,8 @@ export function StatsCharts({ stats }: StatsChartsProps) {
         </div>
       </div>
 
-      <div className="glass-effect rounded-xl shadow-sm p-6 border border-blue-100/50">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Priority Distribution</h3>
+      <div className="glass-effect rounded-xl shadow-sm p-6 border border-blue-100/50 dark:border-purple-200/30">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Priority Distribution</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -65,7 +65,7 @@ export function StatsCharts({ stats }: StatsChartsProps) {
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: COLORS[index] }}
               />
-              <span className="text-sm text-gray-600">{entry.name}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{entry.name}</span>
             </div>
           ))}
         </div>

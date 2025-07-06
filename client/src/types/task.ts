@@ -1,11 +1,19 @@
 export interface Task {
   id: number;
   userId: string;
+  categoryId?: number;
   title: string;
   description?: string;
   priority: 'high' | 'medium' | 'low';
   completed: boolean;
   dueDate?: Date;
+  isRecurring: boolean;
+  recurringPattern?: 'daily' | 'weekly' | 'monthly';
+  // Reminder notification fields
+  reminderEnabled: boolean;
+  reminderType: 'manual' | 'morning' | 'default';
+  reminderTime?: string; // Format: "HH:MM" for manual reminders
+  lastNotified?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,5 +37,9 @@ export interface CreateTaskData {
   title: string;
   description?: string;
   priority: 'high' | 'medium' | 'low';
+  categoryId?: number;
   dueDate?: Date | string;
+  reminderEnabled?: boolean;
+  reminderType?: 'manual' | 'morning' | 'default';
+  reminderTime?: string;
 }

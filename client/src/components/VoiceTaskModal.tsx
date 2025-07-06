@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useCreateTask } from '@/hooks/useTasks';
+import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
+import { detectDateFromText, formatRelativeDate } from '@/lib/dateDetection';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Mic, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { ReminderSettings } from '@/components/ReminderSettings';
+import { Mic, X, Tag, Calendar, Clock } from 'lucide-react';
 
 interface VoiceTaskModalProps {
   open: boolean;
@@ -15,7 +21,19 @@ interface VoiceTaskModalProps {
 export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const [recordingTime, setRecordingTime] = useState(0);
   const [showTranscription, setShowTranscription] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedDeadline, setSelectedDeadline] = useState<Date | null>(null);
+  const [deadlineInputValue, setDeadlineInputValue] = useState('');
+  const [detectedDate, setDetectedDate] = useState<Date | null>(null);
+  
+  // Reminder settings state
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [reminderType, setReminderType] = useState<'manual' | 'morning' | 'default'>('default');
+  const [reminderTime, setReminderTime] = useState<string>('');
+  
   const { toast } = useToast();
+  
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
   
   const {
     isListening,
@@ -46,6 +64,16 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   useEffect(() => {
     if (transcript && !isListening) {
       setShowTranscription(true);
+      
+      // Detect date from transcript
+      const dateResult = detectDateFromText(transcript);
+      if (dateResult.detectedDate && dateResult.confidence === 'high') {
+        setDetectedDate(dateResult.detectedDate);
+        setSelectedDeadline(dateResult.detectedDate);
+        setDeadlineInputValue(dateResult.detectedDate.toISOString().split('T')[0]);
+      } else {
+        setDetectedDate(null);
+      }
     }
   }, [transcript, isListening]);
 
@@ -62,6 +90,13 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const handleStartRecording = () => {
     resetTranscript();
     setShowTranscription(false);
+    setSelectedCategory('');
+    setSelectedDeadline(null);
+    setDetectedDate(null);
+    setDeadlineInputValue('');
+    setReminderEnabled(true);
+    setReminderType('default');
+    setReminderTime('');
     startListening();
   };
 
@@ -82,17 +117,34 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         title: transcript.slice(0, 100), // Limit title length
         description: transcript.length > 100 ? transcript.slice(100) : undefined,
         priority,
-        dueDate: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // Due today at noon
+        categoryId: selectedCategory && selectedCategory !== 'none' ? parseInt(selectedCategory) : undefined,
+        dueDate: selectedDeadline ? selectedDeadline.toISOString() : undefined,
+        reminderEnabled,
+        reminderType,
+        reminderTime: reminderType === 'manual' ? reminderTime : undefined,
       });
 
+      const deadlineText = selectedDeadline ? ` (due ${formatRelativeDate(selectedDeadline)})` : '';
+      const reminderText = reminderEnabled ? 
+        reminderType === 'manual' ? ` with reminder at ${reminderTime}` :
+        reminderType === 'morning' ? ' with morning reminder' :
+        ' with default reminder' : '';
+      
       toast({
         title: "Task Created",
-        description: `Task "${transcript.slice(0, 50)}..." has been created with ${priority} priority`,
+        description: `Task "${transcript.slice(0, 50)}..." has been created with ${priority} priority${deadlineText}${reminderText}`,
       });
 
       onOpenChange(false);
       resetTranscript();
       setShowTranscription(false);
+      setSelectedCategory('');
+      setSelectedDeadline(null);
+      setDetectedDate(null);
+      setDeadlineInputValue('');
+      setReminderEnabled(true);
+      setReminderType('default');
+      setReminderTime('');
     } catch (error) {
       toast({
         title: "Error",
@@ -102,11 +154,29 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     }
   };
 
+  const handleDeadlineChange = (value: string) => {
+    setDeadlineInputValue(value);
+    if (value) {
+      const date = new Date(value);
+      date.setHours(23, 59, 59, 999); // Set to end of day
+      setSelectedDeadline(date);
+    } else {
+      setSelectedDeadline(null);
+    }
+  };
+
   const handleClose = () => {
     stopListening();
     onOpenChange(false);
     resetTranscript();
     setShowTranscription(false);
+    setSelectedCategory('');
+    setSelectedDeadline(null);
+    setDetectedDate(null);
+    setDeadlineInputValue('');
+    setReminderEnabled(true);
+    setReminderType('default');
+    setReminderTime('');
   };
 
   const formatTime = (seconds: number) => {
@@ -188,6 +258,70 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                   {detectPriority(transcript).charAt(0).toUpperCase() + detectPriority(transcript).slice(1)}
                 </span>
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="category-select" className="text-sm font-medium text-gray-700 flex items-center">
+                  <Tag className="w-4 h-4 mr-2" />
+                  Category (Optional)
+                </Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger id="category-select" className="w-full">
+                    <SelectValue placeholder={categoriesLoading ? "Loading categories..." : "Select a category..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {categories?.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: category.color }}
+                          />
+                          <span>{category.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="deadline-input" className="text-sm font-medium text-gray-700 flex items-center">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Deadline (Optional)
+                </Label>
+                {detectedDate && (
+                  <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded">
+                    <Clock className="w-4 h-4" />
+                    <span>Detected: {formatRelativeDate(detectedDate)}</span>
+                  </div>
+                )}
+                <Input
+                  id="deadline-input"
+                  type="date"
+                  value={deadlineInputValue}
+                  onChange={(e) => handleDeadlineChange(e.target.value)}
+                  className="w-full"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                {selectedDeadline && (
+                  <p className="text-xs text-gray-500">
+                    Due: {formatRelativeDate(selectedDeadline)}
+                  </p>
+                )}
+              </div>
+              
+              {/* Reminder Settings */}
+              {selectedDeadline && (
+                <ReminderSettings
+                  reminderEnabled={reminderEnabled}
+                  reminderType={reminderType}
+                  reminderTime={reminderTime}
+                  onReminderEnabledChange={setReminderEnabled}
+                  onReminderTypeChange={setReminderType}
+                  onReminderTimeChange={setReminderTime}
+                />
+              )}
               
               <div className="flex space-x-3">
                 <Button

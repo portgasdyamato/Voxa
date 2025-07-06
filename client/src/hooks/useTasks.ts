@@ -49,10 +49,28 @@ export function useUpdateTask() {
       const response = await apiRequest('PATCH', `/api/tasks/${id}`, updates);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      
+      // Update the task in the cache immediately for better UX
+      queryClient.setQueryData<Task[]>(['/api/tasks'], (oldTasks) => {
+        if (!oldTasks) return oldTasks;
+        return oldTasks.map(task => 
+          task.id === variables.id ? { ...task, ...variables.updates } : task
+        );
+      });
+      
+      queryClient.setQueryData<Task[]>(['/api/tasks/today'], (oldTasks) => {
+        if (!oldTasks) return oldTasks;
+        return oldTasks.map(task => 
+          task.id === variables.id ? { ...task, ...variables.updates } : task
+        );
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to update task:', error);
     },
   });
 }

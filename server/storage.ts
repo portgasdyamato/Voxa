@@ -1,11 +1,14 @@
 import {
   users,
   tasks,
+  categories,
   type User,
   type UpsertUser,
   type Task,
   type InsertTask,
   type UpdateTask,
+  type Category,
+  type InsertCategory,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, lte } from "drizzle-orm";
@@ -38,6 +41,12 @@ export interface IStorage {
     completedToday: number;
     completedThisWeek: number;
   }>;
+  
+  // Category operations
+  getCategories(userId: string): Promise<Category[]>;
+  createCategory(userId: string, category: InsertCategory): Promise<Category>;
+  updateCategory(userId: string, categoryId: number, updates: Partial<InsertCategory>): Promise<Category>;
+  deleteCategory(userId: string, categoryId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -134,6 +143,11 @@ export class DatabaseStorage implements IStorage {
       })
       .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
       .returning();
+    
+    if (!updatedTask) {
+      throw new Error(`Task with id ${taskId} not found or does not belong to user ${userId}`);
+    }
+    
     return updatedTask;
   }
 
@@ -428,6 +442,54 @@ export class DatabaseStorage implements IStorage {
     });
 
     return quarterlyData;
+  }
+
+  // Category operations
+  async getCategories(userId: string): Promise<Category[]> {
+    return await db
+      .select()
+      .from(categories)
+      .where(eq(categories.userId, userId))
+      .orderBy(asc(categories.name));
+  }
+
+  async createCategory(userId: string, category: InsertCategory): Promise<Category> {
+    const [newCategory] = await db
+      .insert(categories)
+      .values({
+        ...category,
+        userId,
+      })
+      .returning();
+    return newCategory;
+  }
+
+  async updateCategory(userId: string, categoryId: number, updates: Partial<InsertCategory>): Promise<Category> {
+    const [updatedCategory] = await db
+      .update(categories)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)))
+      .returning();
+    if (!updatedCategory) {
+      throw new Error("Category not found");
+    }
+    return updatedCategory;
+  }
+
+  async deleteCategory(userId: string, categoryId: number): Promise<void> {
+    // First, set tasks' categoryId to null for tasks in this category
+    await db
+      .update(tasks)
+      .set({ categoryId: null })
+      .where(and(eq(tasks.categoryId, categoryId), eq(tasks.userId, userId)));
+    
+    // Then delete the category
+    await db
+      .delete(categories)
+      .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)));
   }
 }
 

@@ -80,6 +80,40 @@
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(240, 4.9%, 83.9%);
   --radius: 0.5rem;
+  
+  /* Dark mode pastel colors */
+  --light-blue-50: hsl(220, 30%, 8%);
+  --light-blue-100: hsl(220, 25%, 12%);
+  --light-blue-200: hsl(220, 20%, 16%);
+  --light-blue-300: hsl(220, 15%, 24%);
+  --light-blue-400: hsl(220, 12%, 32%);
+  --light-blue-500: hsl(220, 15%, 40%);
+  --light-blue-600: hsl(220, 20%, 48%);
+  --light-blue-700: hsl(220, 25%, 56%);
+  --light-blue-800: hsl(220, 30%, 64%);
+  --light-blue-900: hsl(220, 35%, 72%);
+  
+  --lavender-50: hsl(260, 25%, 8%);
+  --lavender-100: hsl(260, 20%, 12%);
+  --lavender-200: hsl(260, 18%, 16%);
+  --lavender-300: hsl(260, 15%, 24%);
+  --lavender-400: hsl(260, 12%, 32%);
+  --lavender-500: hsl(260, 15%, 40%);
+  --lavender-600: hsl(260, 20%, 48%);
+  --lavender-700: hsl(260, 25%, 56%);
+  --lavender-800: hsl(260, 30%, 64%);
+  --lavender-900: hsl(260, 35%, 72%);
+  
+  --soft-pink-50: hsl(300, 25%, 8%);
+  --soft-pink-100: hsl(300, 20%, 12%);
+  --soft-pink-200: hsl(300, 18%, 16%);
+  --soft-pink-300: hsl(300, 15%, 24%);
+  --soft-pink-400: hsl(300, 12%, 32%);
+  --soft-pink-500: hsl(300, 15%, 40%);
+  --soft-pink-600: hsl(300, 20%, 48%);
+  --soft-pink-700: hsl(300, 25%, 56%);
+  --soft-pink-800: hsl(300, 30%, 64%);
+  --soft-pink-900: hsl(300, 35%, 72%);
 }
 
 @layer base {
@@ -92,6 +126,7 @@
     background: linear-gradient(135deg, var(--light-blue-50) 0%, var(--lavender-50) 50%, var(--soft-pink-50) 100%);
     min-height: 100vh;
     color: var(--foreground);
+    transition: background 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -109,6 +144,48 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
+  
+  .dark .glass-effect {
+    background: rgba(38, 38, 71, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(58, 58, 92, 0.2);
+  }
+}
+
+/* Task completion animations */
+@keyframes checkbox-check {
+  0% {
+    transform: scale(0) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes task-complete {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-checkbox-check {
+  animation: checkbox-check 0.3s ease-in-out;
+}
+
+.animate-task-complete {
+  animation: task-complete 0.5s ease-in-out;
 }
 
 /* Custom animations */
