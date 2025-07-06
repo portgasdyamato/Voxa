@@ -197,18 +197,22 @@ export class DatabaseStorage implements IStorage {
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
     
-    const completedToday = userTasks.filter(task => 
-      task.completed && task.updatedAt && task.updatedAt >= startOfToday && task.updatedAt <= endOfToday
-    ).length;
+    const completedToday = userTasks.filter(task => {
+      if (!task.completed || !task.updatedAt) return false;
+      const updatedAt = new Date(task.updatedAt);
+      return updatedAt >= startOfToday && updatedAt <= endOfToday;
+    }).length;
 
     // This week's completed tasks
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
     
-    const completedThisWeek = userTasks.filter(task => 
-      task.completed && task.updatedAt && task.updatedAt >= startOfWeek
-    ).length;
+    const completedThisWeek = userTasks.filter(task => {
+      if (!task.completed || !task.updatedAt) return false;
+      const updatedAt = new Date(task.updatedAt);
+      return updatedAt >= startOfWeek;
+    }).length;
 
     return {
       total,
@@ -238,7 +242,8 @@ export class DatabaseStorage implements IStorage {
     
     completedTasks.forEach(task => {
       if (task.updatedAt) {
-        const dateKey = task.updatedAt.toISOString().split('T')[0];
+        const updatedDate = new Date(task.updatedAt);
+        const dateKey = updatedDate.toISOString().split('T')[0];
         tasksByDate.set(dateKey, (tasksByDate.get(dateKey) || 0) + 1);
       }
     });

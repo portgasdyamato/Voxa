@@ -18,7 +18,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
   
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      <div className="flex items-center gap-2 text-sm text-gray-600">
+      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
         <Filter className="w-4 h-4" />
         <span>Filter by:</span>
       </div>
@@ -27,7 +27,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
         variant={selectedCategory === null ? "default" : "outline"}
         size="sm"
         onClick={() => onCategoryChange(null)}
-        className="h-7"
+        className="h-8 px-3"
       >
         All Tasks
       </Button>
@@ -38,7 +38,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
           variant={selectedCategory === category.id ? "default" : "outline"}
           size="sm"
           onClick={() => onCategoryChange(category.id)}
-          className="h-7 pl-2 pr-3"
+          className="h-8 pl-2 pr-3"
         >
           <div
             className="w-3 h-3 rounded-full mr-2"

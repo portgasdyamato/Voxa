@@ -1,4 +1,4 @@
-# Voice Task Manager - Local Development Setup
+# VoXa - Local Development Setup
 
 ## Quick Start Guide
 
@@ -235,7 +235,7 @@ The application will be available at `http://localhost:5000`
 
 ## Voice Commands Usage
 
-The Voice Task Manager now supports natural language voice commands for hands-free task management. Here's how to use them:
+The VoXa now supports natural language voice commands for hands-free task management. Here's how to use them:
 
 ### Activating Voice Commands
 

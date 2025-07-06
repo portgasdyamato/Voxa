@@ -36,7 +36,11 @@ export function useCreateTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      // Invalidate all stats queries for all periods
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
     },
   });
 }
@@ -52,7 +56,11 @@ export function useUpdateTask() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      // Invalidate all stats queries for all periods
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
       
       // Update the task in the cache immediately for better UX
       queryClient.setQueryData<Task[]>(['/api/tasks'], (oldTasks) => {
@@ -85,7 +93,11 @@ export function useDeleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      // Invalidate all stats queries for all periods
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
     },
   });
 }

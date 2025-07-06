@@ -7,7 +7,7 @@
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Click "Select a project" dropdown at the top
 3. Click "New Project"
-4. Enter project name: "Voice Task Manager"
+4. Enter project name: "VoXa"
 5. Click "Create"
 
 ### 2. Enable Google+ API
@@ -23,14 +23,14 @@
 3. If prompted, configure the OAuth consent screen:
    - Choose "External" user type
    - Fill in required fields:
-     - App name: "Voice Task Manager"
+     - App name: "VoXa"
      - User support email: your email
      - Developer contact information: your email
    - Click "Save and Continue"
    - Skip "Scopes" and "Test users" for now
 4. Back to creating OAuth client ID:
    - Application type: "Web application"
-   - Name: "Voice Task Manager"
+   - Name: "VoXa"
    - Authorized redirect URIs: Add `http://localhost:5000/auth/google/callback`
    - Click "Create"
 

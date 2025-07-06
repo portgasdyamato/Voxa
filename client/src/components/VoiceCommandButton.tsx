@@ -86,11 +86,7 @@ export function VoiceCommandButton({ tasks, className }: VoiceCommandButtonProps
           <p className="text-sm text-gray-600 dark:text-gray-300 animate-pulse">
             🎤 Listening for commands...
           </p>
-        ) : (
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Voice Commands
-          </p>
-        )}
+        ) : null}
       </div>
 
       {/* Last command display */}
@@ -131,9 +127,7 @@ export function VoiceCommandButton({ tasks, className }: VoiceCommandButtonProps
       {/* Help text */}
       {!isListening && !lastCommand && (
         <div className="text-center max-w-xs mt-2 space-y-2">
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            Try: "Mark laundry as done" or "Show me today's tasks"
-          </p>
+
           <div className="flex items-center justify-center space-x-2 text-xs text-gray-400 dark:text-gray-500">
             <Keyboard className="w-3 h-3" />
             <span>Ctrl+K to activate</span>

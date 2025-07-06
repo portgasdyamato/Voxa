@@ -42,6 +42,11 @@ export function useCreateCategory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      // Invalidate all stats queries for all periods
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
     },
   });
 }
@@ -63,7 +68,13 @@ export function useUpdateCategory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
+      // Invalidate all stats queries for all periods
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
     },
   });
 }
@@ -82,7 +93,13 @@ export function useDeleteCategory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
+      // Invalidate all stats queries for all periods
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
     },
   });
 }

@@ -23,8 +23,8 @@ function Router() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse">
-          <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center">
-            <Mic className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
+            <img src="/logo.png" alt="VoXa Logo" className="w-full h-full object-contain" />
           </div>
         </div>
       </div>

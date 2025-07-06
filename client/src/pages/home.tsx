@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTodayTasks, useTaskStats, useTasks } from '@/hooks/useTasks';
+import { useTodayTasks, useTasks } from '@/hooks/useTasks';
 import { useCategories, useCreateDefaultCategories } from '@/hooks/useCategories';
 import { useDeadlineNotifications } from '@/hooks/useDeadlineNotifications';
 import { useToast } from '@/hooks/use-toast';
@@ -21,12 +21,11 @@ export default function Home() {
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilterType>('all');
+  const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilterType>('today');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   
   const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
   const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
-  const { data: stats, isLoading: statsLoading, error: statsError } = useTaskStats();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { createDefaults, isLoading: creatingDefaults } = useCreateDefaultCategories();
   const { toast } = useToast();
@@ -76,20 +75,6 @@ export default function Home() {
     }
   }, [tasksError, toast]);
 
-  useEffect(() => {
-    if (statsError && isUnauthorizedError(statsError)) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [statsError, toast]);
-
   // Create default categories for new users
   useEffect(() => {
     if (categories && categories.length === 0 && !categoriesLoading && !creatingDefaults) {
@@ -97,7 +82,7 @@ export default function Home() {
     }
   }, [categories, categoriesLoading, createDefaults, creatingDefaults]);
 
-  if (userLoading || tasksLoading || statsLoading) {
+  if (userLoading || tasksLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-pulse space-y-6">
@@ -160,20 +145,6 @@ export default function Home() {
               </Button>
             </AlertDescription>
           </Alert>
-        )}
-        
-        {notificationPermission === 'granted' && (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={testNotification}
-              className="text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
-            >
-              <Bell className="w-3 h-3 mr-1" />
-              Test Notifications
-            </Button>
-          </div>
         )}
         
         {pendingTasksDueToday.length > 0 && (
@@ -250,13 +221,13 @@ export default function Home() {
           <div className="glass-effect rounded-xl p-8 text-center">
             <ClipboardList className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
             <h4 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">
-              {deadlineFilter === 'all' && selectedCategory === null && searchQuery === '' 
+              {selectedCategory === null && searchQuery === '' 
                 ? (showAllTasks ? 'No tasks yet' : 'No tasks for today')
                 : 'No tasks match your filters'
               }
             </h4>
             <p className="text-gray-500 dark:text-gray-400">
-              {deadlineFilter === 'all' && selectedCategory === null && searchQuery === '' 
+              {selectedCategory === null && searchQuery === '' 
                 ? 'Use the microphone button to add your first task!'
                 : 'Try adjusting your search or filter criteria.'
               }
@@ -312,7 +283,7 @@ export default function Home() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Tasks</p>
               <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {stats?.total || 0}
+                {filteredTasks.length}
               </p>
             </div>
           </div>
@@ -328,7 +299,7 @@ export default function Home() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
               <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {stats?.completed || 0}
+                {completedTasks.length}
               </p>
             </div>
           </div>
@@ -344,7 +315,7 @@ export default function Home() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending</p>
               <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {stats?.pending || 0}
+                {pendingTasks.length}
               </p>
             </div>
           </div>

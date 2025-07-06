@@ -1,10 +1,10 @@
 @echo off
 echo ===============================================
-echo Voice Task Manager - Database Setup Helper
+echo VoXa - Database Setup Helper
 echo ===============================================
 echo.
 echo This script will help you set up a free PostgreSQL database
-echo for your Voice Task Manager project.
+echo for your VoXa project.
 echo.
 echo STEP 1: Get a free database
 echo ----------------------------------------
