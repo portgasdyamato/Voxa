@@ -9,8 +9,9 @@ import { TaskCard } from '@/components/TaskCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
 import { VoiceCommandButton } from '@/components/VoiceCommandButton';
+import { ManualTaskModal } from '@/components/ManualTaskModal';
 import { DeadlineFilter, getDeadlineFilteredTasks, getDeadlineCounts, type DeadlineFilter as DeadlineFilterType } from '@/components/DeadlineFilter';
-import { ClipboardList, CheckCircle, Clock, TrendingUp, Search, Settings, Bell, BellOff } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, TrendingUp, Search, Settings, Bell, BellOff, Edit3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -23,6 +24,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilterType>('today');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [showManualTaskModal, setShowManualTaskModal] = useState(false);
   
   const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
   const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
@@ -199,8 +201,15 @@ export default function Home() {
       </div>
 
       {/* Voice Commands Section */}
-      <div className="flex justify-center mb-6">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
         <VoiceCommandButton tasks={rawTasksData || []} />
+        <Button
+          onClick={() => setShowManualTaskModal(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
+        >
+          <Edit3 className="w-4 h-4" />
+          Add Task Manually
+        </Button>
       </div>
 
       {/* Today's Tasks */}
@@ -228,7 +237,7 @@ export default function Home() {
             </h4>
             <p className="text-gray-500 dark:text-gray-400">
               {selectedCategory === null && searchQuery === '' 
-                ? 'Use the microphone button to add your first task!'
+                ? 'Use the microphone button or "Add Task Manually" to create your first task!'
                 : 'Try adjusting your search or filter criteria.'
               }
             </p>
@@ -321,6 +330,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Manual Task Modal */}
+      <ManualTaskModal
+        open={showManualTaskModal}
+        onOpenChange={setShowManualTaskModal}
+      />
     </div>
   );
 }

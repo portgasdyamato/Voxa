@@ -4,10 +4,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// api/server.ts
-import "dotenv/config";
-import express from "express";
-
 // shared/schema.ts
 var schema_exports = {};
 __export(schema_exports, {
@@ -500,11 +496,11 @@ function getSession() {
     }
   });
 }
-async function setupGoogleAuth(app2) {
-  app2.set("trust proxy", 1);
-  app2.use(getSession());
-  app2.use(passport.initialize());
-  app2.use(passport.session());
+async function setupGoogleAuth(app) {
+  app.set("trust proxy", 1);
+  app.use(getSession());
+  app.use(passport.initialize());
+  app.use(passport.session());
   if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
       clientID: GOOGLE_CLIENT_ID,
@@ -569,7 +565,7 @@ async function setupGoogleAuth(app2) {
       done(error, false);
     }
   });
-  app2.get("/api/login", (req, res, next) => {
+  app.get("/api/login", (req, res, next) => {
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
       return res.status(500).json({
         message: "Google OAuth not configured. Please check your environment variables."
@@ -577,14 +573,14 @@ async function setupGoogleAuth(app2) {
     }
     passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
   });
-  app2.get(
+  app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login-failed" }),
     (req, res) => {
       res.redirect("/");
     }
   );
-  app2.get("/api/logout", (req, res) => {
+  app.get("/api/logout", (req, res) => {
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
@@ -592,7 +588,7 @@ async function setupGoogleAuth(app2) {
       res.redirect("/");
     });
   });
-  app2.get("/login-failed", (req, res) => {
+  app.get("/login-failed", (req, res) => {
     res.send(`
       <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
         <h2>Login Failed</h2>
@@ -611,9 +607,9 @@ var isAuthenticated = (req, res, next) => {
 
 // server/routes.ts
 import { z } from "zod";
-async function registerRoutes(app2) {
-  await setupGoogleAuth(app2);
-  app2.get("/api/auth/user", isAuthenticated, async (req, res) => {
+async function registerRoutes(app) {
+  await setupGoogleAuth(app);
+  app.get("/api/auth/user", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -623,7 +619,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
-  app2.patch("/api/profile", isAuthenticated, async (req, res) => {
+  app.patch("/api/profile", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const { firstName, lastName, profileImageUrl } = req.body;
@@ -638,7 +634,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to update profile" });
     }
   });
-  app2.get("/api/categories", isAuthenticated, async (req, res) => {
+  app.get("/api/categories", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const categories2 = await storage.getCategories(userId);
@@ -648,7 +644,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to fetch categories" });
     }
   });
-  app2.post("/api/categories", isAuthenticated, async (req, res) => {
+  app.post("/api/categories", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const { name, color } = req.body;
@@ -659,7 +655,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to create category" });
     }
   });
-  app2.patch("/api/categories/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/categories/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const categoryId = parseInt(req.params.id);
@@ -671,7 +667,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to update category" });
     }
   });
-  app2.delete("/api/categories/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/categories/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const categoryId = parseInt(req.params.id);
@@ -682,7 +678,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to delete category" });
     }
   });
-  app2.get("/api/tasks", isAuthenticated, async (req, res) => {
+  app.get("/api/tasks", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const tasks2 = await storage.getTasks(userId);
@@ -692,7 +688,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to fetch tasks" });
     }
   });
-  app2.get("/api/tasks/today", isAuthenticated, async (req, res) => {
+  app.get("/api/tasks/today", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const today = /* @__PURE__ */ new Date();
@@ -705,7 +701,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to fetch today's tasks" });
     }
   });
-  app2.post("/api/tasks", isAuthenticated, async (req, res) => {
+  app.post("/api/tasks", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       console.log("Creating task with data:", req.body);
@@ -725,7 +721,7 @@ async function registerRoutes(app2) {
       }
     }
   });
-  app2.patch("/api/tasks/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/tasks/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const taskId = parseInt(req.params.id);
@@ -746,7 +742,7 @@ async function registerRoutes(app2) {
       }
     }
   });
-  app2.delete("/api/tasks/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/tasks/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const taskId = parseInt(req.params.id);
@@ -757,7 +753,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to delete task" });
     }
   });
-  app2.get("/api/stats", isAuthenticated, async (req, res) => {
+  app.get("/api/stats", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const period = req.query.period || "week";
@@ -768,45 +764,8 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to fetch stats" });
     }
   });
-  return app2;
+  return app;
 }
-
-// api/server.ts
-var app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-var initialized = false;
-var initializeApp = async () => {
-  if (initialized) {
-    return app;
-  }
-  try {
-    await registerRoutes(app);
-    app.use((err, _req, res, _next) => {
-      console.error("API Error:", err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-    });
-    initialized = true;
-    return app;
-  } catch (error) {
-    console.error("Failed to initialize API:", error);
-    throw error;
-  }
-};
-var server_default = async (req, res) => {
-  try {
-    const app2 = await initializeApp();
-    return app2(req, res);
-  } catch (error) {
-    console.error("Handler error:", error);
-    res.status(500).json({
-      message: "Internal Server Error",
-      error: error instanceof Error ? error.message : "Unknown error"
-    });
-  }
-};
 export {
-  server_default as default
+  registerRoutes
 };

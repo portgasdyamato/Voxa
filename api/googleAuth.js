@@ -4,9 +4,11 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// api/server.ts
-import "dotenv/config";
-import express from "express";
+// server/googleAuth.ts
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
 
 // shared/schema.ts
 var schema_exports = {};
@@ -467,10 +469,6 @@ var DatabaseStorage = class {
 var storage = new DatabaseStorage();
 
 // server/googleAuth.ts
-import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
 var GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 var GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 var GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback";
@@ -500,11 +498,11 @@ function getSession() {
     }
   });
 }
-async function setupGoogleAuth(app2) {
-  app2.set("trust proxy", 1);
-  app2.use(getSession());
-  app2.use(passport.initialize());
-  app2.use(passport.session());
+async function setupGoogleAuth(app) {
+  app.set("trust proxy", 1);
+  app.use(getSession());
+  app.use(passport.initialize());
+  app.use(passport.session());
   if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
       clientID: GOOGLE_CLIENT_ID,
@@ -569,7 +567,7 @@ async function setupGoogleAuth(app2) {
       done(error, false);
     }
   });
-  app2.get("/api/login", (req, res, next) => {
+  app.get("/api/login", (req, res, next) => {
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
       return res.status(500).json({
         message: "Google OAuth not configured. Please check your environment variables."
@@ -577,14 +575,14 @@ async function setupGoogleAuth(app2) {
     }
     passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
   });
-  app2.get(
+  app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login-failed" }),
     (req, res) => {
       res.redirect("/");
     }
   );
-  app2.get("/api/logout", (req, res) => {
+  app.get("/api/logout", (req, res) => {
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
@@ -592,7 +590,7 @@ async function setupGoogleAuth(app2) {
       res.redirect("/");
     });
   });
-  app2.get("/login-failed", (req, res) => {
+  app.get("/login-failed", (req, res) => {
     res.send(`
       <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
         <h2>Login Failed</h2>
@@ -608,205 +606,8 @@ var isAuthenticated = (req, res, next) => {
   }
   res.status(401).json({ message: "Not authenticated" });
 };
-
-// server/routes.ts
-import { z } from "zod";
-async function registerRoutes(app2) {
-  await setupGoogleAuth(app2);
-  app2.get("/api/auth/user", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-  app2.patch("/api/profile", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { firstName, lastName, profileImageUrl } = req.body;
-      const updatedUser = await storage.updateUser(userId, {
-        firstName,
-        lastName,
-        profileImageUrl
-      });
-      res.json(updatedUser);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      res.status(500).json({ message: "Failed to update profile" });
-    }
-  });
-  app2.get("/api/categories", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const categories2 = await storage.getCategories(userId);
-      res.json(categories2);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      res.status(500).json({ message: "Failed to fetch categories" });
-    }
-  });
-  app2.post("/api/categories", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { name, color } = req.body;
-      const category = await storage.createCategory(userId, { name, color });
-      res.json(category);
-    } catch (error) {
-      console.error("Error creating category:", error);
-      res.status(500).json({ message: "Failed to create category" });
-    }
-  });
-  app2.patch("/api/categories/:id", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const categoryId = parseInt(req.params.id);
-      const updates = req.body;
-      const category = await storage.updateCategory(userId, categoryId, updates);
-      res.json(category);
-    } catch (error) {
-      console.error("Error updating category:", error);
-      res.status(500).json({ message: "Failed to update category" });
-    }
-  });
-  app2.delete("/api/categories/:id", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const categoryId = parseInt(req.params.id);
-      await storage.deleteCategory(userId, categoryId);
-      res.json({ message: "Category deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      res.status(500).json({ message: "Failed to delete category" });
-    }
-  });
-  app2.get("/api/tasks", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const tasks2 = await storage.getTasks(userId);
-      res.json(tasks2);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-      res.status(500).json({ message: "Failed to fetch tasks" });
-    }
-  });
-  app2.get("/api/tasks/today", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const today = /* @__PURE__ */ new Date();
-      console.log("Today's date for query:", today);
-      const tasks2 = await storage.getTasksByDate(userId, today);
-      console.log("Today's tasks found:", tasks2.length);
-      res.json(tasks2);
-    } catch (error) {
-      console.error("Error fetching today's tasks:", error);
-      res.status(500).json({ message: "Failed to fetch today's tasks" });
-    }
-  });
-  app2.post("/api/tasks", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      console.log("Creating task with data:", req.body);
-      if (req.body.dueDate) {
-        req.body.dueDate = new Date(req.body.dueDate);
-      }
-      const taskData = insertTaskSchema.parse(req.body);
-      const task = await storage.createTask(userId, taskData);
-      res.status(201).json(task);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error("Validation errors:", error.errors);
-        res.status(400).json({ message: "Invalid task data", errors: error.errors });
-      } else {
-        console.error("Error creating task:", error);
-        res.status(500).json({ message: "Failed to create task" });
-      }
-    }
-  });
-  app2.patch("/api/tasks/:id", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const taskId = parseInt(req.params.id);
-      const updates = updateTaskSchema.parse(req.body);
-      if (isNaN(taskId)) {
-        return res.status(400).json({ message: "Invalid task ID" });
-      }
-      const task = await storage.updateTask(userId, taskId, updates);
-      res.json(task);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid update data", errors: error.errors });
-      } else if (error instanceof Error && error.message.includes("not found")) {
-        res.status(404).json({ message: "Task not found" });
-      } else {
-        console.error("Error updating task:", error);
-        res.status(500).json({ message: "Failed to update task" });
-      }
-    }
-  });
-  app2.delete("/api/tasks/:id", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const taskId = parseInt(req.params.id);
-      await storage.deleteTask(userId, taskId);
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting task:", error);
-      res.status(500).json({ message: "Failed to delete task" });
-    }
-  });
-  app2.get("/api/stats", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const period = req.query.period || "week";
-      const stats = await storage.getTaskStats(userId, period);
-      res.json(stats);
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-      res.status(500).json({ message: "Failed to fetch stats" });
-    }
-  });
-  return app2;
-}
-
-// api/server.ts
-var app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-var initialized = false;
-var initializeApp = async () => {
-  if (initialized) {
-    return app;
-  }
-  try {
-    await registerRoutes(app);
-    app.use((err, _req, res, _next) => {
-      console.error("API Error:", err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-    });
-    initialized = true;
-    return app;
-  } catch (error) {
-    console.error("Failed to initialize API:", error);
-    throw error;
-  }
-};
-var server_default = async (req, res) => {
-  try {
-    const app2 = await initializeApp();
-    return app2(req, res);
-  } catch (error) {
-    console.error("Handler error:", error);
-    res.status(500).json({
-      message: "Internal Server Error",
-      error: error instanceof Error ? error.message : "Unknown error"
-    });
-  }
-};
 export {
-  server_default as default
+  getSession,
+  isAuthenticated,
+  setupGoogleAuth
 };
