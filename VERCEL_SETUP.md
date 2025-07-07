@@ -1,5 +1,13 @@
 # Vercel Environment Variables Setup
 
+## ⚠️ DEPLOYMENT UPDATE
+
+**Current Status**: Using minimal API handler for debugging deployment issues.
+
+- **Handler**: `api/minimal-handler.ts` (simplified, debug-focused)
+- **Endpoints**: `/api/health`, `/api/test-db`, `/api/login`
+- **Purpose**: Isolate and fix serverless function issues before restoring full functionality
+
 ## The Issue
 Your VoXa app deployed successfully to Vercel, but you're getting a `FUNCTION_INVOCATION_FAILED` error because the environment variables are not configured.
 
