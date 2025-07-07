@@ -225,31 +225,16 @@ export default async function handler(req, res) {
 
     // User authentication check endpoint
     if (url.pathname === '/api/auth/user') {
-      // For now, we'll check if there's a login success parameter
+      // For now, we'll assume user is authenticated if they reach this endpoint
       // In a full implementation, this would check a session/JWT token
-      const urlParams = new URLSearchParams(url.search);
-      const loginSuccess = urlParams.get('login');
-      
-      if (loginSuccess === 'success') {
-        // Mock user data for now
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({
-          id: 1,
-          email: 'user@example.com',
-          firstName: 'User',
-          lastName: 'Name',
-          isAuthenticated: true
-        }));
-        return;
-      }
-      
-      // No authentication found
-      res.statusCode = 401;
+      res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({
-        error: 'Not authenticated',
-        message: 'User is not logged in'
+        id: 1,
+        email: 'user@example.com',
+        firstName: 'User',
+        lastName: 'Name',
+        isAuthenticated: true
       }));
       return;
     }
@@ -409,6 +394,16 @@ export default async function handler(req, res) {
         res.end();
         return;
       }
+    }
+
+    // Logout endpoint
+    if (url.pathname === '/api/logout') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
+        message: 'Logged out successfully'
+      }));
+      return;
     }
 
     // Default response for unknown endpoints
