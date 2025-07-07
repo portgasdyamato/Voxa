@@ -12,10 +12,36 @@ export default async function handler(req, res) {
     }
 
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
-    console.log('Request URL:', url.pathname);
+    console.log('Request URL:', url.pathname, 'Method:', req.method);
 
-    // Simple in-memory storage (this resets on each deployment)
+    // Simple persistent storage using global variable (resets on cold starts)
     // In production, this would be replaced with a real database
+    if (!global.appData) {
+      global.appData = {
+        tasks: [
+          {
+            id: 1,
+            title: "Welcome to VoXa!",
+            description: "This is your first task. Try creating more tasks using voice commands or the manual task button.",
+            completed: false,
+            priority: "medium",
+            categoryId: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            dueDate: new Date().toISOString()
+          }
+        ],
+        categories: [
+          { id: 1, name: "Work", color: "#3B82F6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 2, name: "Personal", color: "#10B981", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 3, name: "Shopping", color: "#F59E0B", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 4, name: "Health", color: "#EF4444", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 5, name: "Learning", color: "#8B5CF6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        ],
+        nextTaskId: 2,
+        nextCategoryId: 6
+      };
+    }
     if (!global.tasks) {
       global.tasks = [
         {
@@ -272,7 +298,7 @@ export default async function handler(req, res) {
       if (req.method === 'GET') {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(global.tasks || []));
+        res.end(JSON.stringify(global.appData.tasks || []));
         return;
       }
       
@@ -287,7 +313,7 @@ export default async function handler(req, res) {
           try {
             const taskData = JSON.parse(body);
             const newTask = {
-              id: Date.now(),
+              id: global.appData.nextTaskId++,
               title: taskData.title || 'New Task',
               description: taskData.description || '',
               completed: false,
@@ -295,10 +321,10 @@ export default async function handler(req, res) {
               categoryId: taskData.categoryId || 1,
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
-              dueDate: taskData.dueDate || null
+              dueDate: taskData.dueDate || new Date().toISOString()
             };
             
-            global.tasks.push(newTask);
+            global.appData.tasks.push(newTask);
             
             res.statusCode = 201;
             res.setHeader('Content-Type', 'application/json');
