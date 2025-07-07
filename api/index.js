@@ -1,12 +1,40 @@
+"use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
+var __copyProps = (to, from, except, desc2) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc2 = __getOwnPropDesc(from, key)) || desc2.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// api/server.ts
-import "dotenv/config";
-import express from "express";
+// api/index.ts
+var index_exports = {};
+__export(index_exports, {
+  default: () => index_default
+});
+module.exports = __toCommonJS(index_exports);
+var import_config = require("dotenv/config");
+var import_express = __toESM(require("express"), 1);
 
 // shared/schema.ts
 var schema_exports = {};
@@ -23,72 +51,62 @@ __export(schema_exports, {
   users: () => users,
   usersRelations: () => usersRelations
 });
-import {
-  pgTable,
-  text,
-  varchar,
-  timestamp,
-  jsonb,
-  index,
-  serial,
-  boolean,
-  integer
-} from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { relations } from "drizzle-orm";
-var sessions = pgTable(
+var import_pg_core = require("drizzle-orm/pg-core");
+var import_drizzle_zod = require("drizzle-zod");
+var import_drizzle_orm = require("drizzle-orm");
+var sessions = (0, import_pg_core.pgTable)(
   "sessions",
   {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull()
+    sid: (0, import_pg_core.varchar)("sid").primaryKey(),
+    sess: (0, import_pg_core.jsonb)("sess").notNull(),
+    expire: (0, import_pg_core.timestamp)("expire").notNull()
   },
-  (table) => [index("IDX_session_expire").on(table.expire)]
+  (table) => [(0, import_pg_core.index)("IDX_session_expire").on(table.expire)]
 );
-var users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow()
+var users = (0, import_pg_core.pgTable)("users", {
+  id: (0, import_pg_core.varchar)("id").primaryKey().notNull(),
+  email: (0, import_pg_core.varchar)("email").unique(),
+  firstName: (0, import_pg_core.varchar)("first_name"),
+  lastName: (0, import_pg_core.varchar)("last_name"),
+  profileImageUrl: (0, import_pg_core.varchar)("profile_image_url"),
+  createdAt: (0, import_pg_core.timestamp)("created_at").defaultNow(),
+  updatedAt: (0, import_pg_core.timestamp)("updated_at").defaultNow()
 });
-var tasks = pgTable("tasks", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  priority: varchar("priority", { enum: ["high", "medium", "low"] }).notNull().default("medium"),
-  completed: boolean("completed").notNull().default(false),
-  dueDate: timestamp("due_date"),
-  isRecurring: boolean("is_recurring").notNull().default(false),
-  recurringPattern: varchar("recurring_pattern", { enum: ["daily", "weekly", "monthly"] }),
+var tasks = (0, import_pg_core.pgTable)("tasks", {
+  id: (0, import_pg_core.serial)("id").primaryKey(),
+  userId: (0, import_pg_core.varchar)("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  categoryId: (0, import_pg_core.integer)("category_id").references(() => categories.id, { onDelete: "set null" }),
+  title: (0, import_pg_core.text)("title").notNull(),
+  description: (0, import_pg_core.text)("description"),
+  priority: (0, import_pg_core.varchar)("priority", { enum: ["high", "medium", "low"] }).notNull().default("medium"),
+  completed: (0, import_pg_core.boolean)("completed").notNull().default(false),
+  dueDate: (0, import_pg_core.timestamp)("due_date"),
+  isRecurring: (0, import_pg_core.boolean)("is_recurring").notNull().default(false),
+  recurringPattern: (0, import_pg_core.varchar)("recurring_pattern", { enum: ["daily", "weekly", "monthly"] }),
   // Reminder notification fields
-  reminderEnabled: boolean("reminder_enabled").notNull().default(true),
-  reminderType: varchar("reminder_type", { enum: ["manual", "morning", "default"] }).notNull().default("default"),
-  reminderTime: varchar("reminder_time"),
+  reminderEnabled: (0, import_pg_core.boolean)("reminder_enabled").notNull().default(true),
+  reminderType: (0, import_pg_core.varchar)("reminder_type", { enum: ["manual", "morning", "default"] }).notNull().default("default"),
+  reminderTime: (0, import_pg_core.varchar)("reminder_time"),
   // Format: "HH:MM" for manual reminders
-  lastNotified: timestamp("last_notified"),
+  lastNotified: (0, import_pg_core.timestamp)("last_notified"),
   // Track when last notification was sent
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow()
+  createdAt: (0, import_pg_core.timestamp)("created_at").defaultNow(),
+  updatedAt: (0, import_pg_core.timestamp)("updated_at").defaultNow()
 });
-var categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: varchar("name", { length: 100 }).notNull(),
-  color: varchar("color", { length: 7 }).notNull().default("#3B82F6"),
+var categories = (0, import_pg_core.pgTable)("categories", {
+  id: (0, import_pg_core.serial)("id").primaryKey(),
+  userId: (0, import_pg_core.varchar)("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: (0, import_pg_core.varchar)("name", { length: 100 }).notNull(),
+  color: (0, import_pg_core.varchar)("color", { length: 7 }).notNull().default("#3B82F6"),
   // Default blue
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow()
+  createdAt: (0, import_pg_core.timestamp)("created_at").defaultNow(),
+  updatedAt: (0, import_pg_core.timestamp)("updated_at").defaultNow()
 });
-var usersRelations = relations(users, ({ many }) => ({
+var usersRelations = (0, import_drizzle_orm.relations)(users, ({ many }) => ({
   tasks: many(tasks),
   categories: many(categories)
 }));
-var tasksRelations = relations(tasks, ({ one }) => ({
+var tasksRelations = (0, import_drizzle_orm.relations)(tasks, ({ one }) => ({
   user: one(users, {
     fields: [tasks.userId],
     references: [users.id]
@@ -98,32 +116,32 @@ var tasksRelations = relations(tasks, ({ one }) => ({
     references: [categories.id]
   })
 }));
-var categoriesRelations = relations(categories, ({ one, many }) => ({
+var categoriesRelations = (0, import_drizzle_orm.relations)(categories, ({ one, many }) => ({
   user: one(users, {
     fields: [categories.userId],
     references: [users.id]
   }),
   tasks: many(tasks)
 }));
-var insertTaskSchema = createInsertSchema(tasks).omit({
+var insertTaskSchema = (0, import_drizzle_zod.createInsertSchema)(tasks).omit({
   id: true,
   userId: true,
   createdAt: true,
   updatedAt: true
 });
-var updateTaskSchema = createInsertSchema(tasks).omit({
+var updateTaskSchema = (0, import_drizzle_zod.createInsertSchema)(tasks).omit({
   id: true,
   userId: true,
   createdAt: true,
   updatedAt: true
 }).partial();
-var insertCategorySchema = createInsertSchema(categories).omit({
+var insertCategorySchema = (0, import_drizzle_zod.createInsertSchema)(categories).omit({
   id: true,
   userId: true,
   createdAt: true,
   updatedAt: true
 });
-var updateCategorySchema = createInsertSchema(categories).omit({
+var updateCategorySchema = (0, import_drizzle_zod.createInsertSchema)(categories).omit({
   id: true,
   userId: true,
   createdAt: true,
@@ -131,10 +149,10 @@ var updateCategorySchema = createInsertSchema(categories).omit({
 }).partial();
 
 // server/db.ts
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import ws from "ws";
-neonConfig.webSocketConstructor = ws;
+var import_serverless = require("@neondatabase/serverless");
+var import_neon_serverless = require("drizzle-orm/neon-serverless");
+var import_ws = __toESM(require("ws"), 1);
+import_serverless.neonConfig.webSocketConstructor = import_ws.default;
 if (!process.env.DATABASE_URL) {
   console.warn(
     "\u26A0\uFE0F  DATABASE_URL is not set. Please set up your database connection."
@@ -153,16 +171,16 @@ if (dbUrl.includes("localhost") || dbUrl.includes("username:password")) {
     "Please update DATABASE_URL in your .env file with a real database connection. See setup.md for instructions."
   );
 }
-var pool = new Pool({ connectionString: process.env.DATABASE_URL });
-var db = drizzle({ client: pool, schema: schema_exports });
+var pool = new import_serverless.Pool({ connectionString: process.env.DATABASE_URL });
+var db = (0, import_neon_serverless.drizzle)({ client: pool, schema: schema_exports });
 
 // server/storage.ts
-import { eq, and, desc, asc, gte, lte } from "drizzle-orm";
+var import_drizzle_orm2 = require("drizzle-orm");
 var DatabaseStorage = class {
   // User operations
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   async getUser(id) {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db.select().from(users).where((0, import_drizzle_orm2.eq)(users.id, id));
     return user;
   }
   async upsertUser(userData) {
@@ -179,12 +197,12 @@ var DatabaseStorage = class {
     const [user] = await db.update(users).set({
       ...updates,
       updatedAt: /* @__PURE__ */ new Date()
-    }).where(eq(users.id, id)).returning();
+    }).where((0, import_drizzle_orm2.eq)(users.id, id)).returning();
     return user;
   }
   // Task operations
   async getTasks(userId) {
-    return await db.select().from(tasks).where(eq(tasks.userId, userId)).orderBy(desc(tasks.createdAt));
+    return await db.select().from(tasks).where((0, import_drizzle_orm2.eq)(tasks.userId, userId)).orderBy((0, import_drizzle_orm2.desc)(tasks.createdAt));
   }
   async getTasksByDate(userId, date) {
     const startOfDay = new Date(date);
@@ -197,12 +215,12 @@ var DatabaseStorage = class {
       inputDate: date.toISOString()
     });
     const result = await db.select().from(tasks).where(
-      and(
-        eq(tasks.userId, userId),
-        gte(tasks.dueDate, startOfDay),
-        lte(tasks.dueDate, endOfDay)
+      (0, import_drizzle_orm2.and)(
+        (0, import_drizzle_orm2.eq)(tasks.userId, userId),
+        (0, import_drizzle_orm2.gte)(tasks.dueDate, startOfDay),
+        (0, import_drizzle_orm2.lte)(tasks.dueDate, endOfDay)
       )
-    ).orderBy(asc(tasks.completed), desc(tasks.priority));
+    ).orderBy((0, import_drizzle_orm2.asc)(tasks.completed), (0, import_drizzle_orm2.desc)(tasks.priority));
     console.log("Tasks found in date range:", result.map((t) => ({ id: t.id, title: t.title, dueDate: t.dueDate })));
     return result;
   }
@@ -217,17 +235,17 @@ var DatabaseStorage = class {
     const [updatedTask] = await db.update(tasks).set({
       ...updates,
       updatedAt: /* @__PURE__ */ new Date()
-    }).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId))).returning();
+    }).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(tasks.id, taskId), (0, import_drizzle_orm2.eq)(tasks.userId, userId))).returning();
     if (!updatedTask) {
       throw new Error(`Task with id ${taskId} not found or does not belong to user ${userId}`);
     }
     return updatedTask;
   }
   async deleteTask(userId, taskId) {
-    await db.delete(tasks).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+    await db.delete(tasks).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(tasks.id, taskId), (0, import_drizzle_orm2.eq)(tasks.userId, userId)));
   }
   async getTaskStats(userId, period = "week") {
-    const userTasks = await db.select().from(tasks).where(eq(tasks.userId, userId)).orderBy(desc(tasks.createdAt));
+    const userTasks = await db.select().from(tasks).where((0, import_drizzle_orm2.eq)(tasks.userId, userId)).orderBy((0, import_drizzle_orm2.desc)(tasks.createdAt));
     const total = userTasks.length;
     const completed = userTasks.filter((task) => task.completed).length;
     const pending = total - completed;
@@ -440,7 +458,7 @@ var DatabaseStorage = class {
   }
   // Category operations
   async getCategories(userId) {
-    return await db.select().from(categories).where(eq(categories.userId, userId)).orderBy(asc(categories.name));
+    return await db.select().from(categories).where((0, import_drizzle_orm2.eq)(categories.userId, userId)).orderBy((0, import_drizzle_orm2.asc)(categories.name));
   }
   async createCategory(userId, category) {
     const [newCategory] = await db.insert(categories).values({
@@ -453,24 +471,24 @@ var DatabaseStorage = class {
     const [updatedCategory] = await db.update(categories).set({
       ...updates,
       updatedAt: /* @__PURE__ */ new Date()
-    }).where(and(eq(categories.id, categoryId), eq(categories.userId, userId))).returning();
+    }).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(categories.id, categoryId), (0, import_drizzle_orm2.eq)(categories.userId, userId))).returning();
     if (!updatedCategory) {
       throw new Error("Category not found");
     }
     return updatedCategory;
   }
   async deleteCategory(userId, categoryId) {
-    await db.update(tasks).set({ categoryId: null }).where(and(eq(tasks.categoryId, categoryId), eq(tasks.userId, userId)));
-    await db.delete(categories).where(and(eq(categories.id, categoryId), eq(categories.userId, userId)));
+    await db.update(tasks).set({ categoryId: null }).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(tasks.categoryId, categoryId), (0, import_drizzle_orm2.eq)(tasks.userId, userId)));
+    await db.delete(categories).where((0, import_drizzle_orm2.and)((0, import_drizzle_orm2.eq)(categories.id, categoryId), (0, import_drizzle_orm2.eq)(categories.userId, userId)));
   }
 };
 var storage = new DatabaseStorage();
 
 // server/googleAuth.ts
-import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
+var import_passport = __toESM(require("passport"), 1);
+var import_passport_google_oauth20 = require("passport-google-oauth20");
+var import_express_session = __toESM(require("express-session"), 1);
+var import_connect_pg_simple = __toESM(require("connect-pg-simple"), 1);
 var GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 var GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 var GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback";
@@ -481,14 +499,14 @@ if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
 }
 function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1e3;
-  const pgStore = connectPg(session);
+  const pgStore = (0, import_connect_pg_simple.default)(import_express_session.default);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions"
   });
-  return session({
+  return (0, import_express_session.default)({
     secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
     store: sessionStore,
     resave: false,
@@ -503,10 +521,10 @@ function getSession() {
 async function setupGoogleAuth(app2) {
   app2.set("trust proxy", 1);
   app2.use(getSession());
-  app2.use(passport.initialize());
-  app2.use(passport.session());
+  app2.use(import_passport.default.initialize());
+  app2.use(import_passport.default.session());
   if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
-    passport.use(new GoogleStrategy({
+    import_passport.default.use(new import_passport_google_oauth20.Strategy({
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: GOOGLE_CALLBACK_URL,
@@ -541,10 +559,10 @@ async function setupGoogleAuth(app2) {
       }
     }));
   }
-  passport.serializeUser((user, done) => {
+  import_passport.default.serializeUser((user, done) => {
     done(null, user.id);
   });
-  passport.deserializeUser(async (id, done) => {
+  import_passport.default.deserializeUser(async (id, done) => {
     try {
       const user = await storage.getUser(id);
       if (user) {
@@ -575,11 +593,11 @@ async function setupGoogleAuth(app2) {
         message: "Google OAuth not configured. Please check your environment variables."
       });
     }
-    passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+    import_passport.default.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
   });
   app2.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login-failed" }),
+    import_passport.default.authenticate("google", { failureRedirect: "/login-failed" }),
     (req, res) => {
       res.redirect("/");
     }
@@ -610,7 +628,7 @@ var isAuthenticated = (req, res, next) => {
 };
 
 // server/routes.ts
-import { z } from "zod";
+var import_zod = require("zod");
 async function registerRoutes(app2) {
   await setupGoogleAuth(app2);
   app2.get("/api/auth/user", isAuthenticated, async (req, res) => {
@@ -716,7 +734,7 @@ async function registerRoutes(app2) {
       const task = await storage.createTask(userId, taskData);
       res.status(201).json(task);
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof import_zod.z.ZodError) {
         console.error("Validation errors:", error.errors);
         res.status(400).json({ message: "Invalid task data", errors: error.errors });
       } else {
@@ -736,7 +754,7 @@ async function registerRoutes(app2) {
       const task = await storage.updateTask(userId, taskId, updates);
       res.json(task);
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof import_zod.z.ZodError) {
         res.status(400).json({ message: "Invalid update data", errors: error.errors });
       } else if (error instanceof Error && error.message.includes("not found")) {
         res.status(404).json({ message: "Task not found" });
@@ -771,10 +789,10 @@ async function registerRoutes(app2) {
   return app2;
 }
 
-// api/server.ts
-var app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// api/index.ts
+var app = (0, import_express.default)();
+app.use(import_express.default.json());
+app.use(import_express.default.urlencoded({ extended: false }));
 var initialized = false;
 var initializeApp = async () => {
   if (initialized) {
@@ -795,18 +813,19 @@ var initializeApp = async () => {
     throw error;
   }
 };
-var server_default = async (req, res) => {
+async function handler(req, res) {
   try {
     const app2 = await initializeApp();
     return app2(req, res);
   } catch (error) {
     console.error("Handler error:", error);
-    res.status(500).json({
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({
       message: "Internal Server Error",
       error: error instanceof Error ? error.message : "Unknown error"
-    });
+    }));
   }
-};
-export {
-  server_default as default
-};
+}
+var index_default = handler;
+module.exports = handler; module.exports.default = handler; 
