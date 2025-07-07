@@ -111,6 +111,48 @@ async function createOrGetUser(userData) {
   }
 }
 
+// Initialize demo user and data
+async function initDemoUser() {
+  if (!process.env.DATABASE_URL) {
+    return null;
+  }
+
+  try {
+    const demoUser = await createOrGetUser({
+      email: 'demo@voxa.app',
+      firstName: 'Demo',
+      lastName: 'User',
+      googleId: 'demo-user'
+    });
+
+    // Create a welcome task if it doesn't exist
+    const client = getPool();
+    const existingTasks = await client.query(
+      'SELECT * FROM tasks WHERE user_id = $1 AND title = $2',
+      [demoUser.id, 'Welcome to VoXa!']
+    );
+
+    if (existingTasks.rows.length === 0) {
+      await client.query(
+        `INSERT INTO tasks (title, description, completed, priority, user_id) 
+         VALUES ($1, $2, $3, $4, $5)`,
+        [
+          'Welcome to VoXa!',
+          'This is your first task. Try creating more tasks using voice commands or the manual task button.',
+          false,
+          'medium',
+          demoUser.id
+        ]
+      );
+    }
+
+    return demoUser;
+  } catch (error) {
+    console.error('Demo user initialization error:', error);
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   try {
     // Set CORS headers
@@ -130,8 +172,11 @@ export default async function handler(req, res) {
     // Initialize database on first call
     await initDatabase();
 
+    // Initialize demo user if database is available
+    const demoUser = await initDemoUser();
+    
     // Mock user for now (in production, get from session/JWT)
-    const currentUser = {
+    const currentUser = demoUser || {
       id: 1,
       email: 'demo@voxa.app',
       firstName: 'Demo',
@@ -153,6 +198,18 @@ export default async function handler(req, res) {
         .filter(([key, value]) => key !== 'NODE_ENV' && key !== 'GOOGLE_CALLBACK_URL' && !value)
         .map(([key]) => key);
 
+      // Test database connection if DATABASE_URL is available
+      let dbStatus = 'not_configured';
+      if (process.env.DATABASE_URL) {
+        try {
+          const testClient = getPool();
+          await testClient.query('SELECT 1');
+          dbStatus = 'connected';
+        } catch (error) {
+          dbStatus = `connection_error: ${error.message}`;
+        }
+      }
+
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({
@@ -164,11 +221,76 @@ export default async function handler(req, res) {
           vercel: !!process.env.VERCEL,
           region: process.env.VERCEL_REGION || 'unknown'
         },
+        database: {
+          status: dbStatus,
+          url_configured: !!process.env.DATABASE_URL
+        },
         message: missingVars.length === 0 
           ? 'All environment variables are set'
           : `Missing environment variables: ${missingVars.join(', ')}`
       }, null, 2));
       return;
+    }
+
+    // Test database endpoint
+    if (url.pathname === '/api/test-db') {
+      if (!process.env.DATABASE_URL) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          status: 'no_database_url',
+          message: 'DATABASE_URL environment variable not set'
+        }));
+        return;
+      }
+
+      try {
+        const client = getPool();
+        
+        // Test basic connection
+        await client.query('SELECT 1');
+        
+        // Test tables exist
+        const tables = await client.query(`
+          SELECT table_name FROM information_schema.tables 
+          WHERE table_schema = 'public'
+        `);
+        
+        // Test user count
+        const userCount = await client.query('SELECT COUNT(*) FROM users');
+        
+        // Test category count
+        const categoryCount = await client.query('SELECT COUNT(*) FROM categories');
+        
+        // Test task count
+        const taskCount = await client.query('SELECT COUNT(*) FROM tasks');
+        
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          status: 'success',
+          timestamp: new Date().toISOString(),
+          database: {
+            connected: true,
+            tables: tables.rows.map(row => row.table_name),
+            counts: {
+              users: parseInt(userCount.rows[0].count),
+              categories: parseInt(categoryCount.rows[0].count),
+              tasks: parseInt(taskCount.rows[0].count)
+            }
+          }
+        }, null, 2));
+        return;
+      } catch (error) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          status: 'error',
+          message: error.message,
+          timestamp: new Date().toISOString()
+        }));
+        return;
+      }
     }
 
     // Skip database operations if no DATABASE_URL is set
