@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'wouter';
 import { Mic, Home, BarChart3 } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { ThemeToggle } from './ThemeToggle';
@@ -10,6 +11,12 @@ interface NavigationProps {
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
   const { user } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  const handleNavigation = (path: string, tab: 'home' | 'stats') => {
+    setLocation(path);
+    onTabChange(tab);
+  };
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return '?';
@@ -33,7 +40,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
               {/* Tab Navigation */}
               <div className="hidden sm:flex bg-white/60 dark:bg-dark-card/60 rounded-full p-1 shadow-sm">
                 <button
-                  onClick={() => onTabChange('home')}
+                  onClick={() => handleNavigation('/home', 'home')}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
                     activeTab === 'home'
                       ? 'text-blue-600 bg-white dark:bg-dark-card shadow-sm'
@@ -43,7 +50,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
                   Home
                 </button>
                 <button
-                  onClick={() => onTabChange('stats')}
+                  onClick={() => handleNavigation('/stats', 'stats')}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
                     activeTab === 'stats'
                       ? 'text-blue-600 bg-white dark:bg-dark-card shadow-sm'
@@ -68,7 +75,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
       <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-dark-surface/90 backdrop-blur-sm border-t border-blue-100 dark:border-dark-border z-40">
         <div className="grid grid-cols-2 h-16">
           <button
-            onClick={() => onTabChange('home')}
+            onClick={() => handleNavigation('/home', 'home')}
             className={`flex flex-col items-center justify-center space-y-1 ${
               activeTab === 'home'
                 ? 'text-blue-600 bg-blue-50 dark:bg-dark-card'
@@ -79,7 +86,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
             <span className="text-xs font-medium">Home</span>
           </button>
           <button
-            onClick={() => onTabChange('stats')}
+            onClick={() => handleNavigation('/stats', 'stats')}
             className={`flex flex-col items-center justify-center space-y-1 ${
               activeTab === 'stats'
                 ? 'text-blue-600 bg-blue-50 dark:bg-dark-card'

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Switch, Route } from "wouter";
+import { useState, useEffect } from 'react';
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,8 +16,18 @@ import Stats from "@/pages/stats";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
   const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+
+  // Update active tab based on current location
+  useEffect(() => {
+    if (location === '/home' || location === '/' || location.startsWith('/home?')) {
+      setActiveTab('home');
+    } else if (location === '/stats' || location.startsWith('/stats?')) {
+      setActiveTab('stats');
+    }
+  }, [location]);
 
   if (isLoading) {
     return (
@@ -82,6 +92,29 @@ function Router() {
             />
           </div>
         )}
+      </Route>
+      <Route path="/stats">
+        <div className="min-h-screen">
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <main>
+            <Stats />
+          </main>
+          
+          {/* Floating Voice Button */}
+          <div className="fixed bottom-6 right-6 z-50">
+            <button
+              onClick={() => setVoiceModalOpen(true)}
+              className="w-16 h-16 gradient-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110"
+            >
+              <Mic className="w-8 h-8 group-hover:scale-110 transition-transform duration-200" />
+            </button>
+          </div>
+
+          <VoiceTaskModal
+            open={voiceModalOpen}
+            onOpenChange={setVoiceModalOpen}
+          />
+        </div>
       </Route>
       <Route component={NotFound} />
     </Switch>
