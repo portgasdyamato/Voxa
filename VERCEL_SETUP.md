@@ -93,6 +93,39 @@ I've added a health check endpoint to help debug issues:
 - Visit: https://voxa-taupe.vercel.app/api/health
 - This will show you if any environment variables are missing
 
+**If you're still seeing the FUNCTION_INVOCATION_FAILED error on the health endpoint, try these steps:**
+
+#### Step A: Force Redeploy
+1. Go to your Vercel dashboard: https://vercel.com/dashboard
+2. Find your VoXa project and click on it
+3. Go to **Deployments** tab
+4. Click the three dots (**...**) on the latest deployment
+5. Select **Redeploy** 
+6. Wait for the deployment to complete (usually 1-2 minutes)
+
+#### Step B: Check Environment Variable Settings
+1. In your Vercel dashboard, go to **Settings** → **Environment Variables**
+2. Make sure **ALL 6 variables** are set for **ALL environments** (Production, Preview, Development):
+   - `DATABASE_URL`
+   - `GOOGLE_CLIENT_ID` 
+   - `GOOGLE_CLIENT_SECRET`
+   - `GOOGLE_CALLBACK_URL`
+   - `SESSION_SECRET`
+   - `NODE_ENV`
+
+#### Step C: Check Function Logs
+1. In your Vercel dashboard, go to **Functions** tab
+2. Click on any recent function execution
+3. Look for error messages in the logs
+4. This will show you the exact error that's happening
+
+#### Step D: Try a Test Deployment
+If the above doesn't work, let's push a small change to trigger a fresh deployment:
+1. In your local project, open `vercel.json`
+2. Add a comment line like: `// Updated: [current date]`
+3. Commit and push to GitHub
+4. This will trigger a new deployment with fresh environment variables
+
 ## Common Issues
 
 1. **Make sure all environment variables are set for Production, Preview, AND Development**
