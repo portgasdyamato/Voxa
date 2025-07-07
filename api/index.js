@@ -27,12 +27,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// api/index.ts
-var index_exports = {};
-__export(index_exports, {
-  default: () => index_default
+// api/handler.ts
+var handler_exports = {};
+__export(handler_exports, {
+  default: () => handler_default
 });
-module.exports = __toCommonJS(index_exports);
+module.exports = __toCommonJS(handler_exports);
 var import_config = require("dotenv/config");
 var import_express = __toESM(require("express"), 1);
 
@@ -789,7 +789,7 @@ async function registerRoutes(app2) {
   return app2;
 }
 
-// api/index.ts
+// api/handler.ts
 var app = (0, import_express.default)();
 app.use(import_express.default.json());
 app.use(import_express.default.urlencoded({ extended: false }));
@@ -827,5 +827,5 @@ async function handler(req, res) {
     }));
   }
 }
-var index_default = handler;
+var handler_default = handler;
 module.exports = handler; module.exports.default = handler; 
