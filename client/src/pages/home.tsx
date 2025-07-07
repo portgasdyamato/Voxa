@@ -26,6 +26,23 @@ export default function Home() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [showManualTaskModal, setShowManualTaskModal] = useState(false);
   
+  // Check for login success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const loginSuccess = urlParams.get('login');
+    const userName = urlParams.get('user');
+    
+    if (loginSuccess === 'success' && userName) {
+      toast({
+        title: "Welcome to VoXa! 🎉",
+        description: `Hello ${decodeURIComponent(userName)}! You've successfully logged in.`,
+        variant: "default"
+      });
+      // Clear the URL parameters
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+  
   const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
   const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
   const { data: categories, isLoading: categoriesLoading } = useCategories();

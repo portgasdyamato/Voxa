@@ -116,12 +116,65 @@ async function handler(req, res) {
         return;
       }
     }
+    if (url.pathname === "/auth/google/callback") {
+      const code = url.searchParams.get("code");
+      if (!code) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({
+          error: "Missing authorization code",
+          message: "Google OAuth callback requires authorization code"
+        }));
+        return;
+      }
+      try {
+        const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET,
+            code,
+            grant_type: "authorization_code",
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL || "https://voxa-taupe.vercel.app/auth/google/callback"
+          })
+        });
+        const tokenData = await tokenResponse.json();
+        if (!tokenResponse.ok) {
+          throw new Error(`Token exchange failed: ${tokenData.error_description || tokenData.error}`);
+        }
+        const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+          headers: {
+            "Authorization": `Bearer ${tokenData.access_token}`
+          }
+        });
+        const userData = await userResponse.json();
+        if (!userResponse.ok) {
+          throw new Error(`User info fetch failed: ${userData.error_description || userData.error}`);
+        }
+        res.statusCode = 302;
+        res.setHeader("Location", "/?login=success&user=" + encodeURIComponent(userData.name || userData.email));
+        res.end();
+        return;
+      } catch (oauthError) {
+        console.error("OAuth callback error:", oauthError);
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({
+          error: "OAuth callback failed",
+          message: oauthError instanceof Error ? oauthError.message : "Unknown OAuth error"
+        }));
+        return;
+      }
+    }
     res.statusCode = 404;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({
       error: "Not Found",
       message: `Endpoint ${url.pathname} not found`,
-      availableEndpoints: ["/api/health", "/api/login", "/api/test-db"]
+      availableEndpoints: ["/api/health", "/api/login", "/api/test-db", "/auth/google/callback"]
     }));
   } catch (error) {
     console.error("Handler error:", error);
