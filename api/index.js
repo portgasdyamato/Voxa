@@ -1,3 +1,116 @@
+import { Pool } from '@neondatabase/serverless';
+
+// Initialize database connection
+let pool;
+function getPool() {
+  if (!pool) {
+    pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  }
+  return pool;
+}
+
+// Initialize database tables
+async function initDatabase() {
+  // Skip if no database URL
+  if (!process.env.DATABASE_URL) {
+    console.log('No DATABASE_URL found, skipping database initialization');
+    return;
+  }
+
+  const client = getPool();
+  
+  try {
+    // Create users table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        first_name VARCHAR(255),
+        last_name VARCHAR(255),
+        google_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Create categories table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        color VARCHAR(7) NOT NULL,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Create tasks table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        completed BOOLEAN DEFAULT FALSE,
+        priority VARCHAR(50) DEFAULT 'medium',
+        due_date TIMESTAMP,
+        category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+  }
+}
+
+// User operations
+async function createOrGetUser(userData) {
+  const client = getPool();
+  
+  try {
+    // Try to find existing user
+    const existingUser = await client.query(
+      'SELECT * FROM users WHERE email = $1',
+      [userData.email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return existingUser.rows[0];
+    }
+
+    // Create new user
+    const newUser = await client.query(
+      'INSERT INTO users (email, first_name, last_name, google_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [userData.email, userData.firstName, userData.lastName, userData.googleId]
+    );
+
+    // Create default categories for new user
+    const defaultCategories = [
+      { name: "Work", color: "#3B82F6" },
+      { name: "Personal", color: "#10B981" },
+      { name: "Shopping", color: "#F59E0B" },
+      { name: "Health", color: "#EF4444" },
+      { name: "Learning", color: "#8B5CF6" }
+    ];
+
+    for (const category of defaultCategories) {
+      await client.query(
+        'INSERT INTO categories (name, color, user_id) VALUES ($1, $2, $3)',
+        [category.name, category.color, newUser.rows[0].id]
+      );
+    }
+
+    return newUser.rows[0];
+  } catch (error) {
+    console.error('User operation error:', error);
+    throw error;
+  }
+}
+
 export default async function handler(req, res) {
   try {
     // Set CORS headers
@@ -14,59 +127,16 @@ export default async function handler(req, res) {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     console.log('Request URL:', url.pathname, 'Method:', req.method);
 
-    // Simple persistent storage using global variable (resets on cold starts)
-    // In production, this would be replaced with a real database
-    if (!global.appData) {
-      global.appData = {
-        tasks: [
-          {
-            id: 1,
-            title: "Welcome to VoXa!",
-            description: "This is your first task. Try creating more tasks using voice commands or the manual task button.",
-            completed: false,
-            priority: "medium",
-            categoryId: 1,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            dueDate: new Date().toISOString()
-          }
-        ],
-        categories: [
-          { id: 1, name: "Work", color: "#3B82F6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          { id: 2, name: "Personal", color: "#10B981", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          { id: 3, name: "Shopping", color: "#F59E0B", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          { id: 4, name: "Health", color: "#EF4444", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          { id: 5, name: "Learning", color: "#8B5CF6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-        ],
-        nextTaskId: 2,
-        nextCategoryId: 6
-      };
-    }
-    if (!global.tasks) {
-      global.tasks = [
-        {
-          id: 1,
-          title: "Welcome to VoXa!",
-          description: "This is your first task. Try creating more tasks using voice commands or the manual task button.",
-          completed: false,
-          priority: "medium",
-          categoryId: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Tomorrow
-        }
-      ];
-    }
-    
-    if (!global.categories) {
-      global.categories = [
-        { id: 1, name: "Work", color: "#3B82F6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: 2, name: "Personal", color: "#10B981", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: 3, name: "Shopping", color: "#F59E0B", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: 4, name: "Health", color: "#EF4444", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: 5, name: "Learning", color: "#8B5CF6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-      ];
-    }
+    // Initialize database on first call
+    await initDatabase();
+
+    // Mock user for now (in production, get from session/JWT)
+    const currentUser = {
+      id: 1,
+      email: 'demo@voxa.app',
+      firstName: 'Demo',
+      lastName: 'User'
+    };
 
     // Health check endpoint
     if (url.pathname === '/api/health') {
@@ -98,6 +168,278 @@ export default async function handler(req, res) {
           ? 'All environment variables are set'
           : `Missing environment variables: ${missingVars.join(', ')}`
       }, null, 2));
+      return;
+    }
+
+    // Skip database operations if no DATABASE_URL is set
+    if (!process.env.DATABASE_URL) {
+      // Return mock data for development
+      const mockData = {
+        tasks: [
+          {
+            id: 1,
+            title: "Welcome to VoXa!",
+            description: "This is your first task. Try creating more tasks using voice commands or the manual task button.",
+            completed: false,
+            priority: "medium",
+            category_id: 1,
+            category_name: "Work",
+            category_color: "#3B82F6",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            due_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          }
+        ],
+        categories: [
+          { id: 1, name: "Work", color: "#3B82F6", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: 2, name: "Personal", color: "#10B981", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: 3, name: "Shopping", color: "#F59E0B", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: 4, name: "Health", color: "#EF4444", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: 5, name: "Learning", color: "#8B5CF6", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+        ]
+      };
+
+      if (url.pathname === '/api/tasks') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(mockData.tasks));
+        return;
+      }
+
+      if (url.pathname === '/api/categories') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(mockData.categories));
+        return;
+      }
+
+      if (url.pathname === '/api/stats') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          totalTasks: 1,
+          completedTasks: 0,
+          pendingTasks: 1,
+          overdueTasks: 0,
+          completionRate: 0,
+          period: 'week',
+          chartData: []
+        }));
+        return;
+      }
+    }
+
+    // Database operations (when DATABASE_URL is available)
+    const client = getPool();
+
+    // Tasks endpoints
+    if (url.pathname === '/api/tasks') {
+      if (req.method === 'GET') {
+        const todayOnly = url.searchParams.get('today') === 'true';
+        let query = `
+          SELECT t.*, c.name as category_name, c.color as category_color 
+          FROM tasks t 
+          LEFT JOIN categories c ON t.category_id = c.id 
+          WHERE t.user_id = $1
+        `;
+        
+        if (todayOnly) {
+          query += ` AND DATE(t.created_at) = CURRENT_DATE`;
+        }
+        
+        query += ` ORDER BY t.created_at DESC`;
+        
+        const result = await client.query(query, [currentUser.id]);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(result.rows));
+        return;
+      }
+      
+      if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+          try {
+            const taskData = JSON.parse(body);
+            const result = await client.query(
+              `INSERT INTO tasks (title, description, completed, priority, due_date, category_id, user_id) 
+               VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+              [
+                taskData.title,
+                taskData.description || null,
+                taskData.completed || false,
+                taskData.priority || 'medium',
+                taskData.dueDate || null,
+                taskData.categoryId || null,
+                currentUser.id
+              ]
+            );
+            res.statusCode = 201;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result.rows[0]));
+          } catch (error) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+        return;
+      }
+    }
+
+    // Task by ID endpoints
+    if (url.pathname.startsWith('/api/tasks/') && url.pathname !== '/api/tasks/today') {
+      const taskId = url.pathname.split('/')[3];
+      
+      if (req.method === 'PUT') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+          try {
+            const updates = JSON.parse(body);
+            const result = await client.query(
+              `UPDATE tasks SET 
+               title = COALESCE($1, title),
+               description = COALESCE($2, description),
+               completed = COALESCE($3, completed),
+               priority = COALESCE($4, priority),
+               due_date = COALESCE($5, due_date),
+               category_id = COALESCE($6, category_id),
+               updated_at = NOW()
+               WHERE id = $7 AND user_id = $8 RETURNING *`,
+              [
+                updates.title,
+                updates.description,
+                updates.completed,
+                updates.priority,
+                updates.dueDate,
+                updates.categoryId,
+                taskId,
+                currentUser.id
+              ]
+            );
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result.rows[0]));
+          } catch (error) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+        return;
+      }
+      
+      if (req.method === 'DELETE') {
+        try {
+          await client.query(
+            'DELETE FROM tasks WHERE id = $1 AND user_id = $2',
+            [taskId, currentUser.id]
+          );
+          res.statusCode = 204;
+          res.end();
+        } catch (error) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: error.message }));
+        }
+        return;
+      }
+    }
+
+    // Categories endpoints
+    if (url.pathname === '/api/categories') {
+      if (req.method === 'GET') {
+        const result = await client.query(
+          'SELECT * FROM categories WHERE user_id = $1 ORDER BY created_at',
+          [currentUser.id]
+        );
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(result.rows));
+        return;
+      }
+      
+      if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+          try {
+            const categoryData = JSON.parse(body);
+            const result = await client.query(
+              'INSERT INTO categories (name, color, user_id) VALUES ($1, $2, $3) RETURNING *',
+              [categoryData.name, categoryData.color, currentUser.id]
+            );
+            res.statusCode = 201;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result.rows[0]));
+          } catch (error) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+        return;
+      }
+    }
+
+    // Stats endpoints
+    if (url.pathname === '/api/stats') {
+      const period = url.searchParams.get('period') || 'week';
+      
+      // Get basic stats
+      const statsResult = await client.query(
+        `SELECT 
+           COUNT(*) as total_tasks,
+           COUNT(CASE WHEN completed = true THEN 1 END) as completed_tasks,
+           COUNT(CASE WHEN completed = false THEN 1 END) as pending_tasks,
+           COUNT(CASE WHEN due_date < NOW() AND completed = false THEN 1 END) as overdue_tasks
+         FROM tasks WHERE user_id = $1`,
+        [currentUser.id]
+      );
+
+      // Get chart data based on period
+      let dateRange;
+      switch (period) {
+        case 'month':
+          dateRange = '30 days';
+          break;
+        case 'quarter':
+          dateRange = '90 days';
+          break;
+        default:
+          dateRange = '7 days';
+      }
+
+      const chartResult = await client.query(
+        `SELECT 
+           DATE(created_at) as date,
+           COUNT(*) as created,
+           COUNT(CASE WHEN completed = true THEN 1 END) as completed
+         FROM tasks 
+         WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '${dateRange}'
+         GROUP BY DATE(created_at)
+         ORDER BY date`,
+        [currentUser.id]
+      );
+
+      const stats = statsResult.rows[0];
+      const completionRate = stats.total_tasks > 0 
+        ? Math.round((stats.completed_tasks / stats.total_tasks) * 100) 
+        : 0;
+
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
+        totalTasks: parseInt(stats.total_tasks),
+        completedTasks: parseInt(stats.completed_tasks),
+        pendingTasks: parseInt(stats.pending_tasks),
+        overdueTasks: parseInt(stats.overdue_tasks),
+        completionRate,
+        period,
+        chartData: chartResult.rows
+      }));
       return;
     }
 
@@ -285,238 +627,12 @@ export default async function handler(req, res) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({
         id: 1,
-        email: 'user@example.com',
-        firstName: 'User',
-        lastName: 'Name',
+        email: 'demo@voxa.app',
+        firstName: 'Demo',
+        lastName: 'User',
         isAuthenticated: true
       }));
       return;
-    }
-
-    // Tasks endpoints
-    if (url.pathname === '/api/tasks') {
-      if (req.method === 'GET') {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(global.appData.tasks || []));
-        return;
-      }
-      
-      if (req.method === 'POST') {
-        // Parse request body
-        let body = '';
-        req.on('data', (chunk) => {
-          body += chunk.toString();
-        });
-        
-        req.on('end', () => {
-          try {
-            const taskData = JSON.parse(body);
-            const newTask = {
-              id: global.appData.nextTaskId++,
-              title: taskData.title || 'New Task',
-              description: taskData.description || '',
-              completed: false,
-              priority: taskData.priority || 'medium',
-              categoryId: taskData.categoryId || 1,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              dueDate: taskData.dueDate || new Date().toISOString()
-            };
-            
-            global.appData.tasks.push(newTask);
-            
-            res.statusCode = 201;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(newTask));
-          } catch (error) {
-            res.statusCode = 400;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Invalid JSON' }));
-          }
-        });
-        return;
-      }
-    }
-
-    // Today's tasks endpoint
-    if (url.pathname === '/api/tasks/today') {
-      const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
-      
-      const todayTasks = global.tasks.filter(task => {
-        if (!task.dueDate) return false;
-        const dueDate = new Date(task.dueDate);
-        return dueDate >= startOfDay && dueDate < endOfDay;
-      });
-      
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(todayTasks));
-      return;
-    }
-
-    // Categories endpoint
-    if (url.pathname === '/api/categories') {
-      if (req.method === 'GET') {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(global.categories || []));
-        return;
-      }
-      
-      if (req.method === 'POST') {
-        let body = '';
-        req.on('data', (chunk) => {
-          body += chunk.toString();
-        });
-        
-        req.on('end', () => {
-          try {
-            const categoryData = JSON.parse(body);
-            const newCategory = {
-              id: Date.now(),
-              name: categoryData.name || 'New Category',
-              color: categoryData.color || '#3B82F6',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            };
-            
-            global.categories.push(newCategory);
-            
-            res.statusCode = 201;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(newCategory));
-          } catch (error) {
-            res.statusCode = 400;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Invalid JSON' }));
-          }
-        });
-        return;
-      }
-    }
-
-    // Stats endpoint
-    if (url.pathname === '/api/stats') {
-      const period = url.searchParams.get('period') || 'week';
-      const tasks = global.tasks || [];
-      
-      const totalTasks = tasks.length;
-      const completedTasks = tasks.filter(task => task.completed).length;
-      const pendingTasks = totalTasks - completedTasks;
-      
-      // Calculate overdue tasks
-      const now = new Date();
-      const overdueTasks = tasks.filter(task => {
-        if (!task.dueDate || task.completed) return false;
-        return new Date(task.dueDate) < now;
-      }).length;
-      
-      const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-      
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({
-        totalTasks,
-        completedTasks,
-        pendingTasks,
-        overdueTasks,
-        completionRate,
-        period: period,
-        chartData: [
-          { date: '2025-01-01', completed: 2, created: 3 },
-          { date: '2025-01-02', completed: 1, created: 2 },
-          { date: '2025-01-03', completed: 0, created: 1 },
-          { date: '2025-01-04', completed: 1, created: 1 },
-          { date: '2025-01-05', completed: 3, created: 2 },
-          { date: '2025-01-06', completed: 2, created: 4 },
-          { date: '2025-01-07', completed: completedTasks, created: totalTasks }
-        ]
-      }));
-      return;
-    }
-
-    // Handle task updates and deletes
-    if (url.pathname.startsWith('/api/tasks/') && url.pathname !== '/api/tasks/today') {
-      const taskId = parseInt(url.pathname.split('/')[3]);
-      
-      if (req.method === 'PUT') {
-        let body = '';
-        req.on('data', (chunk) => {
-          body += chunk.toString();
-        });
-        
-        req.on('end', () => {
-          try {
-            const updateData = JSON.parse(body);
-            const taskIndex = global.tasks.findIndex(task => task.id === taskId);
-            
-            if (taskIndex === -1) {
-              res.statusCode = 404;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Task not found' }));
-              return;
-            }
-            
-            // Update the task
-            global.tasks[taskIndex] = {
-              ...global.tasks[taskIndex],
-              ...updateData,
-              updatedAt: new Date().toISOString()
-            };
-            
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(global.tasks[taskIndex]));
-          } catch (error) {
-            res.statusCode = 400;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Invalid JSON' }));
-          }
-        });
-        return;
-      }
-      
-      if (req.method === 'DELETE') {
-        const taskIndex = global.tasks.findIndex(task => task.id === taskId);
-        
-        if (taskIndex === -1) {
-          res.statusCode = 404;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Task not found' }));
-          return;
-        }
-        
-        global.tasks.splice(taskIndex, 1);
-        res.statusCode = 204;
-        res.end();
-        return;
-      }
-    }
-
-    // Handle category updates and deletes
-    if (url.pathname.startsWith('/api/categories/')) {
-      const categoryId = url.pathname.split('/')[3];
-      
-      if (req.method === 'PUT') {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({
-          id: parseInt(categoryId),
-          name: "Updated Category",
-          color: "#3B82F6",
-          updatedAt: new Date().toISOString()
-        }));
-        return;
-      }
-      
-      if (req.method === 'DELETE') {
-        res.statusCode = 204;
-        res.end();
-        return;
-      }
     }
 
     // Logout endpoint
