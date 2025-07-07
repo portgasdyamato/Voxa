@@ -171,7 +171,7 @@ export default async function handler(req, res) {
         // For now, just redirect to home with success
         // In full implementation, we'd save user to database and create session
         res.statusCode = 302;
-        res.setHeader('Location', '/?login=success&user=' + encodeURIComponent(userData.name || userData.email));
+        res.setHeader('Location', '/home?login=success&user=' + encodeURIComponent(userData.name || userData.email));
         res.end();
         return;
         
@@ -223,13 +223,44 @@ export default async function handler(req, res) {
       }
     }
 
+    // User authentication check endpoint
+    if (url.pathname === '/api/auth/user') {
+      // For now, we'll check if there's a login success parameter
+      // In a full implementation, this would check a session/JWT token
+      const urlParams = new URLSearchParams(url.search);
+      const loginSuccess = urlParams.get('login');
+      
+      if (loginSuccess === 'success') {
+        // Mock user data for now
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          id: 1,
+          email: 'user@example.com',
+          firstName: 'User',
+          lastName: 'Name',
+          isAuthenticated: true
+        }));
+        return;
+      }
+      
+      // No authentication found
+      res.statusCode = 401;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
+        error: 'Not authenticated',
+        message: 'User is not logged in'
+      }));
+      return;
+    }
+
     // Default response for unknown endpoints
     res.statusCode = 404;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
       error: 'Not Found',
       message: `Endpoint ${url.pathname} not found`,
-      availableEndpoints: ['/api/health', '/api/oauth-debug', '/api/login', '/api/test-db', '/auth/google/callback']
+      availableEndpoints: ['/api/health', '/api/oauth-debug', '/api/login', '/api/auth/user', '/api/test-db', '/auth/google/callback']
     }));
 
   } catch (error) {
