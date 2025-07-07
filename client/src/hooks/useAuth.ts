@@ -8,7 +8,7 @@ export function useAuth() {
   }>({ isAuthenticated: false, user: null });
 
   useEffect(() => {
-    // Check URL parameters for login success
+    // Check URL parameters for login success on any page
     const urlParams = new URLSearchParams(window.location.search);
     const loginSuccess = urlParams.get('login');
     const userName = urlParams.get('user');
@@ -18,12 +18,16 @@ export function useAuth() {
         isAuthenticated: true,
         user: {
           id: 1,
-          email: 'user@example.com',
+          email: decodeURIComponent(userName).toLowerCase().replace(/\s+/g, '') + '@example.com',
           firstName: decodeURIComponent(userName),
           lastName: '',
           isAuthenticated: true
         }
       });
+      
+      // Clean up URL parameters after setting auth state
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
     }
   }, []);
 
