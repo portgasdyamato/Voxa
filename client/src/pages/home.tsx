@@ -19,6 +19,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 export default function Home() {
   const { user, isLoading: userLoading } = useAuth();
+  const { toast } = useToast();
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -26,11 +27,18 @@ export default function Home() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [showManualTaskModal, setShowManualTaskModal] = useState(false);
   
-  // Check for login success
+  const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
+  const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { createDefaults, isLoading: creatingDefaults } = useCreateDefaultCategories();
+  
+  // Check for login success or errors
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const loginSuccess = urlParams.get('login');
     const userName = urlParams.get('user');
+    const error = urlParams.get('error');
+    const errorMessage = urlParams.get('message');
     
     if (loginSuccess === 'success' && userName) {
       toast({
@@ -40,14 +48,16 @@ export default function Home() {
       });
       // Clear the URL parameters
       window.history.replaceState({}, '', window.location.pathname);
+    } else if (error) {
+      toast({
+        title: "Login Error",
+        description: errorMessage ? decodeURIComponent(errorMessage) : 'There was an error during login. Please try again.',
+        variant: "destructive"
+      });
+      // Clear the URL parameters
+      window.history.replaceState({}, '', window.location.pathname);
     }
-  }, []);
-  
-  const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
-  const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { createDefaults, isLoading: creatingDefaults } = useCreateDefaultCategories();
-  const { toast } = useToast();
+  }, [toast]);
 
   const rawTasksData = showAllTasks ? allTasks : todayTasks;
   const tasksLoading = showAllTasks ? allTasksLoading : todayTasksLoading;

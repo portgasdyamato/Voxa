@@ -9,7 +9,7 @@
     "build:server": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "vercel-build": "vite build && npm run build:api",
-    "build:api": "esbuild api/minimal-handler.ts --platform=node --packages=external --bundle --format=cjs --outfile=api/index.js && node add-exports.cjs",
+    "build:api": "esbuild api/oauth-handler.ts --platform=node --packages=external --bundle --format=cjs --outfile=api/index.js && node add-exports.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
