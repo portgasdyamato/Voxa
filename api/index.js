@@ -799,12 +799,42 @@ var initializeApp = async () => {
     return app;
   }
   try {
-    await registerRoutes(app);
+    const requiredEnvVars = ["DATABASE_URL", "SESSION_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"];
+    const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+    if (missingEnvVars.length > 0) {
+      console.error("Missing required environment variables:", missingEnvVars);
+      app.get("/api/health", (req, res) => {
+        res.json({
+          status: "error",
+          message: "Missing required environment variables",
+          missingEnvVars,
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        });
+      });
+      try {
+        await registerRoutes(app);
+      } catch (routeError) {
+        console.error("Route registration failed due to missing env vars:", routeError);
+        app.use("/api/*", (req, res) => {
+          res.status(500).json({
+            error: "Configuration Error",
+            message: "Server is misconfigured. Missing environment variables.",
+            missingEnvVars,
+            details: routeError instanceof Error ? routeError.message : "Unknown error"
+          });
+        });
+      }
+    } else {
+      await registerRoutes(app);
+    }
     app.use((err, _req, res, _next) => {
       console.error("API Error:", err);
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
+      res.status(status).json({
+        message,
+        error: process.env.NODE_ENV === "development" ? err.stack : void 0
+      });
     });
     initialized = true;
     return app;
