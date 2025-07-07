@@ -254,13 +254,174 @@ export default async function handler(req, res) {
       return;
     }
 
+    // Tasks endpoints
+    if (url.pathname === '/api/tasks') {
+      if (req.method === 'GET') {
+        // Mock tasks data for now
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify([
+          {
+            id: 1,
+            title: "Welcome to VoXa!",
+            description: "This is your first task. Try creating more tasks using voice commands or the manual task button.",
+            completed: false,
+            priority: "medium",
+            categoryId: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Tomorrow
+          }
+        ]));
+        return;
+      }
+      
+      if (req.method === 'POST') {
+        // Mock task creation
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          id: Date.now(),
+          title: "New Task",
+          completed: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }));
+        return;
+      }
+    }
+
+    // Today's tasks endpoint
+    if (url.pathname === '/api/tasks/today') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify([
+        {
+          id: 1,
+          title: "Welcome to VoXa!",
+          description: "This is your first task. Try creating more tasks using voice commands or the manual task button.",
+          completed: false,
+          priority: "medium",
+          categoryId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          dueDate: new Date().toISOString()
+        }
+      ]));
+      return;
+    }
+
+    // Categories endpoint
+    if (url.pathname === '/api/categories') {
+      if (req.method === 'GET') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify([
+          { id: 1, name: "Work", color: "#3B82F6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 2, name: "Personal", color: "#10B981", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 3, name: "Shopping", color: "#F59E0B", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 4, name: "Health", color: "#EF4444", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: 5, name: "Learning", color: "#8B5CF6", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        ]));
+        return;
+      }
+      
+      if (req.method === 'POST') {
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          id: Date.now(),
+          name: "New Category",
+          color: "#3B82F6",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }));
+        return;
+      }
+    }
+
+    // Stats endpoint
+    if (url.pathname === '/api/stats') {
+      const period = url.searchParams.get('period') || 'week';
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
+        totalTasks: 5,
+        completedTasks: 2,
+        pendingTasks: 3,
+        overdueTasks: 0,
+        completionRate: 40,
+        period: period,
+        chartData: [
+          { date: '2025-01-01', completed: 2, created: 3 },
+          { date: '2025-01-02', completed: 1, created: 2 },
+          { date: '2025-01-03', completed: 0, created: 1 },
+          { date: '2025-01-04', completed: 1, created: 1 },
+          { date: '2025-01-05', completed: 3, created: 2 },
+          { date: '2025-01-06', completed: 2, created: 4 },
+          { date: '2025-01-07', completed: 1, created: 1 }
+        ]
+      }));
+      return;
+    }
+
+    // Handle task updates and deletes
+    if (url.pathname.startsWith('/api/tasks/') && url.pathname !== '/api/tasks/today') {
+      const taskId = url.pathname.split('/')[3];
+      
+      if (req.method === 'PUT') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          id: parseInt(taskId),
+          title: "Updated Task",
+          completed: true,
+          updatedAt: new Date().toISOString()
+        }));
+        return;
+      }
+      
+      if (req.method === 'DELETE') {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+    }
+
+    // Handle category updates and deletes
+    if (url.pathname.startsWith('/api/categories/')) {
+      const categoryId = url.pathname.split('/')[3];
+      
+      if (req.method === 'PUT') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          id: parseInt(categoryId),
+          name: "Updated Category",
+          color: "#3B82F6",
+          updatedAt: new Date().toISOString()
+        }));
+        return;
+      }
+      
+      if (req.method === 'DELETE') {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+    }
+
     // Default response for unknown endpoints
     res.statusCode = 404;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
       error: 'Not Found',
       message: `Endpoint ${url.pathname} not found`,
-      availableEndpoints: ['/api/health', '/api/oauth-debug', '/api/login', '/api/auth/user', '/api/test-db', '/auth/google/callback']
+      availableEndpoints: [
+        '/api/health', '/api/oauth-debug', '/api/login', '/api/auth/user', 
+        '/api/test-db', '/auth/google/callback', '/api/tasks', '/api/tasks/today', 
+        '/api/categories', '/api/stats'
+      ]
     }));
 
   } catch (error) {
