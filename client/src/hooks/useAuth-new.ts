@@ -15,26 +15,15 @@ export function useAuth() {
     // Check URL parameters for login success
     const urlParams = new URLSearchParams(window.location.search);
     const loginSuccess = urlParams.get('login');
-    const userName = urlParams.get('user');
-    const userEmail = urlParams.get('email');
     
     if (loginSuccess === 'success') {
-      // Extract user info from OAuth callback
-      const userData = {
-        email: userEmail ? decodeURIComponent(userEmail) : 'demo@voxa.app',
-        firstName: userName ? decodeURIComponent(userName).split(' ')[0] : 'Demo',
-        lastName: userName ? decodeURIComponent(userName).split(' ').slice(1).join(' ') : 'User',
-        isAuthenticated: true
-      };
-      
       // User just logged in successfully
       setAuthState({
         isAuthenticated: true,
-        user: userData, // Use OAuth data initially
+        user: null, // Will be loaded from API
         isLoading: false
       });
       localStorage.setItem('voxa_authenticated', 'true');
-      localStorage.setItem('voxa_user', JSON.stringify(userData));
       
       // Clean up URL
       const newUrl = window.location.pathname;
@@ -76,12 +65,9 @@ export function useAuth() {
 
   // Update user state when profile data is loaded
   useEffect(() => {
-    if (userProfile && authState.isAuthenticated && authState.user) {
-      // Preserve the real email from OAuth flow, only update other profile fields
+    if (userProfile && authState.isAuthenticated) {
       const updatedUser = {
-        ...authState.user, // Keep existing user data (including real email)
-        ...userProfile, // Merge API profile data
-        email: authState.user.email, // Preserve the original email from OAuth
+        ...userProfile,
         isAuthenticated: true
       };
       
@@ -93,7 +79,7 @@ export function useAuth() {
       // Store in localStorage
       localStorage.setItem('voxa_user', JSON.stringify(updatedUser));
     }
-  }, [userProfile, authState.isAuthenticated, authState.user?.email]);
+  }, [userProfile, authState.isAuthenticated]);
 
   const logout = () => {
     localStorage.removeItem('voxa_user');
@@ -122,26 +108,19 @@ export function useAuth() {
 
     const updatedUser = await response.json();
     
-    // Preserve the original email from OAuth, merge other profile updates
-    const mergedUser = { 
-      ...authState.user, 
-      ...updatedUser,
-      email: authState.user?.email // Always preserve the original email
-    };
-    
     // Update local state
     setAuthState(prev => ({
       ...prev,
-      user: mergedUser
+      user: { ...prev.user, ...updatedUser }
     }));
     
     // Update localStorage
-    localStorage.setItem('voxa_user', JSON.stringify(mergedUser));
+    localStorage.setItem('voxa_user', JSON.stringify({ ...authState.user, ...updatedUser }));
     
     // Invalidate profile query to refetch
     queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
     
-    return mergedUser;
+    return updatedUser;
   };
 
   return {

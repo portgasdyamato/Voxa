@@ -5,6 +5,10 @@ import { Task, TaskStats, CreateTaskData } from '@/types/task';
 export function useTasks() {
   return useQuery<Task[]>({
     queryKey: ['/api/tasks'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/tasks');
+      return response.json();
+    },
   });
 }
 
@@ -12,8 +16,7 @@ export function useTodayTasks() {
   return useQuery<Task[]>({
     queryKey: ['/api/tasks', 'today'],
     queryFn: async () => {
-      const response = await fetch('/api/tasks?today=true');
-      if (!response.ok) throw new Error('Failed to fetch today tasks');
+      const response = await apiRequest('GET', '/api/tasks?today=true');
       return response.json();
     },
   });
@@ -41,11 +44,7 @@ export function useCreateTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'today'] });
-      // Invalidate all stats queries for all periods
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
     },
   });
 }
@@ -58,32 +57,10 @@ export function useUpdateTask() {
       const response = await apiRequest('PATCH', `/api/tasks/${id}`, updates);
       return response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'today'] });
-      // Invalidate all stats queries for all periods
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
-      
-      // Update the task in the cache immediately for better UX
-      queryClient.setQueryData<Task[]>(['/api/tasks'], (oldTasks) => {
-        if (!oldTasks) return oldTasks;
-        return oldTasks.map(task => 
-          task.id === variables.id ? { ...task, ...variables.updates } : task
-        );
-      });
-      
-      queryClient.setQueryData<Task[]>(['/api/tasks', 'today'], (oldTasks) => {
-        if (!oldTasks) return oldTasks;
-        return oldTasks.map(task => 
-          task.id === variables.id ? { ...task, ...variables.updates } : task
-        );
-      });
-    },
-    onError: (error) => {
-      console.error('Failed to update task:', error);
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
     },
   });
 }
@@ -98,11 +75,7 @@ export function useDeleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'today'] });
-      // Invalidate all stats queries for all periods
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats', 'quarter'] });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === '/api/stats' });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
     },
   });
 }

@@ -13,16 +13,20 @@ import { Button } from '@/components/ui/button';
 import { EditProfile } from './EditProfile';
 
 export function ProfileDropdown() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [showEditProfile, setShowEditProfile] = useState(false);
 
   const handleLogout = () => {
-    window.location.href = '/api/logout';
+    logout();
   };
 
   const userInitials = (user as any)?.firstName && (user as any)?.lastName 
     ? `${(user as any).firstName[0]}${(user as any).lastName[0]}` 
     : (user as any)?.email?.[0]?.toUpperCase() || 'U';
+
+  const displayName = (user as any)?.firstName && (user as any)?.lastName
+    ? `${(user as any).firstName} ${(user as any).lastName}`
+    : (user as any)?.firstName || (user as any)?.email || 'User';
 
   return (
     <>
@@ -41,7 +45,7 @@ export function ProfileDropdown() {
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col space-y-1 leading-none">
               <p className="font-medium text-sm">
-                {(user as any)?.firstName || (user as any)?.email || 'User'}
+                {displayName}
               </p>
               {(user as any)?.email && (
                 <p className="text-xs text-muted-foreground">

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Camera } from 'lucide-react';
+import { Camera, Upload, Link } from 'lucide-react';
 
 interface EditProfileProps {
   open: boolean;
@@ -20,34 +20,45 @@ interface EditProfileProps {
 }
 
 export function EditProfile({ open, onOpenChange }: EditProfileProps) {
-  const { user } = useAuth();
+  const { user, updateProfile: updateUserProfile } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [firstName, setFirstName] = useState((user as any)?.firstName || '');
   const [lastName, setLastName] = useState((user as any)?.lastName || '');
   const [profileImageUrl, setProfileImageUrl] = useState((user as any)?.profileImageUrl || '');
+  const [showUrlInput, setShowUrlInput] = useState(false);
+
+  // Convert file to base64 URL for preview
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: 'File too large',
+          description: 'Please select an image smaller than 5MB.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImageUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const updateProfile = useMutation({
     mutationFn: async (data: { firstName: string; lastName: string; profileImageUrl: string }) => {
-      const response = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-      
-      return response.json();
+      return await updateUserProfile(data);
     },
     onSuccess: () => {
       toast({
         title: 'Profile Updated',
         description: 'Your profile has been updated successfully.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       onOpenChange(false);
     },
     onError: () => {
@@ -94,21 +105,58 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
                 variant="outline"
                 size="icon"
                 className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                onClick={() => fileInputRef.current?.click()}
               >
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
             
-            <div className="w-full space-y-2">
-              <Label htmlFor="profileImageUrl">Profile Image URL</Label>
-              <Input
-                id="profileImageUrl"
-                type="url"
-                placeholder="https://example.com/avatar.jpg"
-                value={profileImageUrl}
-                onChange={(e) => setProfileImageUrl(e.target.value)}
-              />
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            
+            {/* Profile picture options */}
+            <div className="flex space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center space-x-2"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Upload Image</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUrlInput(!showUrlInput)}
+                className="flex items-center space-x-2"
+              >
+                <Link className="h-4 w-4" />
+                <span>Use URL</span>
+              </Button>
             </div>
+            
+            {/* URL input (conditionally shown) */}
+            {showUrlInput && (
+              <div className="w-full space-y-2">
+                <Label htmlFor="profileImageUrl">Profile Image URL</Label>
+                <Input
+                  id="profileImageUrl"
+                  type="url"
+                  placeholder="https://example.com/avatar.jpg"
+                  value={profileImageUrl}
+                  onChange={(e) => setProfileImageUrl(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           {/* Name Fields */}

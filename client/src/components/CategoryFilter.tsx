@@ -10,7 +10,12 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
-  const { data: categories } = useCategories();
+  const { data: categoriesData } = useCategories();
+  
+  // Deduplicate categories by name to handle database duplicates
+  const categories = categoriesData ? categoriesData.filter((category, index, self) => 
+    index === self.findIndex(c => c.name === category.name)
+  ) : [];
   
   if (!categories || categories.length === 0) {
     return null;

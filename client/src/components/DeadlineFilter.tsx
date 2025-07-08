@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, AlertTriangle } from 'lucide-react';
 
-export type DeadlineFilter = 'today' | 'tomorrow' | 'this-week' | 'overdue' | 'no-deadline';
+export type DeadlineFilter = 'all' | 'today' | 'tomorrow' | 'this-week' | 'overdue' | 'no-deadline';
 
 interface DeadlineFilterProps {
   value: DeadlineFilter;
@@ -20,6 +20,7 @@ interface DeadlineFilterProps {
 
 export function DeadlineFilter({ value, onChange, counts }: DeadlineFilterProps) {
   const filterOptions = [
+    { value: 'all', label: 'All Tasks', icon: Calendar, count: counts?.total },
     { value: 'overdue', label: 'Overdue', icon: AlertTriangle, count: counts?.overdue, color: 'text-red-600' },
     { value: 'today', label: 'Due Today', icon: Clock, count: counts?.today, color: 'text-orange-600' },
     { value: 'tomorrow', label: 'Due Tomorrow', icon: Clock, count: counts?.tomorrow, color: 'text-yellow-600' },
@@ -74,6 +75,8 @@ export function getDeadlineFilteredTasks(tasks: any[], filter: DeadlineFilter) {
   const endOfWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   switch (filter) {
+    case 'all':
+      return tasks;
     case 'overdue':
       return tasks.filter(task => 
         task.dueDate && new Date(task.dueDate) < today && !task.completed

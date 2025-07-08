@@ -4,6 +4,12 @@
 
 VoXa is a modern, intelligent task management application that combines the power of voice commands with a beautiful, intuitive interface. Built with React, TypeScript, and Node.js, VoXa helps you manage your tasks efficiently through both traditional interactions and cutting-edge voice control.
 
+## 🚀 Live Demo
+
+**Production URL**: [https://voxa-cl66cbsp9-portgasdyamatos-projects.vercel.app](https://voxa-cl66cbsp9-portgasdyamatos-projects.vercel.app)
+
+Try the fully functional app deployed on Vercel with PostgreSQL database backend!
+
 ## ✨ Features
 
 ### 🎤 Voice Commands
@@ -44,9 +50,17 @@ VoXa is a modern, intelligent task management application that combines the powe
 
 ### 🔐 Authentication & Data
 - **Secure Authentication**: Google OAuth integration for secure login
-- **User Profiles**: Personalized experience with profile management
+- **User Profiles**: Personalized experience with profile management and real user email display
 - **Data Persistence**: All tasks and settings are safely stored
 - **Multi-user Support**: Each user has their own private task space
+- **Demo Mode**: Try the app without signing up using the demo account
+
+### 🛠️ Recent Updates & Fixes
+- **Duplicate Categories Fixed**: Resolved issue with duplicate category display
+- **User Authentication**: Improved OAuth flow with proper email handling
+- **Database Optimization**: Enhanced user detection and data deduplication
+- **Performance**: Optimized API endpoints and client-side rendering
+- **UI/UX**: Refined category filtering and task management interface
 
 ## 🚀 Getting Started
 

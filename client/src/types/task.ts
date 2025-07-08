@@ -16,16 +16,31 @@ export interface Task {
   lastNotified?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Category fields added by API
+  category_name?: string;
+  category_color?: string;
 }
 
 export interface TaskStats {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  overdueTasks: number;
+  completionRate: number;
+  period: string;
+  chartData: Array<{
+    date: string;
+    completed: number;
+    total: number;
+    pending: number;
+  }>;
+  // Legacy properties for backward compatibility
   total: number;
   completed: number;
   pending: number;
   highPriority: number;
   mediumPriority: number;
   lowPriority: number;
-  completionRate: number;
   currentStreak: number;
   longestStreak: number;
   weeklyData: Array<{ day: string; completed: number; total: number }>;

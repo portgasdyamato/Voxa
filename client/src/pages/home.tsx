@@ -9,9 +9,8 @@ import { TaskCard } from '@/components/TaskCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
 import { VoiceCommandButton } from '@/components/VoiceCommandButton';
-import { ManualTaskModal } from '@/components/ManualTaskModal';
 import { DeadlineFilter, getDeadlineFilteredTasks, getDeadlineCounts, type DeadlineFilter as DeadlineFilterType } from '@/components/DeadlineFilter';
-import { ClipboardList, CheckCircle, Clock, TrendingUp, Search, Settings, Bell, BellOff, Edit3 } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, TrendingUp, Search, Settings, Bell, BellOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -25,7 +24,19 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilterType>('today');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
-  const [showManualTaskModal, setShowManualTaskModal] = useState(false);
+  
+  // Auto-adjust deadline filter when switching between today/all tasks
+  const handleShowAllTasksToggle = () => {
+    const newShowAllTasks = !showAllTasks;
+    setShowAllTasks(newShowAllTasks);
+    
+    // Auto-switch deadline filter
+    if (newShowAllTasks) {
+      setDeadlineFilter('all'); // Show all tasks when in "All Tasks" mode
+    } else {
+      setDeadlineFilter('today'); // Show today's tasks when in "Today's Tasks" mode
+    }
+  };
   
   const { data: todayTasks, isLoading: todayTasksLoading, error: todayTasksError } = useTodayTasks();
   const { data: allTasks, isLoading: allTasksLoading, error: allTasksError } = useTasks();
@@ -104,10 +115,17 @@ export default function Home() {
     }
   }, [tasksError, toast]);
 
-  // Create default categories for new users
+  // Create default categories for new users (only for demo users, not OAuth users)
   useEffect(() => {
     if (categories && categories.length === 0 && !categoriesLoading && !creatingDefaults) {
-      createDefaults();
+      // Only create default categories if this is a demo user (not from OAuth)
+      const storedUser = localStorage.getItem('voxa_user');
+      const userData = storedUser ? JSON.parse(storedUser) : null;
+      
+      // If user email is demo@voxa.app, they're a demo user and need default categories
+      if (userData?.email === 'demo@voxa.app') {
+        createDefaults();
+      }
     }
   }, [categories, categoriesLoading, createDefaults, creatingDefaults]);
 
@@ -230,13 +248,6 @@ export default function Home() {
       {/* Voice Commands Section */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
         <VoiceCommandButton tasks={rawTasksData || []} />
-        <Button
-          onClick={() => setShowManualTaskModal(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
-        >
-          <Edit3 className="w-4 h-4" />
-          Add Task Manually
-        </Button>
       </div>
 
       {/* Today's Tasks */}
@@ -246,7 +257,7 @@ export default function Home() {
             {showAllTasks ? 'All Tasks' : 'Today\'s Tasks'}
           </h3>
           <button 
-            onClick={() => setShowAllTasks(!showAllTasks)}
+            onClick={handleShowAllTasksToggle}
             className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
           >
             {showAllTasks ? 'Show Today' : 'View All'}
@@ -264,7 +275,7 @@ export default function Home() {
             </h4>
             <p className="text-gray-500 dark:text-gray-400">
               {selectedCategory === null && searchQuery === '' 
-                ? 'Use the microphone button or "Add Task Manually" to create your first task!'
+                ? 'Use the microphone button to create your first task with voice commands!'
                 : 'Try adjusting your search or filter criteria.'
               }
             </p>
@@ -357,12 +368,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* Manual Task Modal */}
-      <ManualTaskModal
-        open={showManualTaskModal}
-        onOpenChange={setShowManualTaskModal}
-      />
     </div>
   );
 }
