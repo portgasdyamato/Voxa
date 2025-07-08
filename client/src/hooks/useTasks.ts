@@ -10,7 +10,12 @@ export function useTasks() {
 
 export function useTodayTasks() {
   return useQuery<Task[]>({
-    queryKey: ['/api/tasks/today'],
+    queryKey: ['/api/tasks', 'today'],
+    queryFn: async () => {
+      const response = await fetch('/api/tasks?today=true');
+      if (!response.ok) throw new Error('Failed to fetch today tasks');
+      return response.json();
+    },
   });
 }
 
@@ -35,7 +40,7 @@ export function useCreateTask() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'today'] });
       // Invalidate all stats queries for all periods
       queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
@@ -55,7 +60,7 @@ export function useUpdateTask() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'today'] });
       // Invalidate all stats queries for all periods
       queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
@@ -70,7 +75,7 @@ export function useUpdateTask() {
         );
       });
       
-      queryClient.setQueryData<Task[]>(['/api/tasks/today'], (oldTasks) => {
+      queryClient.setQueryData<Task[]>(['/api/tasks', 'today'], (oldTasks) => {
         if (!oldTasks) return oldTasks;
         return oldTasks.map(task => 
           task.id === variables.id ? { ...task, ...variables.updates } : task
@@ -92,7 +97,7 @@ export function useDeleteTask() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks/today'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'today'] });
       // Invalidate all stats queries for all periods
       queryClient.invalidateQueries({ queryKey: ['/api/stats', 'week'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats', 'month'] });
