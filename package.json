@@ -4,12 +4,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && npm run build:server",
-    "build:server": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "cross-env NODE_ENV=production node dist/index.js",
+    "dev": "vite",
+    "build": "vite build",
+    "build:server": "echo 'Server build not needed for Vercel deployment'",
+    "start": "vite preview",
     "vercel-build": "vite build",
-    "build:api": "esbuild api/oauth-handler.ts --platform=node --packages=external --bundle --format=cjs --outfile=api/index.cjs && node add-exports.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
