@@ -132,9 +132,11 @@ export function VoiceCommandButton({ tasks, className }: VoiceCommandButtonProps
             <Keyboard className="w-3 h-3" />
             <span>Ctrl+K to activate</span>
           </div>
-          <VoiceCommandsHelp />
+          
         </div>
+        
       )}
+      <VoiceCommandsHelp />
     </div>
   );
 }
