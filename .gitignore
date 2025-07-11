@@ -123,3 +123,7 @@ vite.config.ts.*
 
 # Development tools
 *.tsbuildinfo
+
+# Misc
+.env.example
+vercel.json
