@@ -23,20 +23,20 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
   }
   
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2 items-center">
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-3 items-center">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => onCategoryChange(null)}
           className={cn(
-            "h-10 px-4 rounded-xl font-bold transition-all border-2",
+            "h-11 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all border-2",
             selectedCategory === null 
-              ? "bg-primary/10 text-primary border-primary/20 shadow-sm" 
-              : "border-transparent text-muted-foreground hover:bg-muted/50"
+              ? "bg-foreground text-background border-foreground shadow-xl" 
+              : "border-border/40 text-muted-foreground/60 hover:text-foreground hover:bg-muted/30"
           )}
         >
-          All Units
+          All Contexts
         </Button>
         
         {categories.map((category) => (
@@ -46,19 +46,20 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
             size="sm"
             onClick={() => onCategoryChange(category.id)}
             className={cn(
-              "h-10 px-4 rounded-xl font-bold transition-all border-2",
+              "h-11 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all border-2",
               selectedCategory === category.id 
-                ? "shadow-sm border-opacity-40" 
-                : "border-transparent text-muted-foreground hover:bg-muted/50"
+                ? "shadow-xl border-opacity-60" 
+                : "border-border/30 text-muted-foreground/60 hover:bg-muted/30"
             )}
             style={selectedCategory === category.id ? { 
               backgroundColor: `${category.color}15`,
               color: category.color,
-              borderColor: `${category.color}30`
+              borderColor: `${category.color}40`,
+              boxShadow: `0 10px 15px -3px ${category.color}20`
             } : {}}
           >
             <div
-              className="w-2.5 h-2.5 rounded-full mr-2 shadow-sm"
+              className="w-2 h-2 rounded-full mr-3 shadow-sm shrink-0"
               style={{ backgroundColor: category.color }}
             />
             {category.name}
@@ -81,16 +82,17 @@ export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps
     <Badge
       variant="secondary"
       className={cn(
-        "flex items-center gap-1.5 border-none font-bold uppercase tracking-tight",
-        size === "sm" ? "text-[10px] px-2 py-0.5 rounded-lg" : "px-3 py-1 rounded-xl"
+        "flex items-center gap-2 border-2 font-black uppercase tracking-widest leading-none",
+        size === "sm" ? "text-[8px] px-2.5 py-1 rounded-lg" : "px-4 py-1.5 rounded-xl"
       )}
       style={{
-        backgroundColor: `${category.color}15`,
+        backgroundColor: `${category.color}10`,
         color: category.color,
+        borderColor: `${category.color}20`,
       }}
     >
       <div
-        className={cn("rounded-full", size === "sm" ? "w-1.5 h-1.5" : "w-2 h-2")}
+        className={cn("rounded-full shrink-0", size === "sm" ? "w-1.5 h-1.5" : "w-2.5 h-2.5")}
         style={{ backgroundColor: category.color }}
       />
       {category.name}

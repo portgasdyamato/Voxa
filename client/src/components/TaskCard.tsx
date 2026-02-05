@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Trash2, Edit2, Clock, Check, MoreVertical, Star, AlertCircle } from 'lucide-react';
+import { Calendar, Trash2, Edit2, Clock, Check, MoreVertical, Star, AlertCircle, Share2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ManualTaskModal } from './ManualTaskModal';
@@ -58,7 +58,7 @@ export function TaskCard({ task }: TaskCardProps) {
   };
 
   const priorityStyles = {
-    high: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+    high: 'text-rose-500 bg-rose-500/10 border-rose-500/20 shadow-[0_0_15px_-3px_rgba(244,63,94,0.2)]',
     medium: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
     low: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
   };
@@ -69,59 +69,74 @@ export function TaskCard({ task }: TaskCardProps) {
     <motion.div
       layout
       className="group relative"
+      whileHover={{ y: -4 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
       {showConfetti && <Confetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />}
       <Card
         className={cn(
-          "relative overflow-hidden transition-all duration-500 border-2 rounded-[1.5rem] bg-card/40 backdrop-blur-xl",
-          task.completed ? "opacity-60 grayscale-[0.3]" : "hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30",
-          isOverdue ? "border-rose-500/30 bg-rose-500/[0.02]" : "border-border/40"
+          "premium-card border-2",
+          task.completed ? "opacity-60 grayscale-[0.3]" : "hover:border-primary/40",
+          isOverdue ? "border-rose-500/30 bg-rose-500/[0.02]" : "border-border/60"
         )}
       >
-        <div className="p-5 sm:p-6">
-          <div className="flex items-start gap-4 sm:gap-6">
-            <div className="relative flex items-center justify-center mt-1">
-              <Checkbox
-                checked={task.completed}
-                onCheckedChange={handleToggleComplete}
-                className={cn(
-                  "w-6 h-6 rounded-full border-2 transition-all duration-500",
-                  task.completed 
-                    ? "bg-primary border-primary" 
-                    : "border-muted-foreground/30 hover:border-primary"
-                )}
-              />
-              <AnimatePresence>
-                {task.completed && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    className="absolute pointer-events-none"
-                  >
-                    <Check className="w-3.5 h-3.5 text-white" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+        {/* Glow effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/0 via-primary/5 to-accent-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="p-6 relative z-10">
+          <div className="flex items-start gap-6">
+            <div className="relative flex items-center justify-center mt-1.5 shrink-0">
+               <motion.div
+                 whileTap={{ scale: 0.8 }}
+                 className="relative"
+               >
+                <Checkbox
+                  checked={task.completed}
+                  onCheckedChange={handleToggleComplete}
+                  className={cn(
+                    "w-7 h-7 rounded-full border-2 transition-all duration-300",
+                    task.completed 
+                      ? "bg-primary border-primary shadow-lg shadow-primary/20" 
+                      : "border-muted-foreground/30 hover:border-primary"
+                  )}
+                />
+                <AnimatePresence>
+                  {task.completed && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
+                      <Check className="w-4 h-4 text-white" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </div>
 
-            <div className="flex-1 space-y-3 min-w-0">
+            <div className="flex-1 space-y-4 min-w-0">
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     <h3 className={cn(
-                      "text-lg font-bold transition-all duration-500 truncate",
-                      task.completed ? "line-through text-muted-foreground" : "text-foreground"
+                      "text-xl font-bold transition-all duration-300 truncate tracking-tight",
+                      task.completed ? "line-through text-muted-foreground/70" : "text-foreground"
                     )}>
                       {task.title}
                     </h3>
                     {task.priority === 'high' && !task.completed && (
-                      <Star className="w-4 h-4 fill-rose-500 text-rose-500 animate-pulse" />
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [1, 0.8, 1] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                      >
+                        <Star className="w-4 h-4 fill-rose-500 text-rose-500" />
+                      </motion.div>
                     )}
                   </div>
                   {task.description && (
                     <p className={cn(
-                      "text-sm font-medium leading-relaxed line-clamp-2",
+                      "text-sm font-medium leading-relaxed line-clamp-2 transition-all duration-300",
                       task.completed ? "text-muted-foreground/60" : "text-muted-foreground/80"
                     )}>
                       {task.description}
@@ -131,34 +146,37 @@ export function TaskCard({ task }: TaskCardProps) {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0 hover:bg-muted opacity-0 group-hover:opacity-100 transition-all">
-                      <MoreVertical className="w-4 h-4" />
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl shrink-0 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 ring-offset-background">
+                      <MoreVertical className="w-4.5 h-4.5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl border-2 p-1.5 shadow-xl backdrop-blur-xl">
-                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="rounded-xl gap-2 font-bold focus:bg-primary/10 focus:text-primary">
-                      <Edit2 className="w-4 h-4" /> Edit Task
+                  <DropdownMenuContent align="end" className="rounded-2xl border-2 p-1.5 shadow-2xl backdrop-blur-2xl bg-popover/90">
+                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="rounded-xl gap-2.5 font-bold focus:bg-primary/10 focus:text-primary py-2.5">
+                      <Edit2 className="w-4 h-4" /> Edit Parameters
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDelete} className="rounded-xl gap-2 font-bold text-rose-500 focus:bg-rose-500/10 focus:text-rose-500">
-                      <Trash2 className="w-4 h-4" /> Delete Task
+                    <DropdownMenuItem className="rounded-xl gap-2.5 font-bold focus:bg-primary/10 py-2.5">
+                      <Share2 className="w-4 h-4" /> Export Config
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete} className="rounded-xl gap-2.5 font-bold text-rose-500 focus:bg-rose-500/10 focus:text-rose-500 py-2.5">
+                      <Trash2 className="w-4 h-4" /> Release Task
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <div className="flex flex-wrap items-center gap-3">
                 {category && (
                   <CategoryBadge category={category} size="sm" />
                 )}
                 
-                <Badge variant="outline" className={cn("rounded-lg border-none px-2.5 py-0.5 font-bold uppercase text-[10px] tracking-wider", priorityStyles[task.priority])}>
+                <Badge variant="outline" className={cn("rounded-lg border-2 px-3 py-0.5 font-black uppercase text-[9px] tracking-[0.1em]", priorityStyles[task.priority])}>
                   {task.priority}
                 </Badge>
 
                 {task.dueDate && (
                   <div className={cn(
-                    "flex items-center gap-1.5 text-xs font-bold px-2 py-0.5 rounded-lg bg-muted/50",
-                    isOverdue ? "text-rose-500 bg-rose-500/10" : "text-muted-foreground"
+                    "flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-xl bg-muted/40 border border-transparent transition-all",
+                    isOverdue ? "text-rose-500 bg-rose-500/5 border-rose-500/20" : "text-muted-foreground group-hover:border-border/80 group-hover:bg-muted/60"
                   )}>
                     {isOverdue ? <AlertCircle className="w-3.5 h-3.5" /> : <Calendar className="w-3.5 h-3.5" />}
                     {format(new Date(task.dueDate), 'MMM d, h:mm a')}
@@ -166,7 +184,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 )}
 
                 {task.isRecurring && (
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary/70 bg-primary/5 px-2 py-0.5 rounded-lg">
+                  <div className="flex items-center gap-2 text-xs font-bold text-primary/80 bg-primary/5 px-3 py-1 rounded-xl border border-primary/10">
                     <Clock className="w-3.5 h-3.5" />
                     {task.recurringPattern}
                   </div>
@@ -178,8 +196,10 @@ export function TaskCard({ task }: TaskCardProps) {
 
         {/* Priority accent side glow */}
         <div className={cn(
-          "absolute left-0 top-0 bottom-0 w-1",
-          task.priority === 'high' ? "bg-rose-500" : task.priority === 'medium' ? "bg-amber-500" : "bg-emerald-500",
+          "absolute left-0 top-0 bottom-0 w-1.5",
+          task.priority === 'high' ? "bg-rose-500 shadow-[2px_0_10px_rgba(244,63,94,0.4)]" : 
+          task.priority === 'medium' ? "bg-amber-500 shadow-[2px_0_10px_rgba(245,158,11,0.2)]" : 
+          "bg-emerald-500 shadow-[2px_0_10px_rgba(16,185,129,0.2)]",
           task.completed && "opacity-20"
         )} />
       </Card>

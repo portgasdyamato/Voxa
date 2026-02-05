@@ -5,13 +5,15 @@ import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
 import { detectDateFromText, formatRelativeDate } from '@/lib/dateDetection';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReminderSettings } from '@/components/ReminderSettings';
-import { Mic, X, Tag, Calendar, Clock } from 'lucide-react';
+import { Mic, X, Tag, Calendar, Clock, Sparkles, Activity, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface VoiceTaskModalProps {
   open: boolean;
@@ -26,13 +28,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const [deadlineInputValue, setDeadlineInputValue] = useState('');
   const [detectedDate, setDetectedDate] = useState<Date | null>(null);
   
-  // Reminder settings state
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderType, setReminderType] = useState<'manual' | 'morning' | 'default'>('default');
   const [reminderTime, setReminderTime] = useState<string>('');
   
   const { toast } = useToast();
-  
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   
   const {
@@ -64,8 +64,6 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   useEffect(() => {
     if (transcript && !isListening) {
       setShowTranscription(true);
-      
-      // Detect date from transcript
       const dateResult = detectDateFromText(transcript);
       if (dateResult.detectedDate && dateResult.confidence === 'high') {
         setDetectedDate(dateResult.detectedDate);
@@ -80,7 +78,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   useEffect(() => {
     if (error) {
       toast({
-        title: "Voice Recognition Error",
+        title: "Voice System Error",
         description: error,
         variant: "destructive",
       });
@@ -102,11 +100,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   const handleSaveTask = async () => {
     if (!transcript.trim()) {
-      toast({
-        title: "Error",
-        description: "No transcript available to save",
-        variant: "destructive",
-      });
+      toast({ title: "Null Command", description: "No data available to commit.", variant: "destructive" });
       return;
     }
 
@@ -114,7 +108,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     
     try {
       await createTask.mutateAsync({
-        title: transcript.slice(0, 100), // Limit title length
+        title: transcript.slice(0, 100),
         description: transcript.length > 100 ? transcript.slice(100) : undefined,
         priority,
         categoryId: selectedCategory && selectedCategory !== 'none' ? parseInt(selectedCategory) : undefined,
@@ -124,33 +118,15 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         reminderTime: reminderType === 'manual' ? reminderTime : undefined,
       });
 
-      const deadlineText = selectedDeadline ? ` (due ${formatRelativeDate(selectedDeadline)})` : '';
-      const reminderText = reminderEnabled ? 
-        reminderType === 'manual' ? ` with reminder at ${reminderTime}` :
-        reminderType === 'morning' ? ' with morning reminder' :
-        ' with default reminder' : '';
-      
       toast({
-        title: "Task Created",
-        description: `Task "${transcript.slice(0, 50)}..." has been created with ${priority} priority${deadlineText}${reminderText}`,
+        title: "Objective Indexed",
+        description: `Targeting "${transcript.slice(0, 30)}..." with ${priority} priority.`,
       });
 
       onOpenChange(false);
       resetTranscript();
-      setShowTranscription(false);
-      setSelectedCategory('');
-      setSelectedDeadline(null);
-      setDetectedDate(null);
-      setDeadlineInputValue('');
-      setReminderEnabled(true);
-      setReminderType('default');
-      setReminderTime('');
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create task. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Indexing Error", description: "Failed to persist objective.", variant: "destructive" });
     }
   };
 
@@ -158,25 +134,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     setDeadlineInputValue(value);
     if (value) {
       const date = new Date(value);
-      date.setHours(23, 59, 59, 999); // Set to end of day
+      date.setHours(23, 59, 59, 999);
       setSelectedDeadline(date);
     } else {
       setSelectedDeadline(null);
     }
-  };
-
-  const handleClose = () => {
-    stopListening();
-    onOpenChange(false);
-    resetTranscript();
-    setShowTranscription(false);
-    setSelectedCategory('');
-    setSelectedDeadline(null);
-    setDetectedDate(null);
-    setDeadlineInputValue('');
-    setReminderEnabled(true);
-    setReminderType('default');
-    setReminderTime('');
   };
 
   const formatTime = (seconds: number) => {
@@ -185,170 +147,172 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-pink-100 text-pink-800';
-      case 'medium':
-        return 'bg-purple-100 text-purple-800';
-      case 'low':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogTitle className="sr-only">Voice Task Input</DialogTitle>
-        <DialogDescription className="sr-only">
-          Create a new task using voice recognition
-        </DialogDescription>
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 gradient-primary rounded-full flex items-center justify-center mx-auto">
-            <Mic className="w-10 h-10 text-white" />
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl">
+        <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-primary/5">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
+          <div className="flex items-center gap-6 relative z-10">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-primary flex items-center justify-center text-white shadow-2xl shadow-primary/30 ring-4 ring-primary/10">
+              <Mic className="w-8 h-8" />
+            </div>
+            <div>
+              <DialogTitle className="text-3xl font-black tracking-tighter">Voice Interface</DialogTitle>
+              <DialogDescription className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">
+                Neural capture enabled
+              </DialogDescription>
+            </div>
           </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800">Voice Task Input</h3>
-            <p className="text-gray-600 text-sm mt-1">Speak your task clearly...</p>
-          </div>
+        </DialogHeader>
 
+        <div className="px-10 py-8 space-y-8">
           {!showTranscription ? (
-            <div className="space-y-3">
-              {isListening ? (
-                <>
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse-recording"></div>
-                    <span className="text-sm font-medium text-gray-700">Recording...</span>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    <span>{formatTime(recordingTime)}</span>
-                  </div>
-                  <Button
-                    onClick={stopListening}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Stop Recording
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={handleStartRecording}
-                  className="w-full gradient-primary text-white hover:opacity-90"
+            <div className="flex flex-col items-center py-10 gap-10">
+              <div className="relative">
+                <motion.div 
+                  animate={{ scale: isListening ? [1, 1.2, 1] : 1 }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className={cn(
+                    "w-32 h-32 rounded-[3.5rem] flex items-center justify-center transition-all duration-500",
+                    isListening ? "bg-rose-500 shadow-[0_0_50px_rgba(244,63,94,0.4)]" : "bg-primary shadow-3xl"
+                  )}
                 >
-                  Start Recording
-                </Button>
-              )}
+                  {isListening ? (
+                    <div className="relative flex items-center justify-center">
+                       {[1,2,3].map(i => (
+                         <motion.div 
+                           key={i}
+                           animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.5 }}
+                           className="absolute w-full h-full rounded-[3.5rem] border-2 border-white/50" 
+                         />
+                       ))}
+                       <Activity className="w-12 h-12 text-white" />
+                    </div>
+                  ) : (
+                    <Mic className="w-12 h-12 text-white" />
+                  )}
+                </motion.div>
+                {isListening && (
+                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl">
+                    {formatTime(recordingTime)}
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-center space-y-2">
+                <h4 className="text-xl font-bold tracking-tight">
+                  {isListening ? 'Awaiting Audio Input...' : 'System Ready'}
+                </h4>
+                <p className="text-sm font-medium text-muted-foreground max-w-xs mx-auto">
+                  {isListening ? 'Please state your objective clearly.' : 'Initialize neural capture to begin.'}
+                </p>
+              </div>
+
+              <Button
+                onClick={isListening ? stopListening : handleStartRecording}
+                className={cn(
+                  "h-16 w-full rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all",
+                  isListening ? "bg-rose-500 text-white hover:bg-rose-600" : "bg-foreground text-background"
+                )}
+              >
+                {isListening ? 'Terminate Recording' : 'Begin Capture'}
+              </Button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="bg-blue-50 rounded-lg p-4 text-left">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Transcription:</h4>
-                <p className="text-sm text-gray-800">{transcript}</p>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-8"
+            >
+              <div className="bg-muted/30 rounded-[2rem] p-8 border-2 border-border/40 relative group overflow-hidden shadow-inner">
+                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <Sparkles className="w-12 h-12" />
+                </div>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4">Transcription Engine Output</h4>
+                <p className="text-xl font-bold leading-relaxed">{transcript}</p>
               </div>
               
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Detected Priority:</span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  getPriorityColor(detectPriority(transcript))
-                }`}>
-                  {detectPriority(transcript).charAt(0).toUpperCase() + detectPriority(transcript).slice(1)}
-                </span>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="category-select" className="text-sm font-medium text-gray-700 flex items-center">
-                  <Tag className="w-4 h-4 mr-2" />
-                  Category (Optional)
-                </Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger id="category-select" className="w-full">
-                    <SelectValue placeholder={categoriesLoading ? "Loading categories..." : "Select a category..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No category</SelectItem>
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        <div className="flex items-center space-x-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: category.color }}
-                          />
-                          <span>{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="deadline-input" className="text-sm font-medium text-gray-700 flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Deadline (Optional)
-                </Label>
-                {detectedDate && (
-                  <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded">
-                    <Clock className="w-4 h-4" />
-                    <span>Detected: {formatRelativeDate(detectedDate)}</span>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Tactical Class</Label>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="h-14 rounded-2xl border-2 bg-muted/30 font-bold px-6">
+                      <SelectValue placeholder="General" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-2 shadow-2xl p-1 bg-popover/95">
+                      <SelectItem value="none" className="rounded-xl font-bold py-3">Uncategorized</SelectItem>
+                      {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl font-bold py-3">
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Detected Priority</Label>
+                  <div className={cn(
+                    "h-14 rounded-2xl border-2 flex items-center px-6 gap-3 font-black text-xs uppercase tracking-widest",
+                    detectPriority(transcript) === 'high' ? "bg-rose-500/5 border-rose-500/20 text-rose-500" :
+                    detectPriority(transcript) === 'medium' ? "bg-amber-500/5 border-amber-500/20 text-amber-500" :
+                    "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
+                  )}>
+                    <div className="w-2 h-2 rounded-full bg-current" />
+                    {detectPriority(transcript)} priority
                   </div>
-                )}
-                <Input
-                  id="deadline-input"
-                  type="date"
-                  value={deadlineInputValue}
-                  onChange={(e) => handleDeadlineChange(e.target.value)}
-                  className="w-full"
-                  min={new Date().toISOString().split('T')[0]}
-                />
-                {selectedDeadline && (
-                  <p className="text-xs text-gray-500">
-                    Due: {formatRelativeDate(selectedDeadline)}
-                  </p>
-                )}
+                </div>
               </div>
-              
-              {/* Reminder Settings */}
-              {selectedDeadline && (
-                <ReminderSettings
-                  reminderEnabled={reminderEnabled}
-                  reminderType={reminderType}
-                  reminderTime={reminderTime}
-                  onReminderEnabledChange={setReminderEnabled}
-                  onReminderTypeChange={setReminderType}
-                  onReminderTimeChange={setReminderTime}
-                />
-              )}
-              
-              <div className="flex space-x-3">
+
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1 flex items-center gap-2">
+                  <Calendar className="w-3 h-3" /> Execution Buffer
+                </Label>
+                <div className="relative group">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-primary opacity-50">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <Input
+                    type="date"
+                    value={deadlineInputValue}
+                    onChange={(e) => handleDeadlineChange(e.target.value)}
+                    className="h-14 rounded-2xl border-2 bg-muted/30 font-black px-12 focus-visible:border-primary transition-all"
+                  />
+                  {detectedDate && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                      Auto-detected
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-6">
                 <Button
                   onClick={handleSaveTask}
                   disabled={createTask.isPending}
-                  className="flex-1 gradient-primary text-white hover:opacity-90"
+                  className="flex-[2] h-16 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-primary text-white shadow-2xl shadow-primary/30 transition-all hover:scale-105"
                 >
-                  {createTask.isPending ? 'Saving...' : 'Save Task'}
+                  {createTask.isPending ? 'Syncing...' : 'Index Objective'}
                 </Button>
                 <Button
                   onClick={handleStartRecording}
                   variant="outline"
-                  className="flex-1"
+                   className="flex-1 h-16 rounded-2xl font-black underline decoration-2 decoration-primary/30 hover:decoration-primary uppercase tracking-widest text-[11px] border-2 border-border/50"
                 >
-                  Re-record
+                  <RefreshCw className="w-4 h-4 mr-2" /> Re-scan
                 </Button>
               </div>
-            </div>
+            </motion.div>
           )}
-
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </div>
+        
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-8 right-8 text-muted-foreground hover:text-foreground transition-all duration-300 hover:rotate-90"
+        >
+          <X className="w-6 h-6" />
+        </button>
       </DialogContent>
     </Dialog>
   );

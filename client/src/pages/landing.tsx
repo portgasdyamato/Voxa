@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Mic, CheckCircle, BarChart3, Zap, ArrowRight, Play, Sparkles, Shield, Cpu, Github, Twitter, Linkedin } from 'lucide-react';
+import { Mic, Zap, ArrowRight, Play, Sparkles, Shield, Cpu, Github, Twitter, Linkedin, Globe, Lock, Workflow } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
@@ -10,9 +10,6 @@ export default function Landing() {
     offset: ["start start", "end start"]
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
   const handleLogin = () => {
     window.location.href = '/api/login';
   };
@@ -21,79 +18,68 @@ export default function Landing() {
     {
       icon: <Mic className="w-8 h-8 text-white" />,
       title: 'Neural Voice Engine',
-      description: 'Experience industry-leading accuracy with our custom-trained NLP models designed specifically for productivity intent.',
+      description: 'Experience industry-leading accuracy with our custom-trained NLP models designed specifically for high-velocity environments.',
       color: 'from-blue-600 to-indigo-600',
     },
     {
       icon: <Cpu className="w-8 h-8 text-white" />,
       title: 'Contextual Logic',
-      description: 'VoXa doesn’t just hear you; it understands the structure of your week, automatically clustering related objectives.',
+      description: 'VoXa autonomously structures your workflow, automatically clustering related objectives and prioritizing based on intent.',
       color: 'from-violet-600 to-purple-600',
     },
     {
       icon: <Zap className="w-8 h-8 text-white" />,
       title: 'Zero Latency Sync',
-      description: 'Proprietary edge-computing ensures your voice commands are indexed and mirrored across your workspace in milliseconds.',
+      description: 'Proprietary edge-computing ensures your voice commands are indexed and mirrored across your ecosystem instantly.',
       color: 'from-amber-600 to-orange-600',
     },
     {
-      icon: <Shield className="w-8 h-8 text-white" />,
-      title: 'Vault Security',
-      description: 'Your voice is your own. We utilize local-first processing for sensitive commands and enterprise-grade encryption for sync.',
+      icon: <Lock className="w-8 h-8 text-white" />,
+      title: 'Vault Protection',
+      description: 'Your biometric data remains local. We utilize industry-standard encryption for all cloud-synchronized parameters.',
       color: 'from-emerald-600 to-teal-600',
     },
   ];
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20 overflow-x-hidden">
-      {/* Dynamic Mesh Background */}
+      {/* Premium Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <motion.div 
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[150px] animate-mesh" 
-        />
-        <motion.div 
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent-500/10 rounded-full blur-[150px] animate-mesh" 
-           style={{ animationDelay: '3s' }}
-        />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] contrast-150" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[150px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute inset-0 bg-dot-pattern opacity-[0.05]" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-2xl px-6">
-        <div className="max-w-7xl mx-auto flex h-20 items-center justify-between">
-          <div className="flex items-center space-x-3 group cursor-pointer">
-            <motion.div 
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary to-accent-500 p-[2px] shadow-lg shadow-primary/20"
-            >
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-2xl px-6">
+        <div className="max-w-7xl mx-auto flex h-24 items-center justify-between">
+          <div className="flex items-center space-x-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-indigo-600 p-[2px] shadow-2xl shadow-primary/20 group-hover:rotate-6 transition-transform">
               <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center overflow-hidden">
-                <img src="/logo.png" alt="VoXa" className="w-8 h-8 object-contain" />
+                <img src="/logo.png" alt="VoXa" className="w-9 h-9 object-contain" />
               </div>
-            </motion.div>
-            <span className="text-3xl font-black tracking-tighter text-foreground">
-              VoXa
-            </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-3xl font-black tracking-tighter text-foreground">VoXa</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Protocol v2.0</span>
+            </div>
           </div>
           
-          <nav className="hidden lg:flex items-center space-x-10 text-xs font-black uppercase tracking-widest text-muted-foreground">
-            <a href="#features" className="transition-all hover:text-primary hover:tracking-[0.2em]">Framework</a>
-            <a href="#demo" className="transition-all hover:text-primary hover:tracking-[0.2em]">Interface</a>
-            <a href="#security" className="transition-all hover:text-primary hover:tracking-[0.2em]">Encryption</a>
+          <nav className="hidden lg:flex items-center space-x-12 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            <a href="#features" className="transition-all hover:text-primary hover:tracking-[0.4em]">Engine</a>
+            <a href="#workflow" className="transition-all hover:text-primary hover:tracking-[0.4em]">Workflow</a>
+            <a href="#security" className="transition-all hover:text-primary hover:tracking-[0.4em]">Encryption</a>
           </nav>
 
-          <div className="flex items-center space-x-6">
-            <button onClick={handleLogin} className="hidden sm:block text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors px-4 py-2">
-              Sign In
+          <div className="flex items-center space-x-8">
+            <button onClick={handleLogin} className="hidden sm:block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-all">
+              Login Console
             </button>
             <Button 
                onClick={handleLogin}
-               className="h-12 rounded-2xl px-8 font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-xl shadow-primary/25 transition-all hover:scale-105 active:scale-95"
+               className="h-14 rounded-2xl px-10 font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-xl shadow-primary/25 transition-all hover:scale-105 active:scale-95"
             >
-              Get Started
+              Initialize Access
             </Button>
           </div>
         </div>
@@ -101,98 +87,89 @@ export default function Landing() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-24 pb-40 px-6 overflow-hidden">
-          <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+        <section className="relative pt-32 pb-48 px-6 text-center">
+          <div className="max-w-7xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-3 rounded-full border-2 border-primary/20 bg-primary/5 px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-12 shadow-inner"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-3 rounded-full border-2 border-primary/20 bg-primary/5 px-8 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-16 shadow-inner"
             >
-              <Sparkles className="h-4 w-4" />
-              Neural task management system
+              <Workflow className="h-4 w-4" />
+              Next-Gen Neural Productivity System
             </motion.div>
             
             <motion.h1 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-12"
+              className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.85] mb-12"
             >
               COMMAND YOUR <br />
-              <span className="relative inline-block pb-4">
-                 <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-500 to-indigo-600">
-                    MOMENTUM
-                 </span>
-                 <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ delay: 0.5, duration: 1 }}
-                    className="absolute bottom-0 left-0 h-4 bg-primary/20 rounded-full blur-md" 
-                 />
-              </span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-500 to-indigo-400">MOMENTUM.</span>
             </motion.h1>
             
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="max-w-3xl text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed mb-16 px-4"
+              className="max-w-3xl mx-auto text-2xl md:text-3xl text-muted-foreground/80 font-medium leading-relaxed mb-20 px-4"
             >
-              The first voice-native productivity suite built for modern professionals. 
-              Turn natural speech into structured workflows with zero friction.
+              The first voice-native workspace designed for high-stakes execution. 
+              Eliminate friction and orchestrate your entire day with natural speech.
             </motion.p>
             
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto"
+              className="flex flex-col sm:flex-row gap-8 justify-center items-center"
             >
-              <Button size="lg" className="h-16 px-12 rounded-[1.5rem] text-lg font-black bg-foreground text-background hover:bg-foreground/90 shadow-2xl transition-all hover:scale-105 active:scale-95" onClick={handleLogin}>
-                Access Console <ArrowRight className="ml-3 w-6 h-6" />
+              <Button size="lg" className="h-20 px-16 rounded-[2rem] text-xl font-black bg-foreground text-background hover:bg-foreground/90 shadow-3xl transition-all hover:scale-105 active:scale-95" onClick={handleLogin}>
+                Access Console <ArrowRight className="ml-4 w-7 h-7" />
               </Button>
-              <Button size="lg" variant="outline" className="h-16 px-12 rounded-[1.5rem] text-lg font-black border-2 hover:bg-muted transition-all">
-                <Play className="mr-3 w-5 h-5 fill-current" /> System Demo
+              <Button size="lg" variant="ghost" className="h-20 px-16 rounded-[2rem] text-xl font-black border-2 border-transparent hover:border-border transition-all">
+                <Play className="mr-4 w-6 h-6 fill-current" /> System Brief
               </Button>
             </motion.div>
 
-            {/* Premium Mockup */}
+            {/* Premium Interactive Mockup */}
             <motion.div 
               initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative mt-32 w-full max-w-6xl"
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true }}
+              className="relative mt-40 w-full max-w-6xl mx-auto"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent-500/30 rounded-[3rem] blur-2xl opacity-50" />
-              <div className="relative rounded-[2.5rem] border-2 border-border/50 bg-card/60 p-4 shadow-3xl backdrop-blur-3xl overflow-hidden aspect-video group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5 transition-opacity group-hover:opacity-100" />
-                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-                
-                <div className="relative h-full w-full rounded-[1.5rem] bg-background border border-border/50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full opacity-30 animate-pulse" />
+              <div className="relative rounded-[3.5rem] border-2 border-border/40 bg-card/60 p-6 shadow-3xl backdrop-blur-3xl overflow-hidden aspect-[16/9]">
+                <div className="h-full w-full rounded-[2.5rem] bg-background border border-border/40 flex items-center justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-dot-pattern opacity-[0.05]" />
                     <motion.div 
-                       animate={{ 
-                         scale: [1, 1.05, 1],
-                         opacity: [0.5, 0.8, 0.5]
-                       }}
-                       transition={{ duration: 4, repeat: Infinity }}
-                       className="absolute w-[60%] h-[60%] bg-primary/10 rounded-full blur-[80px]" 
+                       animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+                       transition={{ duration: 8, repeat: Infinity }}
+                       className="absolute w-full h-full bg-primary/5 rounded-full blur-[100px]" 
                     />
-                    <div className="z-10 flex flex-col items-center gap-10">
+                    <div className="z-10 flex flex-col items-center gap-12">
                        <motion.div 
-                          whileHover={{ scale: 1.1 }}
-                          className="w-32 h-32 rounded-[2.5rem] bg-primary flex items-center justify-center shadow-[0_0_50px_rgba(var(--primary),0.3)] cursor-pointer"
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          className="w-40 h-40 rounded-[3rem] bg-primary flex items-center justify-center shadow-3xl shadow-primary/30 cursor-pointer relative"
                         >
-                         <Mic className="w-14 h-14 text-white" />
+                         <Mic className="w-16 h-16 text-white" />
+                         <motion.div 
+                           animate={{ scale: [1, 1.5, 1], opacity: [0, 0.3, 0] }}
+                           transition={{ duration: 2, repeat: Infinity }}
+                           className="absolute inset-0 rounded-[3rem] border-4 border-primary" 
+                         />
                        </motion.div>
-                       <div className="space-y-4 text-center">
-                           <h4 className="text-xl font-black text-foreground tracking-tight">Listening for instructions...</h4>
-                          <div className="flex gap-2 justify-center">
-                             {[1,2,3,4,5].map(i => (
+                       <div className="space-y-6 text-center">
+                          <h4 className="text-3xl font-black text-foreground tracking-tight">Syncing Voice Parameters...</h4>
+                          <div className="flex gap-4 justify-center">
+                             {[1,2,3,4,5,6,7].map(i => (
                                <motion.div 
                                  key={i}
-                                 animate={{ height: [10, 40, 10] }}
-                                 transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
-                                 className="w-1.5 bg-primary/30 rounded-full" 
+                                 animate={{ height: [12, 60, 12] }}
+                                 transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }}
+                                 className="w-2 bg-primary/40 rounded-full" 
                                />
                              ))}
                           </div>
@@ -204,32 +181,33 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Feature Grid */}
-        <section id="features" className="py-40 px-6 bg-muted/30">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-24 space-y-4">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Capabilities</h2>
-              <h3 className="text-4xl md:text-6xl font-black tracking-tight">Engineered for Velocity.</h3>
+        {/* Feature Grid with Hover Effects */}
+        <section id="features" className="py-64 px-6 bg-muted/10 relative overflow-hidden">
+          <div className="absolute inset-0 bg-dot-pattern opacity-[0.03]" />
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="text-center mb-32 space-y-6">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">System Capabilities</h2>
+              <h3 className="text-6xl md:text-8xl font-black tracking-tighter">Unified Intelligence.</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
               {features.map((feature, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
+                  initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1, duration: 0.8 }}
                   viewport={{ once: true }}
-                  className="group relative p-10 rounded-[2.5rem] border-2 border-border/50 bg-card hover:bg-background transition-all duration-500 hover:shadow-2xl overflow-hidden"
+                  className="group relative p-12 rounded-[3.5rem] border-2 border-border/40 bg-card/50 backdrop-blur-md hover:bg-background transition-all duration-700 hover:shadow-3xl overflow-hidden"
                 >
-                  <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 blur-[60px] transition-all duration-700`} />
+                  <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 blur-[80px] transition-all duration-1000`} />
                   
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center p-4 mb-10 shadow-xl shadow-primary/10 group-hover:scale-110 transition-transform duration-500`}>
+                  <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${feature.color} flex items-center justify-center p-5 mb-12 shadow-2xl shadow-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
                     {feature.icon}
                   </div>
                   
-                  <h3 className="text-2xl font-black mb-6 tracking-tight">{feature.title}</h3>
-                  <p className="text-muted-foreground text-lg leading-relaxed font-medium">
+                  <h3 className="text-3xl font-black mb-8 tracking-tight">{feature.title}</h3>
+                  <p className="text-muted-foreground/80 text-xl leading-relaxed font-medium">
                     {feature.description}
                   </p>
                 </motion.div>
@@ -238,35 +216,37 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="py-20 px-6">
+        {/* CTA Section */}
+        <section className="py-32 px-6">
           <div className="max-w-7xl mx-auto">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="relative p-12 md:p-24 rounded-[4rem] bg-foreground text-background overflow-hidden text-center group"
+              className="relative p-20 md:p-32 rounded-[5rem] bg-foreground text-background overflow-hidden text-center group"
             >
-              <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-full bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
+              <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+              <div className="absolute top-[-20%] left-[-10%] w-[120%] h-[140%] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
               
-              <div className="relative z-10 space-y-10 max-w-4xl mx-auto">
-                <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9]">
-                   RECLAIM YOUR <br /> COGNITIVE LOAD.
+              <div className="relative z-10 space-y-12 max-w-5xl mx-auto">
+                <h2 className="text-6xl md:text-[10rem] font-black tracking-tighter leading-[0.85]">
+                   RECLAIM YOUR <br /> COGNITION.
                 </h2>
-                <p className="text-xl md:text-2xl text-background/70 max-w-2xl mx-auto font-medium leading-relaxed">
-                  Join the elite tier of efficient operators who have automated their 
-                  task logistics through neural voice control.
+                <p className="text-2xl md:text-3xl text-background/60 max-w-3xl mx-auto font-medium leading-relaxed">
+                  The future of productivity isn't manual. It's neural. 
+                  Deploy VoXa across your entire operation today.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                   <Button onClick={handleLogin} size="lg" className="h-20 px-12 rounded-[2rem] text-xl font-black bg-primary text-white hover:bg-primary/90 shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-10">
+                   <Button onClick={handleLogin} size="lg" className="h-24 px-16 rounded-[2.5rem] text-2xl font-black bg-primary text-white hover:bg-white hover:text-primary shadow-3xl shadow-primary/40 transition-all hover:scale-105 active:scale-95">
                       Initialize Free Access
                    </Button>
-                   <div className="text-left hidden md:block">
-                      <p className="text-xs font-black uppercase tracking-widest text-background/40 mb-1">Trusted By</p>
-                      <div className="flex -space-x-3">
-                         {[1,2,3,4].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-foreground bg-muted" />)}
-                         <div className="w-8 h-8 rounded-full border-2 border-foreground bg-primary flex items-center justify-center text-[10px] font-black">+</div>
+                   <div className="text-left hidden md:flex items-center gap-6">
+                      <div className="flex -space-x-4">
+                         {[1,2,3,4].map(i => <div key={i} className="w-12 h-12 rounded-full border-4 border-foreground bg-muted-foreground/20" />)}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-lg font-black leading-none">5,000+</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Active Operators</span>
                       </div>
                    </div>
                 </div>
@@ -277,63 +257,66 @@ export default function Landing() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-24 bg-card/10 px-6">
+      <footer className="border-t border-border/40 py-32 bg-card/20 px-6 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between gap-20">
-            <div className="space-y-8 max-w-sm">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                  <img src="/logo.png" alt="VoXa" className="w-6 h-6 grayscale" />
+          <div className="flex flex-col lg:flex-row justify-between gap-32">
+            <div className="space-y-10 max-w-md">
+              <div className="flex items-center space-x-4">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                  <img src="/logo.png" alt="VoXa" className="w-9 h-9 grayscale opacity-50" />
                 </div>
-                <span className="text-3xl font-black tracking-tighter">VoXa</span>
+                <div className="flex flex-col">
+                  <span className="text-4xl font-black tracking-tighter">VoXa</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Intelligence Stack</span>
+                </div>
               </div>
-              <p className="text-muted-foreground font-medium text-lg">
-                The nexus of artificial intelligence and personal logistics. 
-                Built for the speed of modern thought.
+              <p className="text-muted-foreground/60 font-medium text-xl leading-relaxed">
+                Architecting the nexus of high-fidelity voice recognition 
+                and autonomous personal logistics.
               </p>
-              <div className="flex items-center gap-4">
-                 {[Github, Twitter, Linkedin].map((Icon, i) => (
-                   <button key={i} className="w-10 h-10 rounded-xl bg-muted/50 border border-border/50 flex items-center justify-center hover:bg-primary/10 hover:text-primary hover:border-primary/20 transition-all">
+              <div className="flex items-center gap-6">
+                 {[Github, Twitter, Linkedin, Globe].map((Icon, i) => (
+                   <button key={i} className="w-12 h-12 rounded-2xl bg-muted/30 border-2 border-border/40 flex items-center justify-center hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all">
                      <Icon className="w-5 h-5" />
                    </button>
                  ))}
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-12 lg:gap-24">
-              <div className="space-y-6">
-                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Product</h4>
-                 <ul className="space-y-4 text-sm font-bold text-muted-foreground">
-                    <li><a href="#" className="hover:text-primary transition-colors">Neural Engine</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Interface API</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Security Audit</a></li>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-16 lg:gap-32">
+              <div className="space-y-8">
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Infrastructure</h4>
+                 <ul className="space-y-5 text-sm font-black text-muted-foreground/60 transition-all uppercase tracking-widest">
+                    <li className="hover:text-primary cursor-pointer transition-colors">Neural Core</li>
+                    <li className="hover:text-primary cursor-pointer transition-colors">Edge Nodes</li>
+                    <li className="hover:text-primary cursor-pointer transition-colors">Quantum Sync</li>
                  </ul>
               </div>
-              <div className="space-y-6">
-                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Company</h4>
-                 <ul className="space-y-4 text-sm font-bold text-muted-foreground">
-                    <li><a href="#" className="hover:text-primary transition-colors">Vision</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Privacy Lexicon</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Contact Stack</a></li>
+              <div className="space-y-8">
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Organization</h4>
+                 <ul className="space-y-5 text-sm font-black text-muted-foreground/60 transition-all uppercase tracking-widest">
+                    <li className="hover:text-primary cursor-pointer transition-colors">Manifesto</li>
+                    <li className="hover:text-primary cursor-pointer transition-colors">Privacy Lexicon</li>
+                    <li className="hover:text-primary cursor-pointer transition-colors">Security Audit</li>
                  </ul>
               </div>
-              <div className="hidden md:block space-y-6">
-                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">System Status</h4>
-                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 w-fit">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase text-emerald-500 tracking-wider">All Systems Operational</span>
+              <div className="hidden md:block space-y-8">
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Status</h4>
+                 <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-emerald-500/5 border-2 border-emerald-500/20 w-fit animate-pulse">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Systems Nominal</span>
                  </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-24 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">
-              © 2025 Voxa Intelligent Systems, Inc. / Global Distribution
+          <div className="mt-40 pt-10 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
+              © 2026 Voxa Intelligent Systems, Inc. / Earth-Based Operations
             </p>
-            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
-               <a href="#" className="hover:text-primary transition-colors">Security Protocol</a>
-               <a href="#" className="hover:text-primary transition-colors">Data Privacy</a>
+            <div className="flex gap-12 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">
+               <a href="#" className="hover:text-primary transition-colors">Security Layer-4</a>
+               <a href="#" className="hover:text-primary transition-colors">User Privacy Index</a>
             </div>
           </div>
         </div>
