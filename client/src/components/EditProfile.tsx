@@ -1,18 +1,19 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Camera, Upload, Link, User, ShieldCheck, Mail } from 'lucide-react';
+import { Camera, Upload, Link, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ interface EditProfileProps {
 export function EditProfile({ open, onOpenChange }: EditProfileProps) {
   const { user, updateProfile: updateUserProfile } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [firstName, setFirstName] = useState((user as any)?.firstName || '');
@@ -34,10 +36,10 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { 
+      if (file.size > 2 * 1024 * 1024) { 
         toast({
-          title: 'Payload exceeding limit',
-          description: 'Please select an image smaller than 5MB.',
+          title: 'File too large',
+          description: 'Please select an image smaller than 2MB.',
           variant: 'destructive',
         });
         return;
@@ -56,16 +58,14 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
       return await updateUserProfile(data);
     },
     onSuccess: () => {
-      toast({
-        title: 'System Synchronized',
-        description: 'Your profile parameters have been updated.',
-      });
+      toast({ title: 'Profile updated' });
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
       onOpenChange(false);
     },
     onError: () => {
       toast({
-        title: 'Sync Failed',
-        description: 'Failed to update system parameters. Please retry.',
+        title: 'Update failed',
+        description: 'Something went wrong while saving your profile.',
         variant: 'destructive',
       });
     },
@@ -86,140 +86,89 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl">
-        <DialogHeader className="p-10 pb-6 bg-primary/5 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-[60px] -ml-16 -mt-16" />
-          <div className="flex items-center gap-6 relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20">
-               <ShieldCheck className="w-9 h-9" />
-            </div>
-            <div>
-              <DialogTitle className="text-3xl font-black tracking-tight">Identity Config</DialogTitle>
-              <p className="text-sm font-bold text-muted-foreground/60 uppercase tracking-widest mt-1">Configure account parameters</p>
-            </div>
-          </div>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border-border/40 shadow-2xl">
+        <DialogHeader className="p-8 pb-4 border-b border-border/10">
+          <DialogTitle className="text-xl font-bold">Edit Profile</DialogTitle>
+          <DialogDescription className="text-sm">Manage your account information and avatar.</DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="px-10 py-8 space-y-8">
-          {/* Profile Picture */}
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative group">
-              <Avatar className="h-32 w-32 rounded-[2.5rem] border-4 border-background shadow-2xl transition-all group-hover:scale-105 duration-500">
-                <AvatarImage src={profileImageUrl || (user as any)?.profileImageUrl || ''} alt="Profile" className="object-cover" />
-                <AvatarFallback className="bg-gradient-to-tr from-primary to-indigo-600 text-white text-3xl font-black uppercase">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="absolute -bottom-2 -right-2 h-12 w-12 rounded-2xl bg-foreground text-background shadow-xl border-4 border-background flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Camera className="h-5 w-5" />
-              </motion.button>
-            </div>
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                className="h-11 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 border-2 border-border/50"
-              >
-                <Upload className="h-3.5 w-3.5 mr-2" /> Upload Avatar
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowUrlInput(!showUrlInput)}
-                className={cn("h-11 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 border-2 transition-all", showUrlInput ? "border-primary text-primary bg-primary/5" : "border-border/50")}
-              >
-                <Link className="h-3.5 w-3.5 mr-2" /> Neural Link
-              </Button>
-            </div>
-            
-            <AnimatePresence>
-              {showUrlInput && (
-                <motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="w-full space-y-3"
+        <form onSubmit={handleSubmit}>
+          <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative group">
+                <Avatar className="h-24 w-24 rounded-full border-2 border-background shadow-md">
+                  <AvatarImage src={profileImageUrl || (user as any)?.profileImageUrl || ''} className="object-cover" />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  type="button"
+                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-foreground text-background shadow-lg border-2 border-background flex items-center justify-center transition-colors hover:bg-primary hover:text-white"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Avatar Source URL</Label>
-                  <Input
-                    type="url"
-                    placeholder="https://cloud.voxa.app/u/avatar.jpg"
-                    value={profileImageUrl}
-                    onChange={(e) => setProfileImageUrl(e.target.value)}
-                    className="h-14 rounded-2xl border-2 bg-muted/30 focus-visible:ring-0 focus-visible:border-primary font-bold px-6"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Name Fields */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">First ID</Label>
-              <Input
-                placeholder="First name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="h-14 rounded-2xl border-2 bg-muted/30 focus-visible:ring-0 focus-visible:border-primary font-black px-6"
-                required
-              />
+                  <Camera className="h-4 w-4" />
+                </button>
+              </div>
+              
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+              
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-wider">
+                  Upload Image
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowUrlInput(!showUrlInput)} className="rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-wider">
+                  Photo URL
+                </Button>
+              </div>
+              
+              <AnimatePresence>
+                {showUrlInput && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full">
+                    <Input
+                      placeholder="https://example.com/photo.jpg"
+                      value={profileImageUrl}
+                      onChange={(e) => setProfileImageUrl(e.target.value)}
+                      className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Last ID</Label>
-              <Input
-                placeholder="Last name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="h-14 rounded-2xl border-2 bg-muted/30 focus-visible:ring-0 focus-visible:border-primary font-black px-6"
-                required
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">First Name</Label>
+                <Input
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Last Name</Label>
+                <Input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Email</Label>
+              <Input value={(user as any)?.email || ''} disabled className="h-10 rounded-xl border-border/50 bg-muted/10 text-muted-foreground/60 text-sm font-medium" />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1 flex items-center gap-2">
-              <Mail className="w-3 h-3" /> Communication Node
-            </Label>
-            <Input
-              value={(user as any)?.email || ''}
-              disabled
-              className="h-14 rounded-2xl border-2 bg-muted/20 text-muted-foreground/60 font-bold px-6 border-dashed"
-            />
-          </div>
-
-          <div className="flex gap-4 pt-4 pb-4">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              onClick={() => onOpenChange(false)}
-              disabled={updateProfile.isPending}
-              className="flex-1 h-16 rounded-[1.5rem] font-black uppercase tracking-widest text-[11px]"
-            >
-              Abort
+          <div className="p-6 bg-muted/30 border-t border-border/40 flex gap-3">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="flex-1 rounded-xl h-10 font-bold">
+              Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={updateProfile.isPending}
-              className="flex-[2] h-16 rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] bg-primary text-white shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95"
-            >
-              {updateProfile.isPending ? 'Syncing...' : 'Commit Changes'}
+            <Button type="submit" disabled={updateProfile.isPending} className="flex-1 rounded-xl h-10 font-bold">
+              {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>

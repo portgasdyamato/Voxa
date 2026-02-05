@@ -425,14 +425,12 @@ async function handler(req, res) {
       const categoryData = req.body;
       console.log("Creating category:", categoryData);
       
-      // Check if category with same name already exists for this user
       const existingCategory = await db.select().from(categories)
         .where(and(eq(categories.userId, currentUserId), eq(categories.name, categoryData.name)))
         .limit(1);
       
       if (existingCategory.length > 0) {
-        console.log("Category already exists:", existingCategory[0]);
-        res.status(409).json({ error: "Category with this name already exists" });
+        res.status(409).json({ error: "Category already exists" });
         return;
       }
       
@@ -441,8 +439,32 @@ async function handler(req, res) {
         name: categoryData.name,
         color: categoryData.color
       }).returning();
-      console.log("Category created:", newCategory[0]);
       res.status(201).json(newCategory[0]);
+      return;
+    }
+    if (url.pathname.startsWith("/api/categories/") && req.method === "PATCH") {
+      const catId = parseInt(url.pathname.split("/")[3]);
+      const updates = req.body;
+      const updatedCat = await db.update(categories).set({
+        ...updates,
+        updatedAt: new Date()
+      }).where(and(eq(categories.id, catId), eq(categories.userId, currentUserId))).returning();
+      
+      if (updatedCat.length === 0) {
+        res.status(404).json({ error: "Category not found" });
+        return;
+      }
+      res.status(200).json(updatedCat[0]);
+      return;
+    }
+    if (url.pathname.startsWith("/api/categories/") && req.method === "DELETE") {
+      const catId = parseInt(url.pathname.split("/")[3]);
+      const deletedCat = await db.delete(categories).where(and(eq(categories.id, catId), eq(categories.userId, currentUserId))).returning();
+      if (deletedCat.length === 0) {
+        res.status(404).json({ error: "Category not found" });
+        return;
+      }
+      res.status(200).json({ success: true });
       return;
     }
     if (url.pathname === "/api/stats" && req.method === "GET") {

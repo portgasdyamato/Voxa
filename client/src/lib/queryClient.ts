@@ -45,11 +45,11 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes instead of Infinity
-      gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
-      retry: 3,
+      refetchInterval: 60000, // Sync every 60 seconds for "real-time" feel
+      refetchOnWindowFocus: true, // Auto-sync when user returns to tab
+      staleTime: 10000, // Data is fresh for 10 seconds
+      gcTime: 15 * 60 * 1000,
+      retry: 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {

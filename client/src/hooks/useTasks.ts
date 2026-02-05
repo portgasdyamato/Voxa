@@ -26,8 +26,7 @@ export function useTaskStats(period: string = 'week') {
   return useQuery<TaskStats>({
     queryKey: ['/api/stats', period],
     queryFn: async () => {
-      const response = await fetch(`/api/stats?period=${period}`);
-      if (!response.ok) throw new Error('Failed to fetch stats');
+      const response = await apiRequest('GET', `/api/stats?period=${period}`);
       return response.json();
     },
   });

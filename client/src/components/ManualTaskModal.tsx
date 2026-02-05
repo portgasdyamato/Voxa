@@ -152,7 +152,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
           <div className="space-y-2">
             <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Title</Label>
             <Input
