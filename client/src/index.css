@@ -99,7 +99,7 @@
   }
 
   .gradient-primary {
-    @apply bg-gradient-to-tr from-primary via-indigo-500 to-indigo-400 shadow-lg shadow-primary/20;
+    @apply bg-gradient-to-tr from-primary via-indigo-500 to-indigo-400 shadow-lg shadow-indigo-500/20;
   }
 
   .premium-card {
