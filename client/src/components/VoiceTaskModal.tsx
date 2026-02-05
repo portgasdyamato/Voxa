@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import { useCreateTask } from '@/hooks/useTasks';
+import { useCreateTask, useTasks, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
 import { detectDateTimeFromText, formatRelativeDate, parseTaskFromSpeech } from '@/lib/dateDetection';
+import { parseVoiceCommand, findTaskByIdentifier } from '@/lib/voiceCommands';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReminderSettings } from '@/components/ReminderSettings';
-import { Mic, X, Tag, Calendar, Clock, Sparkles, Activity, RefreshCw } from 'lucide-react';
+import { Mic, X, Tag, Calendar, Clock, Sparkles, Activity, RefreshCw, CheckCircle2, Trash2, Edit3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +30,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const [detectedDate, setDetectedDate] = useState<Date | null>(null);
   const [parsedTaskName, setParsedTaskName] = useState<string>('');
   const [detectedPriority, setDetectedPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [commandType, setCommandType] = useState<string>('add');
+  const [commandDescription, setCommandDescription] = useState<string>('');
   
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderType, setReminderType] = useState<'manual' | 'morning' | 'default'>('default');
@@ -36,6 +39,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   
   const { toast } = useToast();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: tasks } = useTasks();
   
   const {
     isListening,
@@ -50,6 +54,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   });
 
   const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -67,27 +73,51 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     if (transcript && !isListening) {
       setShowTranscription(true);
       
-      // Parse task details from speech
-      const { taskName, deadline, priority } = parseTaskFromSpeech(transcript);
-      setParsedTaskName(taskName);
-      setDetectedPriority(priority);
+      // Parse the voice command
+      const command = parseVoiceCommand(transcript);
+      setCommandType(command.type);
       
-      // Detect date and time
-      const dateTimeResult = detectDateTimeFromText(transcript);
-      if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
-        setDetectedDate(dateTimeResult.detectedDate);
-        setSelectedDeadline(dateTimeResult.detectedDate);
+      // Set command description for UI
+      const descriptions: Record<string, string> = {
+        add: 'Adding new task',
+        delete: 'Deleting task',
+        complete: 'Completing task',
+        uncomplete: 'Reopening task',
+        update: 'Updating task',
+        list: 'Listing tasks',
+        clear_completed: 'Clearing completed tasks',
+        unknown: 'Processing command',
+      };
+      setCommandDescription(descriptions[command.type] || 'Processing');
+      
+      // Handle different command types
+      if (command.type === 'add') {
+        // Parse task details from speech
+        const { taskName, deadline, priority } = parseTaskFromSpeech(transcript);
+        setParsedTaskName(taskName);
+        setDetectedPriority(priority);
         
-        // Format for datetime-local input (YYYY-MM-DDTHH:MM)
-        const date = dateTimeResult.detectedDate;
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        setDeadlineInputValue(`${year}-${month}-${day}T${hours}:${minutes}`);
+        // Detect date and time
+        const dateTimeResult = detectDateTimeFromText(transcript);
+        if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
+          setDetectedDate(dateTimeResult.detectedDate);
+          setSelectedDeadline(dateTimeResult.detectedDate);
+          
+          // Format for datetime-local input (YYYY-MM-DDTHH:MM)
+          const date = dateTimeResult.detectedDate;
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          setDeadlineInputValue(`${year}-${month}-${day}T${hours}:${minutes}`);
+        } else {
+          setDetectedDate(null);
+        }
+      } else if (command.type === 'delete' || command.type === 'complete' || command.type === 'uncomplete' || command.type === 'update') {
+        setParsedTaskName(command.taskIdentifier || '');
       } else {
-        setDetectedDate(null);
+        setParsedTaskName('');
       }
     }
   }, [transcript, isListening]);
@@ -117,50 +147,26 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     startListening();
   };
 
-  const handleSaveTask = async () => {
-    if (!transcript.trim()) {
-      toast({ title: "No Voice Input", description: "Please speak a task to add.", variant: "destructive" });
-      return;
-    }
-
-    // Parse the speech to extract task details
-    const { taskName, deadline, priority, confidence } = parseTaskFromSpeech(transcript);
+  const handleExecuteCommand = async () => {
+    const { executeVoiceCommand } = await import('@/lib/voiceCommandExecutor');
     
-    // Use detected deadline if user hasn't manually set one
-    const finalDeadline = selectedDeadline || deadline;
-    
-    // Validate task name
-    if (!taskName || taskName.length < 2) {
-      toast({ 
-        title: "Invalid Task", 
-        description: "Could not understand the task. Please try again.", 
-        variant: "destructive" 
-      });
-      return;
-    }
-    
-    try {
-      await createTask.mutateAsync({
-        title: taskName,
-        description: undefined,
-        priority,
-        categoryId: selectedCategory && selectedCategory !== 'none' ? parseInt(selectedCategory) : undefined,
-        dueDate: finalDeadline ? finalDeadline.toISOString() : undefined,
-        reminderEnabled,
-        reminderType,
-        reminderTime: reminderType === 'manual' ? reminderTime : undefined,
-      });
-
-      toast({
-        title: "Task Created",
-        description: `Added "${taskName.slice(0, 40)}${taskName.length > 40 ? '...' : ''}" with ${priority} priority.`,
-      });
-
-      onOpenChange(false);
-      resetTranscript();
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to create task. Please try again.", variant: "destructive" });
-    }
+    await executeVoiceCommand(
+      transcript,
+      tasks || [],
+      selectedCategory,
+      selectedDeadline,
+      reminderEnabled,
+      reminderType,
+      reminderTime,
+      createTask,
+      updateTask,
+      deleteTask,
+      toast,
+      () => {
+        onOpenChange(false);
+        resetTranscript();
+      }
+    );
   };
 
   const handleDeadlineChange = (value: string) => {
@@ -264,7 +270,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 </div>
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary mb-2">What You Said</h4>
                 <p className="text-sm text-muted-foreground mb-4">{transcript}</p>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">Task Name</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-violet-500 mb-2">Command Type</h4>
+                <p className="text-lg font-bold mb-4 text-violet-600">{commandDescription}</p>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">
+                  {commandType === 'add' ? 'Task Name' : commandType === 'delete' ? 'Task to Delete' : commandType === 'complete' ? 'Task to Complete' : commandType === 'update' ? 'Task to Update' : 'Details'}
+                </h4>
                 <p className="text-xl font-bold leading-relaxed">{parsedTaskName || 'Processing...'}</p>
               </div>
               
@@ -324,11 +334,18 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
               <div className="flex gap-4 pt-6">
                 <Button
-                  onClick={handleSaveTask}
-                  disabled={createTask.isPending}
+                  onClick={handleExecuteCommand}
+                  disabled={createTask.isPending || updateTask.isPending || deleteTask.isPending}
                   className="flex-[2] h-16 rounded-2xl font-bold text-sm bg-primary text-white shadow-2xl shadow-primary/30 transition-all hover:scale-105"
                 >
-                  {createTask.isPending ? 'Saving...' : 'Save Task'}
+                  {(createTask.isPending || updateTask.isPending || deleteTask.isPending) ? 'Processing...' : 
+                   commandType === 'delete' ? 'Delete Task' :
+                   commandType === 'complete' ? 'Complete Task' :
+                   commandType === 'uncomplete' ? 'Reopen Task' :
+                   commandType === 'update' ? 'Update Task' :
+                   commandType === 'list' ? 'Show Tasks' :
+                   commandType === 'clear_completed' ? 'Clear Completed' :
+                   'Execute Command'}
                 </Button>
                 <Button
                   onClick={handleStartRecording}
