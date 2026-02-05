@@ -22,17 +22,18 @@ export function detectTimeFromText(text: string): TimeDetectionResult {
   
   // Simple, robust time patterns
   const timePatterns = [
-    // 12-hour format with minutes (e.g., "3:30 PM", "10:15 AM")
+    // 12-hour format with minutes (e.g., "3:30 PM", "10:15 AM", "11:00 p.m.")
     {
-      pattern: /\b(?:at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)\b/i,
+      pattern: /\b(?:at\s+)?(\d{1,2}):(\d{2})\s*(?:a\.?m\.?|p\.?m\.?)\b/i,
       parse: (match: RegExpMatchArray) => {
         let hours = parseInt(match[1]);
         const minutes = parseInt(match[2]);
-        const ampm = match[3].toLowerCase();
+        const ampm = match[0].toLowerCase();
+        const isPM = ampm.includes('p');
         
         if (hours >= 1 && hours <= 12 && minutes >= 0 && minutes <= 59) {
-          if (ampm === 'pm' && hours !== 12) hours += 12;
-          else if (ampm === 'am' && hours === 12) hours = 0;
+          if (isPM && hours !== 12) hours += 12;
+          else if (!isPM && hours === 12) hours = 0;
           return { hours, minutes };
         }
         return null;
@@ -40,16 +41,17 @@ export function detectTimeFromText(text: string): TimeDetectionResult {
       confidence: 'high' as const
     },
     
-    // 12-hour format without minutes (e.g., "3 PM", "10 AM")
+    // 12-hour format without minutes (e.g., "3 PM", "10 AM", "5 p.m.")
     {
-      pattern: /\b(?:at\s+)?(\d{1,2})\s*(am|pm)\b/i,
+      pattern: /\b(?:at\s+)?(\d{1,2})\s*(?:a\.?m\.?|p\.?m\.?)\b/i,
       parse: (match: RegExpMatchArray) => {
         let hours = parseInt(match[1]);
-        const ampm = match[2].toLowerCase();
+        const ampm = match[0].toLowerCase();
+        const isPM = ampm.includes('p');
         
         if (hours >= 1 && hours <= 12) {
-          if (ampm === 'pm' && hours !== 12) hours += 12;
-          else if (ampm === 'am' && hours === 12) hours = 0;
+          if (isPM && hours !== 12) hours += 12;
+          else if (!isPM && hours === 12) hours = 0;
           return { hours, minutes: 0 };
         }
         return null;
