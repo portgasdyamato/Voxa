@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, Infinity, Sun, RotateCcw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export type DeadlineFilter = 'all' | 'today' | 'tomorrow' | 'this-week' | 'overdue' | 'no-deadline';
 
@@ -21,49 +22,56 @@ interface DeadlineFilterProps {
 export function DeadlineFilter({ value, onChange, counts }: DeadlineFilterProps) {
   const filterOptions = [
     { value: 'all', label: 'All Tasks', icon: Calendar, count: counts?.total },
-    { value: 'overdue', label: 'Overdue', icon: AlertTriangle, count: counts?.overdue, color: 'text-red-600' },
-    { value: 'today', label: 'Due Today', icon: Clock, count: counts?.today, color: 'text-orange-600' },
-    { value: 'tomorrow', label: 'Due Tomorrow', icon: Clock, count: counts?.tomorrow, color: 'text-yellow-600' },
-    { value: 'this-week', label: 'This Week', icon: Calendar, count: counts?.thisWeek },
-    { value: 'no-deadline', label: 'No Deadline', icon: Calendar, count: counts?.noDeadline },
+    { value: 'overdue', label: 'Overdue', icon: AlertTriangle, count: counts?.overdue, color: 'text-rose-500' },
+    { value: 'today', label: 'Due Today', icon: Sun, count: counts?.today, color: 'text-amber-500' },
+    { value: 'tomorrow', label: 'Due Tomorrow', icon: Clock, count: counts?.tomorrow, color: 'text-indigo-500' },
+    { value: 'this-week', label: 'Next 7 Days', icon: Calendar, count: counts?.thisWeek, color: 'text-emerald-500' },
+    { value: 'no-deadline', label: 'Sometime', icon: Infinity, count: counts?.noDeadline, color: 'text-muted-foreground' },
   ];
 
-  const selectedOption = filterOptions.find(opt => opt.value === value);
-
   return (
-    <div className="flex items-center space-x-2">
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-48">
-          <SelectValue>
-            <div className="flex items-center space-x-2">
-              {selectedOption?.icon && <selectedOption.icon className="w-4 h-4" />}
-              <span>{selectedOption?.label}</span>
-              {selectedOption?.count !== undefined && (
-                <Badge variant="secondary" className="text-xs">
-                  {selectedOption.count}
-                </Badge>
-              )}
+    <div className="flex flex-col gap-1">
+      {filterOptions.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onChange(option.value as DeadlineFilter)}
+          className={cn(
+            "group relative flex items-center justify-between w-full p-3 rounded-2xl transition-all duration-300 font-bold text-sm text-left",
+            value === option.value 
+              ? "bg-primary/10 text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
+              : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+               "w-8 h-8 rounded-xl flex items-center justify-center transition-all group-hover:scale-110",
+               value === option.value ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+            )}>
+              <option.icon className="w-4 h-4" />
             </div>
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {filterOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-2">
-                  <option.icon className={`w-4 h-4 ${option.color || 'text-gray-500'}`} />
-                  <span>{option.label}</span>
-                </div>
-                {option.count !== undefined && (
-                  <Badge variant="secondary" className="text-xs ml-2">
-                    {option.count}
-                  </Badge>
-                )}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            <span>{option.label}</span>
+          </div>
+          
+          {option.count !== undefined && (
+            <Badge 
+              variant="secondary" 
+              className={cn(
+                "rounded-lg px-2 py-0.5 text-[10px] font-black transition-all",
+                value === option.value ? "bg-primary/20 text-primary" : "bg-muted group-hover:bg-muted-foreground/10"
+              )}
+            >
+              {option.count}
+            </Badge>
+          )}
+
+          {value === option.value && (
+            <motion.div 
+               layoutId="deadlineActive"
+               className="absolute inset-0 border-2 border-primary/20 rounded-2xl pointer-events-none"
+            />
+          )}
+        </button>
+      ))}
     </div>
   );
 }

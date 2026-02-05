@@ -1,8 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Tag } from "lucide-react";
 import type { Category } from "@shared/schema";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface CategoryFilterProps {
   selectedCategory: number | null;
@@ -12,7 +14,6 @@ interface CategoryFilterProps {
 export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
   const { data: categoriesData } = useCategories();
   
-  // Deduplicate categories by name to handle database duplicates
   const categories = categoriesData ? categoriesData.filter((category, index, self) => 
     index === self.findIndex(c => c.name === category.name)
   ) : [];
@@ -22,53 +23,54 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
   }
   
   return (
-    <div className="flex flex-wrap gap-2 items-center">
-      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-        <Filter className="w-4 h-4" />
-        <span>Filter by:</span>
-      </div>
-      
-      <Button
-        variant={selectedCategory === null ? "default" : "outline"}
-        size="sm"
-        onClick={() => onCategoryChange(null)}
-        className="h-8 px-3"
-      >
-        All Tasks
-      </Button>
-      
-      {categories.map((category) => (
-        <Button
-          key={category.id}
-          variant={selectedCategory === category.id ? "default" : "outline"}
-          size="sm"
-          onClick={() => onCategoryChange(category.id)}
-          className="h-8 pl-2 pr-3"
-        >
-          <div
-            className="w-3 h-3 rounded-full mr-2"
-            style={{ backgroundColor: category.color }}
-          />
-          {category.name}
-        </Button>
-      ))}
-      
-      {selectedCategory !== null && (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2 items-center">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => onCategoryChange(null)}
-          className="h-7 px-2"
+          className={cn(
+            "h-10 px-4 rounded-xl font-bold transition-all border-2",
+            selectedCategory === null 
+              ? "bg-primary/10 text-primary border-primary/20 shadow-sm" 
+              : "border-transparent text-muted-foreground hover:bg-muted/50"
+          )}
         >
-          <X className="w-4 h-4" />
+          All Units
         </Button>
-      )}
+        
+        {categories.map((category) => (
+          <Button
+            key={category.id}
+            variant="ghost"
+            size="sm"
+            onClick={() => onCategoryChange(category.id)}
+            className={cn(
+              "h-10 px-4 rounded-xl font-bold transition-all border-2",
+              selectedCategory === category.id 
+                ? "shadow-sm border-opacity-40" 
+                : "border-transparent text-muted-foreground hover:bg-muted/50"
+            )}
+            style={selectedCategory === category.id ? { 
+              backgroundColor: `${category.color}15`,
+              color: category.color,
+              borderColor: `${category.color}30`
+            } : {}}
+          >
+            <div
+              className="w-2.5 h-2.5 rounded-full mr-2 shadow-sm"
+              style={{ backgroundColor: category.color }}
+            />
+            {category.name}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
 
 interface CategoryBadgeProps {
-  category: Category | null;
+  category: any;
   size?: "sm" | "default";
 }
 
@@ -78,17 +80,17 @@ export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps
   return (
     <Badge
       variant="secondary"
-      className={`flex items-center gap-1.5 ${
-        size === "sm" ? "text-xs px-1.5 py-0.5" : ""
-      }`}
+      className={cn(
+        "flex items-center gap-1.5 border-none font-bold uppercase tracking-tight",
+        size === "sm" ? "text-[10px] px-2 py-0.5 rounded-lg" : "px-3 py-1 rounded-xl"
+      )}
       style={{
-        backgroundColor: `${category.color}20`,
+        backgroundColor: `${category.color}15`,
         color: category.color,
-        borderColor: `${category.color}40`,
       }}
     >
       <div
-        className={`rounded-full ${size === "sm" ? "w-2 h-2" : "w-2.5 h-2.5"}`}
+        className={cn("rounded-full", size === "sm" ? "w-1.5 h-1.5" : "w-2 h-2")}
         style={{ backgroundColor: category.color }}
       />
       {category.name}

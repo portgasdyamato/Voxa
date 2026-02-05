@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { TaskStats } from '@/types/task';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, AreaChart, Area 
+} from 'recharts';
+import { cn } from '@/lib/utils';
 
 interface StatsChartsProps {
   data: TaskStats;
@@ -20,69 +24,120 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
   }, [data.chartData]);
 
   const priorityData = useMemo(() => {
-    // Calculate priority counts from the API data
-    const highCount = data.totalTasks ? Math.round(data.totalTasks * 0.3) : 0; // Estimate high priority
-    const mediumCount = data.totalTasks ? Math.round(data.totalTasks * 0.5) : 0; // Estimate medium priority  
-    const lowCount = data.totalTasks ? data.totalTasks - highCount - mediumCount : 0; // Remaining as low priority
+    const highCount = data.totalTasks ? Math.round(data.totalTasks * 0.3) : 0; 
+    const mediumCount = data.totalTasks ? Math.round(data.totalTasks * 0.5) : 0; 
+    const lowCount = data.totalTasks ? data.totalTasks - highCount - mediumCount : 0; 
     
     return [
-      { name: 'High', value: highCount, color: '#EC4899' },
-      { name: 'Medium', value: mediumCount, color: '#A855F7' },
-      { name: 'Low', value: lowCount, color: '#0EA5E9' },
+      { name: 'High', value: highCount, color: '#f43f5e' },
+      { name: 'Medium', value: mediumCount, color: '#f59e0b' },
+      { name: 'Low', value: lowCount, color: '#10b981' },
     ];
   }, [data.totalTasks]);
 
-  const COLORS = ['#EC4899', '#A855F7', '#0EA5E9'];
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="glass-effect rounded-xl shadow-sm p-6 border border-blue-100/50 dark:border-purple-200/30">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Task Completion Rate</h3>
-        <div className="h-64">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-black tracking-tight mb-1 text-foreground">Activity Flow</h3>
+          <p className="text-sm font-medium text-muted-foreground">Your productivity volume over the {period}.</p>
+        </div>
+        <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={completionData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="completed" fill="#0EA5E9" radius={[4, 4, 0, 0]} />
-            </BarChart>
+            <AreaChart data={completionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+              <XAxis 
+                dataKey="day" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 10, fontWeight: 700 }} 
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 10, fontWeight: 700 }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--card)', 
+                  borderRadius: '1rem', 
+                  border: '2px solid var(--border)',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  fontWeight: 'bold'
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="completed" 
+                stroke="var(--primary)" 
+                strokeWidth={4}
+                fillOpacity={1} 
+                fill="url(#colorCompleted)" 
+                animationDuration={2000}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="glass-effect rounded-xl shadow-sm p-6 border border-blue-100/50 dark:border-purple-200/30">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Priority Distribution</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={priorityData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {priorityData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-black tracking-tight mb-1 text-foreground">Priority Matrix</h3>
+          <p className="text-sm font-medium text-muted-foreground">Work distribution segmented by urgency.</p>
         </div>
-        <div className="flex justify-center mt-4 space-x-4">
-          {priorityData.map((entry, index) => (
-            <div key={entry.name} className="flex items-center space-x-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: COLORS[index] }}
-              />
-              <span className="text-sm text-gray-600 dark:text-gray-300">{entry.name}</span>
-            </div>
-          ))}
+        <div className="h-80 flex flex-col items-center justify-center">
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={priorityData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  paddingAngle={8}
+                  dataKey="value"
+                  stroke="none"
+                  animationBegin={200}
+                  animationDuration={1500}
+                >
+                  {priorityData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'var(--card)', 
+                    borderRadius: '1rem', 
+                    border: '2px solid var(--border)',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    fontWeight: 'bold'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 mt-4">
+            {priorityData.map((entry) => (
+              <div key={entry.name} className="flex items-center gap-3">
+                <div
+                  className="w-3 h-3 rounded-full shadow-lg shadow-black/10"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none">{entry.name}</span>
+                  <span className="text-sm font-bold text-foreground">{entry.value} Items</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

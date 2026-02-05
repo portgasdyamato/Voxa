@@ -1,8 +1,10 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
-import { Mic, Home, BarChart3 } from 'lucide-react';
+import { Mic, Home, BarChart3, Search, Bell } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { ThemeToggle } from './ThemeToggle';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface NavigationProps {
   activeTab: 'home' | 'stats';
@@ -18,86 +20,126 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
     onTabChange(tab);
   };
 
-  const getInitials = (firstName?: string, lastName?: string) => {
-    if (!firstName && !lastName) return '?';
-    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
-  };
-
   return (
     <>
-      {/* Desktop Navigation */}
-      <nav className="bg-white/80 dark:bg-dark-surface/80 backdrop-blur-sm shadow-sm border-b border-blue-100 dark:border-dark-border sticky top-0 z-40">
+      <nav className="sticky top-0 z-50 w-full bg-background/60 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/40 border-b border-border/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
-                <img src="/logo.png" alt="VoXa Logo" className="w-full h-full object-contain" />
+          <div className="flex justify-between items-center h-20">
+            {/* Logo side */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center space-x-3 group cursor-pointer"
+              onClick={() => handleNavigation('/home', 'home')}
+            >
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-lg group-hover:bg-primary/30 transition-all" />
+                <div className="relative w-full h-full rounded-2xl bg-gradient-to-tr from-primary to-accent-500 p-[2px]">
+                  <div className="w-full h-full bg-background rounded-[14px] flex items-center justify-center overflow-hidden">
+                    <img src="/logo.png" alt="VoXa" className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
+                  </div>
+                </div>
               </div>
-              <h1 className="text-4xl font-semibold font-serif text-gray-800 dark:text-dark-text">VoXa</h1>
-            </div>
+              <h1 className="text-3xl font-black tracking-tighter text-foreground group-hover:text-primary transition-colors">VoXa</h1>
+            </motion.div>
             
-            <div className="flex items-center space-x-4">
-              {/* Tab Navigation */}
-              <div className="hidden sm:flex bg-white/60 dark:bg-dark-card/60 rounded-full p-1 shadow-sm">
-                <button
+            {/* Nav side */}
+            <div className="flex items-center gap-6">
+              <div className="hidden md:flex items-center bg-muted/50 rounded-2xl p-1.5 border border-border/50">
+                <NavButton 
+                  isActive={activeTab === 'home'} 
                   onClick={() => handleNavigation('/home', 'home')}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
-                    activeTab === 'home'
-                      ? 'text-blue-600 bg-white dark:bg-dark-card shadow-sm'
-                      : 'text-gray-500 dark:text-dark-muted hover:text-blue-600'
-                  }`}
-                >
-                  Home
-                </button>
-                <button
+                  icon={<Home className="w-4 h-4" />}
+                  label="Dashboard"
+                />
+                <NavButton 
+                  isActive={activeTab === 'stats'} 
                   onClick={() => handleNavigation('/stats', 'stats')}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
-                    activeTab === 'stats'
-                      ? 'text-blue-600 bg-white dark:bg-dark-card shadow-sm'
-                      : 'text-gray-500 dark:text-dark-muted hover:text-blue-600'
-                  }`}
-                >
-                  Stats
-                </button>
+                  icon={<BarChart3 className="w-4 h-4" />}
+                  label="Analytics"
+                />
               </div>
-              
-              {/* Theme Toggle */}
-              <ThemeToggle />
-              
-              {/* User Profile */}
-              <ProfileDropdown />
+
+              <div className="flex items-center gap-2 border-l border-border/80 pl-6">
+                <ThemeToggle />
+                <div className="relative">
+                   <Button variant="ghost" size="icon" className="rounded-xl hover:bg-muted">
+                    <Bell className="w-5 h-5 text-muted-foreground" />
+                   </Button>
+                   <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-background" />
+                </div>
+                <ProfileDropdown />
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-dark-surface/90 backdrop-blur-sm border-t border-blue-100 dark:border-dark-border z-40">
-        <div className="grid grid-cols-2 h-16">
-          <button
-            onClick={() => handleNavigation('/home', 'home')}
-            className={`flex flex-col items-center justify-center space-y-1 ${
-              activeTab === 'home'
-                ? 'text-blue-600 bg-blue-50 dark:bg-dark-card'
-                : 'text-gray-500 dark:text-dark-muted'
-            }`}
-          >
-            <Home className="w-5 h-5" />
-            <span className="text-xs font-medium">Home</span>
-          </button>
-          <button
-            onClick={() => handleNavigation('/stats', 'stats')}
-            className={`flex flex-col items-center justify-center space-y-1 ${
-              activeTab === 'stats'
-                ? 'text-blue-600 bg-blue-50 dark:bg-dark-card'
-                : 'text-gray-500 dark:text-dark-muted'
-            }`}
-          >
-            <BarChart3 className="w-5 h-5" />
-            <span className="text-xs font-medium">Stats</span>
-          </button>
+      {/* Mobile Nav - Floating Bottom */}
+      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm">
+        <div className="bg-background/80 backdrop-blur-2xl border-2 border-border/50 rounded-[2rem] p-2 shadow-2xl flex items-center justify-around overflow-hidden">
+          <MobileNavButton 
+             isActive={activeTab === 'home'} 
+             onClick={() => handleNavigation('/home', 'home')}
+             icon={<Home className="w-6 h-6" />}
+             label="Home"
+          />
+          <MobileNavButton 
+             isActive={activeTab === 'stats'} 
+             onClick={() => handleNavigation('/stats', 'stats')}
+             icon={<BarChart3 className="w-6 h-6" />}
+             label="Stats"
+          />
         </div>
       </div>
     </>
   );
 }
+
+function NavButton({ isActive, onClick, icon, label }: { isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "relative flex items-center gap-2 px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300",
+        isActive 
+          ? "text-primary bg-background shadow-sm" 
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+      )}
+    >
+      {icon}
+      {label}
+      {isActive && (
+        <motion.div 
+          layoutId="activeTab"
+          className="absolute inset-0 bg-background rounded-xl -z-10 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-border" 
+        />
+      )}
+    </button>
+  );
+}
+
+function MobileNavButton({ isActive, onClick, icon, label }: { isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center gap-1 py-3 px-8 rounded-2xl transition-all duration-300",
+        isActive ? "text-primary bg-primary/5 shadow-inner" : "text-muted-foreground"
+      )}
+    >
+      <div className={cn("transition-transform duration-300", isActive && "scale-110")}>
+        {icon}
+      </div>
+      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+      {isActive && (
+        <motion.div 
+          layoutId="mobileActiveTab"
+          className="absolute bottom-0 w-8 h-1 bg-primary rounded-t-full shadow-[0_-2px_8px_rgba(var(--primary),0.5)]" 
+        />
+      )}
+    </button>
+  );
+}
+
+import { Button } from './ui/button';

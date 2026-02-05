@@ -10,11 +10,14 @@ import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
 import { VoiceCommandButton } from '@/components/VoiceCommandButton';
 import { DeadlineFilter, getDeadlineFilteredTasks, getDeadlineCounts, type DeadlineFilter as DeadlineFilterType } from '@/components/DeadlineFilter';
-import { ClipboardList, CheckCircle, Clock, TrendingUp, Search, Settings, Bell, BellOff } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, Search, Settings, Calendar, ListTodo, LayoutDashboard, Sparkles, Filter, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { ManualTaskModal } from '@/components/ManualTaskModal';
 
 export default function Home() {
   const { user, isLoading: userLoading } = useAuth();
@@ -24,17 +27,15 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilterType>('today');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   
-  // Auto-adjust deadline filter when switching between today/all tasks
   const handleShowAllTasksToggle = () => {
     const newShowAllTasks = !showAllTasks;
     setShowAllTasks(newShowAllTasks);
-    
-    // Auto-switch deadline filter
     if (newShowAllTasks) {
-      setDeadlineFilter('all'); // Show all tasks when in "All Tasks" mode
+      setDeadlineFilter('all');
     } else {
-      setDeadlineFilter('today'); // Show today's tasks when in "Today's Tasks" mode
+      setDeadlineFilter('today');
     }
   };
   
@@ -43,7 +44,6 @@ export default function Home() {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { createDefaults, isLoading: creatingDefaults } = useCreateDefaultCategories();
   
-  // Check for login success or errors
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const loginSuccess = urlParams.get('login');
@@ -53,19 +53,16 @@ export default function Home() {
     
     if (loginSuccess === 'success' && userName) {
       toast({
-        title: "Welcome to VoXa! 🎉",
-        description: `Hello ${decodeURIComponent(userName)}! You've successfully logged in.`,
-        variant: "default"
+        title: "Welcome back! ⚡",
+        description: `Great to see you, ${decodeURIComponent(userName)}. Let's get things done.`,
       });
-      // Clear the URL parameters
       window.history.replaceState({}, '', window.location.pathname);
     } else if (error) {
       toast({
         title: "Login Error",
-        description: errorMessage ? decodeURIComponent(errorMessage) : 'There was an error during login. Please try again.',
+        description: errorMessage ? decodeURIComponent(errorMessage) : 'Authentication failed.',
         variant: "destructive"
       });
-      // Clear the URL parameters
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [toast]);
@@ -74,55 +71,31 @@ export default function Home() {
   const tasksLoading = showAllTasks ? allTasksLoading : todayTasksLoading;
   const tasksError = showAllTasks ? allTasksError : todayTasksError;
   
-  const { notifications, notificationPermission, requestPermission, testNotification } = useDeadlineNotifications(rawTasksData || []);
+  const { notifications, notificationPermission, requestPermission } = useDeadlineNotifications(rawTasksData || []);
 
-  // Filter tasks based on search query, category, and deadline
   const tasksData = rawTasksData?.filter(task => {
     const matchesSearch = searchQuery === '' || 
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    
     const matchesCategory = selectedCategory === null || task.categoryId === selectedCategory;
-    
     return matchesSearch && matchesCategory;
   }) || [];
 
-  // Apply deadline filtering
   const filteredTasks = getDeadlineFilteredTasks(tasksData, deadlineFilter);
-  
-  // Get deadline counts for the filter component
   const deadlineCounts = tasksData ? getDeadlineCounts(tasksData) : {
-    total: 0,
-    today: 0,
-    tomorrow: 0,
-    thisWeek: 0,
-    overdue: 0,
-    noDeadline: 0
+    total: 0, today: 0, tomorrow: 0, thisWeek: 0, overdue: 0, noDeadline: 0
   };
 
-  // Handle unauthorized errors
   useEffect(() => {
     if (tasksError && isUnauthorizedError(tasksError)) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
+      window.location.href = "/api/login";
     }
-  }, [tasksError, toast]);
+  }, [tasksError]);
 
-  // Create default categories for new users (only for demo users, not OAuth users)
   useEffect(() => {
     if (categories && categories.length === 0 && !categoriesLoading && !creatingDefaults) {
-      // Only create default categories if this is a demo user (not from OAuth)
       const storedUser = localStorage.getItem('voxa_user');
       const userData = storedUser ? JSON.parse(storedUser) : null;
-      
-      // If user email is demo@voxa.app, they're a demo user and need default categories
       if (userData?.email === 'demo@voxa.app') {
         createDefaults();
       }
@@ -131,19 +104,24 @@ export default function Home() {
 
   if (userLoading || tasksLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse space-y-6">
-          <div className="text-center space-y-2">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-64 mx-auto"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48 mx-auto"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="animate-pulse space-y-12">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="h-12 bg-muted rounded-[2rem] w-80"></div>
+            <div className="h-4 bg-muted rounded-lg w-64"></div>
           </div>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-effect rounded-xl p-4">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+             <div className="md:col-span-1 space-y-10">
+                <div className="h-10 bg-muted rounded-xl"></div>
+                <div className="space-y-4">
+                   {[1,2,3,4,5].map(i => <div key={i} className="h-12 bg-muted rounded-2xl"></div>)}
+                </div>
+             </div>
+             <div className="md:col-span-3 space-y-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-32 bg-muted rounded-[2rem]"></div>
+                ))}
+             </div>
           </div>
         </div>
       </div>
@@ -152,222 +130,210 @@ export default function Home() {
 
   const pendingTasks = filteredTasks?.filter(task => !task.completed) || [];
   const completedTasks = filteredTasks?.filter(task => task.completed) || [];
-  
-  // Calculate pending tasks due today (excluding completed tasks)
-  const pendingTasksDueToday = pendingTasks.filter(task => {
-    if (!task.dueDate) return false;
-    const dueDate = new Date(task.dueDate);
-    const today = new Date();
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
-    return dueDate >= startOfToday && dueDate < endOfToday;
-  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
-
-
-      {/* Welcome Header */}
-      <div className="text-center space-y-2 mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-          Good morning, <span className="text-blue-600 dark:text-blue-400">{(user as any)?.firstName || 'User'}</span>!
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300">
-          You have <span className="font-semibold text-purple-600 dark:text-purple-400">{pendingTasks.length} pending tasks</span> for today
-        </p>
-        
-        {/* Notification Permission Alert */}
-        {notificationPermission !== 'granted' && (
-          <Alert className="max-w-md mx-auto mt-4 dark:border-gray-600">
-            <Bell className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span className="text-sm dark:text-gray-300">Enable notifications for deadline reminders</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={requestPermission}
-                className="ml-2 h-6 text-xs"
-              >
-                Enable
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {pendingTasksDueToday.length > 0 && (
-          <Alert className="max-w-md mx-auto mt-4 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700">
-            <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-            <AlertDescription className="text-orange-800 dark:text-orange-200">
-              You have {pendingTasksDueToday.length} task{pendingTasksDueToday.length === 1 ? '' : 's'} due today!
-            </AlertDescription>
-          </Alert>
-        )}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-32">
+      {/* Mesh Background Accent */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] animate-mesh" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent-500/5 rounded-full blur-[120px] animate-mesh" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Search and Filters */}
-      <div className="space-y-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Search tasks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+      <motion.header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col lg:flex-row items-center justify-between gap-10 mb-16"
+      >
+        <div className="text-center lg:text-left space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-[0.2em]">
+            <Sparkles className="w-3.5 h-3.5" />
+            Productivity Suite
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowCategoryManager(!showCategoryManager)}
-            className="flex items-center gap-2"
+          <h2 className="text-5xl font-black tracking-tight text-foreground sm:text-6xl">
+            Focus, <span className="text-primary">{(user as any)?.firstName || 'Hero'}</span>
+          </h2>
+          <p className="text-muted-foreground text-xl font-medium max-w-2xl">
+            {pendingTasks.length > 0 
+              ? `Strategic objectives: ${pendingTasks.length} pending operations.`
+              : "All systems clear. You're completely up to date."}
+          </p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-4 bg-card/60 backdrop-blur-3xl p-4 rounded-[2.5rem] border-2 border-border/50 shadow-xl">
+           <VoiceCommandButton tasks={rawTasksData || []} />
+           <div className="h-px w-full sm:h-12 sm:w-px bg-border/50 sm:mx-2" />
+           <Button
+            size="lg"
+            onClick={() => setIsNewTaskModalOpen(true)}
+            className="rounded-[1.5rem] h-20 px-10 text-lg font-black gap-3 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all active:scale-95"
           >
-            <Settings className="w-4 h-4" />
-            Manage Categories
+            <Plus className="w-6 h-6" />
+            Create
           </Button>
         </div>
-        
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
-        
-        <DeadlineFilter
-          value={deadlineFilter}
-          onChange={setDeadlineFilter}
-          counts={deadlineCounts}
-        />
-        
-        <Collapsible open={showCategoryManager} onOpenChange={setShowCategoryManager}>
-          <CollapsibleContent className="space-y-4">
-            <CategoryManager />
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
+      </motion.header>
 
-      {/* Voice Commands Section */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-        <VoiceCommandButton tasks={rawTasksData || []} />
-      </div>
-
-      {/* Today's Tasks */}
-      <div className="space-y-4 mb-8">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            {showAllTasks ? 'All Tasks' : 'Today\'s Tasks'}
-          </h3>
-          <button 
-            onClick={handleShowAllTasksToggle}
-            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+      <AnimatePresence>
+        {notificationPermission !== 'granted' && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mb-12"
           >
-            {showAllTasks ? 'Show Today' : 'View All'}
-          </button>
-        </div>
+            <div className="bg-primary/5 border-2 border-primary/20 rounded-[2rem] p-6 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative group">
+              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-6 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border-2 border-primary/20">
+                  <Bell className="h-7 w-7" />
+                </div>
+                <div className="space-y-1">
+                   <h4 className="text-lg font-black tracking-tight">Stay synchronized</h4>
+                   <p className="text-muted-foreground font-medium">Enable real-time priority alerts and deadline reminders.</p>
+                </div>
+              </div>
+              <Button onClick={requestPermission} className="rounded-2xl h-14 px-8 font-black text-sm uppercase tracking-widest relative z-10 hover:scale-105 active:scale-95">
+                Grant Access
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {filteredTasks?.length === 0 ? (
-          <div className="glass-effect rounded-xl p-8 text-center">
-            <ClipboardList className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">
-              {selectedCategory === null && searchQuery === '' 
-                ? (showAllTasks ? 'No tasks yet' : 'No tasks for today')
-                : 'No tasks match your filters'
-              }
-            </h4>
-            <p className="text-gray-500 dark:text-gray-400">
-              {selectedCategory === null && searchQuery === '' 
-                ? 'Use the microphone button to create your first task with voice commands!'
-                : 'Try adjusting your search or filter criteria.'
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {/* Show message if no pending tasks but has completed tasks */}
-            {pendingTasks.length === 0 && completedTasks.length > 0 && (
-              <div className="glass-effect rounded-xl p-6 text-center border-green-100 dark:border-green-800">
-                <CheckCircle className="w-10 h-10 text-green-500 dark:text-green-400 mx-auto mb-3" />
-                <h4 className="text-lg font-medium text-green-700 dark:text-green-300 mb-2">
-                  All tasks completed!
-                </h4>
-                <p className="text-green-600 dark:text-green-400">
-                  Great job! You've completed all your tasks for this view.
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+        {/* Sidebar Controls */}
+        <aside className="lg:col-span-1 space-y-12">
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-2">Navigation</h3>
+            <div className="relative group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 group-focus-within:text-primary transition-colors" />
+              <Input
+                placeholder="Find anything..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-14 rounded-2xl border-2 bg-card/40 backdrop-blur-xl border-border/50 focus-visible:ring-0 focus-visible:border-primary transition-all font-bold"
+              />
+            </div>
+            <DeadlineFilter
+              value={deadlineFilter}
+              onChange={setDeadlineFilter}
+              counts={deadlineCounts}
+            />
+          </section>
+
+          <section className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Entities</h3>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowCategoryManager(!showCategoryManager)}
+                className={cn("h-8 w-8 rounded-lg", showCategoryManager && "bg-primary/10 text-primary")}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+          </section>
+          
+          <Collapsible open={showCategoryManager} onOpenChange={setShowCategoryManager}>
+            <CollapsibleContent className="pt-6 border-t-2 border-dashed border-border/50">
+              <CategoryManager />
+            </CollapsibleContent>
+          </Collapsible>
+        </aside>
+
+        {/* Main Content */}
+        <main className="lg:col-span-3 space-y-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border-2 border-primary/10">
+                {showAllTasks ? <ListTodo className="w-6 h-6" /> : <Calendar className="w-6 h-6" />}
+              </div>
+              <div>
+                <h3 className="text-3xl font-black tracking-tight">
+                  {showAllTasks ? 'Global Library' : 'Daily Agenda'}
+                </h3>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/50">
+                   {filteredTasks.length} Operations Indexed
                 </p>
               </div>
-            )}
-            
-            {/* Pending Tasks */}
-            {pendingTasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
-            ))}
-            
-            {/* Completed Tasks - shown below pending tasks */}
-            {completedTasks.length > 0 && (
-              <>
-                <div className="my-6 border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Completed Tasks ({completedTasks.length})
-                  </h4>
+            </div>
+            <Button 
+              variant="outline"
+              onClick={handleShowAllTasksToggle}
+              className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 h-10 border-2 hover:bg-muted"
+            >
+              {showAllTasks ? 'Today Only' : 'Everything'}
+            </Button>
+          </div>
+
+          <div className="space-y-6 min-h-[500px]">
+            {filteredTasks?.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center p-20 rounded-[3rem] bg-muted/20 border-2 border-dashed border-border"
+              >
+                <div className="w-24 h-24 rounded-3xl bg-muted/40 flex items-center justify-center mb-8">
+                  <ClipboardList className="w-12 h-12 text-muted-foreground/30" />
                 </div>
-                {completedTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
-                ))}
-              </>
+                <h4 className="text-2xl font-black text-foreground/80 mb-3 text-center">
+                  Zero results found.
+                </h4>
+                <p className="text-muted-foreground text-center font-medium max-w-sm leading-relaxed">
+                  Start by using the "Voice" command or clicking "Create" to populate your workspace.
+                </p>
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {pendingTasks.map((task) => (
+                    <motion.div
+                      key={task.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.98, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                    >
+                      <TaskCard task={task} />
+                    </motion.div>
+                  ))}
+                  
+                  {completedTasks.length > 0 && (
+                    <motion.div layout className="pt-12 space-y-6">
+                      <div className="flex items-center gap-6">
+                        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40 whitespace-nowrap">Archive Buffer</span>
+                        <div className="h-px w-full bg-border/50" />
+                      </div>
+                      {completedTasks.map((task) => (
+                        <motion.div
+                          key={task.id}
+                          layout
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <TaskCard task={task} />
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
-        )}
+        </main>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-effect rounded-xl shadow-sm p-4 border border-blue-100/50 dark:border-purple-200/30">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Tasks</p>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {filteredTasks.length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-effect rounded-xl shadow-sm p-4 border border-blue-100/50 dark:border-purple-200/30">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {completedTasks.length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-effect rounded-xl shadow-sm p-4 border border-blue-100/50 dark:border-purple-200/30">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending</p>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {pendingTasks.length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ManualTaskModal 
+        open={isNewTaskModalOpen}
+        onOpenChange={setIsNewTaskModalOpen}
+      />
     </div>
   );
 }
