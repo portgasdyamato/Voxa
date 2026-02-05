@@ -74,7 +74,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       
       // Detect date and time
       const dateTimeResult = detectDateTimeFromText(transcript);
-      if (dateTimeResult.detectedDate && dateTimeResult.confidence === 'high') {
+      if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
         setDetectedDate(dateTimeResult.detectedDate);
         setSelectedDeadline(dateTimeResult.detectedDate);
         
@@ -166,8 +166,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const handleDeadlineChange = (value: string) => {
     setDeadlineInputValue(value);
     if (value) {
+      // Parse the datetime-local value directly
       const date = new Date(value);
-      date.setHours(23, 59, 59, 999);
       setSelectedDeadline(date);
     } else {
       setSelectedDeadline(null);
@@ -309,10 +309,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                     <Clock className="w-4 h-4" />
                   </div>
                   <Input
-                    type="date"
+                    type="datetime-local"
                     value={deadlineInputValue}
                     onChange={(e) => handleDeadlineChange(e.target.value)}
-                    className="h-14 rounded-2xl border-2 bg-muted/30 font-black px-12 focus-visible:border-primary transition-all"
+                    className="h-14 rounded-2xl border-2 bg-muted/30 font-bold text-sm px-12 focus-visible:border-primary transition-all"
                   />
                   {detectedDate && (
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20">
