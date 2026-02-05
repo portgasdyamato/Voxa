@@ -182,23 +182,23 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl">
-        <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-primary/5">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-primary/5 flex-shrink-0">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
           <div className="flex items-center gap-6 relative z-10">
             <div className="w-16 h-16 rounded-[1.5rem] bg-primary flex items-center justify-center text-white shadow-2xl shadow-primary/30 ring-4 ring-primary/10">
               <Mic className="w-8 h-8" />
             </div>
             <div>
-              <DialogTitle className="text-3xl font-black tracking-tighter">Voice Interface</DialogTitle>
-              <DialogDescription className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">
-                Neural capture enabled
+              <DialogTitle className="text-3xl font-black tracking-tighter">Voice Task</DialogTitle>
+              <DialogDescription className="text-xs font-semibold text-muted-foreground/60 mt-1">
+                Speak to add your task
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-10 py-8 space-y-8">
+        <div className="px-10 py-8 space-y-8 overflow-y-auto flex-1">
           {!showTranscription ? (
             <div className="flex flex-col items-center py-10 gap-10">
               <div className="relative">
@@ -235,21 +235,21 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               
               <div className="text-center space-y-2">
                 <h4 className="text-xl font-bold tracking-tight">
-                  {isListening ? 'Awaiting Audio Input...' : 'System Ready'}
+                  {isListening ? 'Listening...' : 'Ready to Record'}
                 </h4>
                 <p className="text-sm font-medium text-muted-foreground max-w-xs mx-auto">
-                  {isListening ? 'Please state your objective clearly.' : 'Initialize neural capture to begin.'}
+                  {isListening ? 'Speak your task clearly' : 'Click the button to start recording'}
                 </p>
               </div>
 
               <Button
                 onClick={isListening ? stopListening : handleStartRecording}
                 className={cn(
-                  "h-16 w-full rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all",
+                  "h-16 w-full rounded-2xl font-bold text-sm transition-all",
                   isListening ? "bg-rose-500 text-white hover:bg-rose-600" : "bg-foreground text-background"
                 )}
               >
-                {isListening ? 'Terminate Recording' : 'Begin Capture'}
+                {isListening ? 'Stop Recording' : 'Start Recording'}
               </Button>
             </div>
           ) : (
@@ -262,15 +262,15 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                   <Sparkles className="w-12 h-12" />
                 </div>
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-2">Transcription Engine Output</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary mb-2">What You Said</h4>
                 <p className="text-sm text-muted-foreground mb-4">{transcript}</p>
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-2">Parsed Task</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">Task Name</h4>
                 <p className="text-xl font-bold leading-relaxed">{parsedTaskName || 'Processing...'}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Tactical Class</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1">Category</Label>
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="h-14 rounded-2xl border-2 bg-muted/30 font-bold px-6">
                       <SelectValue placeholder="General" />
@@ -287,9 +287,9 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Detected Priority</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1">Priority</Label>
                   <div className={cn(
-                    "h-14 rounded-2xl border-2 flex items-center px-6 gap-3 font-black text-xs uppercase tracking-widest",
+                    "h-14 rounded-2xl border-2 flex items-center px-6 gap-3 font-bold text-xs uppercase tracking-wide",
                     detectedPriority === 'high' ? "bg-rose-500/5 border-rose-500/20 text-rose-500" :
                     detectedPriority === 'medium' ? "bg-amber-500/5 border-amber-500/20 text-amber-500" :
                     "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
@@ -301,8 +301,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1 flex items-center gap-2">
-                  <Calendar className="w-3 h-3" /> Execution Buffer
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1 flex items-center gap-2">
+                  <Calendar className="w-3 h-3" /> Deadline
                 </Label>
                 <div className="relative group">
                   <div className="absolute left-5 top-1/2 -translate-y-1/2 text-primary opacity-50">
@@ -315,7 +315,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                     className="h-14 rounded-2xl border-2 bg-muted/30 font-bold text-sm px-12 focus-visible:border-primary transition-all"
                   />
                   {detectedDate && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wide border border-primary/20">
                       Auto-detected
                     </div>
                   )}
@@ -326,28 +326,23 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 <Button
                   onClick={handleSaveTask}
                   disabled={createTask.isPending}
-                  className="flex-[2] h-16 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-primary text-white shadow-2xl shadow-primary/30 transition-all hover:scale-105"
+                  className="flex-[2] h-16 rounded-2xl font-bold text-sm bg-primary text-white shadow-2xl shadow-primary/30 transition-all hover:scale-105"
                 >
-                  {createTask.isPending ? 'Syncing...' : 'Index Objective'}
+                  {createTask.isPending ? 'Saving...' : 'Save Task'}
                 </Button>
                 <Button
                   onClick={handleStartRecording}
                   variant="outline"
-                   className="flex-1 h-16 rounded-2xl font-black underline decoration-2 decoration-primary/30 hover:decoration-primary uppercase tracking-widest text-[11px] border-2 border-border/50"
+                   className="flex-1 h-16 rounded-2xl font-bold text-sm border-2 border-border/50"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" /> Re-scan
+                  <RefreshCw className="w-4 h-4 mr-2" /> Re-record
                 </Button>
               </div>
             </motion.div>
           )}
         </div>
         
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute top-8 right-8 text-muted-foreground hover:text-foreground transition-all duration-300 hover:rotate-90"
-        >
-          <X className="w-6 h-6" />
-        </button>
+
       </DialogContent>
     </Dialog>
   );
