@@ -119,6 +119,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       } else {
         setParsedTaskName('');
       }
+      
+      // AUTO-EXECUTE: Execute command immediately after parsing
+      setTimeout(() => {
+        handleExecuteCommand();
+      }, 500); // Small delay to show the parsed result
     }
   }, [transcript, isListening]);
 
@@ -196,9 +201,9 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               <Mic className="w-8 h-8" />
             </div>
             <div>
-              <DialogTitle className="text-3xl font-black tracking-tighter">Voice Task</DialogTitle>
+              <DialogTitle className="text-3xl font-black tracking-tighter">Voice Commands</DialogTitle>
               <DialogDescription className="text-xs font-semibold text-muted-foreground/60 mt-1">
-                Speak to add your task
+                Speak and it happens instantly
               </DialogDescription>
             </div>
           </div>
@@ -332,27 +337,26 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-6">
-                <Button
-                  onClick={handleExecuteCommand}
-                  disabled={createTask.isPending || updateTask.isPending || deleteTask.isPending}
-                  className="flex-[2] h-16 rounded-2xl font-bold text-sm bg-primary text-white shadow-2xl shadow-primary/30 transition-all hover:scale-105"
-                >
-                  {(createTask.isPending || updateTask.isPending || deleteTask.isPending) ? 'Processing...' : 
-                   commandType === 'delete' ? 'Delete Task' :
-                   commandType === 'complete' ? 'Complete Task' :
-                   commandType === 'uncomplete' ? 'Reopen Task' :
-                   commandType === 'update' ? 'Update Task' :
-                   commandType === 'list' ? 'Show Tasks' :
-                   commandType === 'clear_completed' ? 'Clear Completed' :
-                   'Execute Command'}
-                </Button>
+              <div className="flex flex-col gap-4 pt-6">
+                {/* Auto-execution status */}
+                <div className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-primary/10 border-2 border-primary/20">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full"
+                  />
+                  <span className="text-sm font-bold text-primary">
+                    {(createTask.isPending || updateTask.isPending || deleteTask.isPending) ? 'Executing command...' : 'Command will execute automatically'}
+                  </span>
+                </div>
+                
+                {/* Re-record button */}
                 <Button
                   onClick={handleStartRecording}
                   variant="outline"
-                   className="flex-1 h-16 rounded-2xl font-bold text-sm border-2 border-border/50"
+                  className="h-14 rounded-2xl font-bold text-sm border-2 border-border/50"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" /> Re-record
+                  <RefreshCw className="w-4 h-4 mr-2" /> Record New Command
                 </Button>
               </div>
             </motion.div>
