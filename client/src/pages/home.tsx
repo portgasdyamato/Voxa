@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
