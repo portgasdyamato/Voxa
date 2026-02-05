@@ -142,6 +142,9 @@ export default {
         "task-complete": "task-complete 0.5s ease-in-out",
         "confetti-fall": "confetti-fall 3s linear infinite",
       },
+      boxShadow: {
+        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+      }
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
