@@ -55,7 +55,7 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
     
     // Update task patterns
     update: [
-      /^(?:update|change|modify|edit)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+?)\s+to\s+(.+)/i,
+      /^(?:update|change|modify|edit|postpone|reschedule)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+?)\s+to\s+(.+)/i,
       /^(?:rename|change the name of)\s+(?:the\s+)?(?:task|todo|item)?\s*(.+?)\s+to\s+(.+)/i,
     ],
     
@@ -149,13 +149,31 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
     const match = speech.match(pattern);
     if (match) {
       const identifier = match[1]?.trim();
-      const newName = match[2]?.trim();
-      if (identifier && newName && identifier.length > 1 && newName.length > 1) {
+      const newValue = match[2]?.trim();
+      
+      if (identifier && newValue && identifier.length > 1 && newValue.length > 1) {
+        const { detectDateTimeFromText } = require('./dateDetection');
+        const dateTimeResult = detectDateTimeFromText(newValue);
+        
+        // If newValue is a date/time, update deadline
+        if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
+          return {
+            type: 'update',
+            taskIdentifier: identifier,
+            updates: {
+              deadline: dateTimeResult.detectedDate,
+            },
+            confidence: 'high',
+            originalText: speech,
+          };
+        }
+        
+        // Otherwise, assume it's a rename
         return {
           type: 'update',
           taskIdentifier: identifier,
           updates: {
-            title: newName,
+            title: newValue,
           },
           confidence: 'high',
           originalText: speech,

@@ -139,8 +139,8 @@ export async function executeVoiceCommand(
       }
 
       case 'update': {
-        if (!command.taskIdentifier || !command.updates?.title) {
-          toast({ title: "Error", description: "Please specify the task and new name.", variant: "destructive" });
+        if (!command.taskIdentifier || (!command.updates?.title && !command.updates?.deadline)) {
+          toast({ title: "Error", description: "Please specify the task and what to change (name or time).", variant: "destructive" });
           return;
         }
 
@@ -154,14 +154,20 @@ export async function executeVoiceCommand(
           return;
         }
 
+        const updates: any = {};
+        if (command.updates?.title) updates.title = command.updates.title;
+        if (command.updates?.deadline) updates.dueDate = command.updates.deadline.toISOString();
+
         await updateTask.mutateAsync({
           id: task.id,
-          updates: { title: command.updates.title }
+          updates
         });
 
         toast({
           title: "Task Updated",
-          description: `Renamed to "${command.updates.title}"`,
+          description: command.updates?.title 
+            ? `Renamed to "${command.updates.title}"` 
+            : `Rescheduled for ${command.updates?.deadline?.toLocaleString()}`,
         });
         break;
       }
