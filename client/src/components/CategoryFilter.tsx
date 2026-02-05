@@ -23,49 +23,46 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
   }
   
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap gap-2.5 items-center">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onCategoryChange(null)}
+        className={cn(
+          "h-9 px-4 rounded-xl font-bold uppercase tracking-wider text-[10px] transition-all border",
+          selectedCategory === null 
+            ? "bg-foreground text-background border-foreground shadow-md" 
+            : "border-border/30 text-muted-foreground/60 hover:text-foreground hover:bg-muted/30"
+        )}
+      >
+        All Contexts
+      </Button>
+      
+      {categories.map((category) => (
         <Button
+          key={category.id}
           variant="ghost"
           size="sm"
-          onClick={() => onCategoryChange(null)}
+          onClick={() => onCategoryChange(category.id)}
           className={cn(
-            "h-11 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all border-2",
-            selectedCategory === null 
-              ? "bg-foreground text-background border-foreground shadow-xl" 
-              : "border-border/40 text-muted-foreground/60 hover:text-foreground hover:bg-muted/30"
+            "h-9 px-4 rounded-xl font-bold uppercase tracking-wider text-[10px] transition-all border",
+            selectedCategory === category.id 
+              ? "shadow-md border-opacity-50" 
+              : "border-border/20 text-muted-foreground/50 hover:bg-muted/30"
           )}
+          style={selectedCategory === category.id ? { 
+            backgroundColor: `${category.color}15`,
+            color: category.color,
+            borderColor: `${category.color}30`,
+          } : {}}
         >
-          All Contexts
+          <div
+            className="w-1.5 h-1.5 rounded-full mr-2 shrink-0"
+            style={{ backgroundColor: category.color }}
+          />
+          {category.name}
         </Button>
-        
-        {categories.map((category) => (
-          <Button
-            key={category.id}
-            variant="ghost"
-            size="sm"
-            onClick={() => onCategoryChange(category.id)}
-            className={cn(
-              "h-11 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all border-2",
-              selectedCategory === category.id 
-                ? "shadow-xl border-opacity-60" 
-                : "border-border/30 text-muted-foreground/60 hover:bg-muted/30"
-            )}
-            style={selectedCategory === category.id ? { 
-              backgroundColor: `${category.color}15`,
-              color: category.color,
-              borderColor: `${category.color}40`,
-              boxShadow: `0 10px 15px -3px ${category.color}20`
-            } : {}}
-          >
-            <div
-              className="w-2 h-2 rounded-full mr-3 shadow-sm shrink-0"
-              style={{ backgroundColor: category.color }}
-            />
-            {category.name}
-          </Button>
-        ))}
-      </div>
+      ))}
     </div>
   );
 }
@@ -82,8 +79,8 @@ export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps
     <Badge
       variant="secondary"
       className={cn(
-        "flex items-center gap-2 border-2 font-black uppercase tracking-widest leading-none",
-        size === "sm" ? "text-[8px] px-2.5 py-1 rounded-lg" : "px-4 py-1.5 rounded-xl"
+        "flex items-center gap-2 border font-bold uppercase tracking-wider leading-none",
+        size === "sm" ? "text-[9px] px-2 py-0.5 rounded-md" : "px-3 py-1 rounded-lg"
       )}
       style={{
         backgroundColor: `${category.color}10`,
@@ -92,7 +89,7 @@ export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps
       }}
     >
       <div
-        className={cn("rounded-full shrink-0", size === "sm" ? "w-1.5 h-1.5" : "w-2.5 h-2.5")}
+        className={cn("rounded-full shrink-0", size === "sm" ? "w-1 h-1" : "w-1.5 h-1.5")}
         style={{ backgroundColor: category.color }}
       />
       {category.name}
