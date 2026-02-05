@@ -1,5 +1,4 @@
-// Voice command parser for task operations
-// Handles: add, delete, complete, update, list tasks via voice
+import { parseTaskFromSpeech, detectDateTimeFromText } from './dateDetection';
 
 export type VoiceCommandType = 
   | 'add'
@@ -78,7 +77,6 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
       const taskText = match[1]?.trim();
       if (taskText && taskText.length > 1) {
         // Use existing parseTaskFromSpeech for detailed parsing
-        const { parseTaskFromSpeech } = require('./dateDetection');
         const parsed = parseTaskFromSpeech(speech);
         
         return {
@@ -152,7 +150,6 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
       const newValue = match[2]?.trim();
       
       if (identifier && newValue && identifier.length > 1 && newValue.length > 1) {
-        const { detectDateTimeFromText } = require('./dateDetection');
         const dateTimeResult = detectDateTimeFromText(newValue);
         
         // If newValue is a date/time, update deadline
@@ -208,7 +205,6 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
   
   // If no pattern matched, default to add command
   // This maintains backward compatibility
-  const { parseTaskFromSpeech } = require('./dateDetection');
   const parsed = parseTaskFromSpeech(speech);
   
   return {
