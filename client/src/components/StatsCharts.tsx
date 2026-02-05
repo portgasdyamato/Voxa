@@ -70,8 +70,10 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                   borderRadius: '1rem', 
                   border: '2px solid var(--border)',
                   boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
+                  color: 'var(--foreground)'
                 }}
+                itemStyle={{ color: 'var(--foreground)' }}
               />
               <Area 
                 type="monotone" 
@@ -118,8 +120,10 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                     borderRadius: '1rem', 
                     border: '2px solid var(--border)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    color: 'var(--foreground)'
                   }}
+                  itemStyle={{ color: 'var(--foreground)' }}
                 />
               </PieChart>
             </ResponsiveContainer>

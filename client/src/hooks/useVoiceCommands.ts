@@ -14,7 +14,8 @@ declare global {
 
 interface VoiceCommandResult {
   command: string;
-  action: 'mark_done' | 'mark_pending' | 'delete' | 'show_tasks' | 'list_pending' | 'list_completed' | 'add_task' | 'create_task' | 'unknown';
+  action: 'mark_done' | 'mark_pending' | 'delete' | 'show_tasks' | 'list_pending' | 'list_completed' | 'add_task' | 'create_task' | 'edit_task' | 'unknown';
+  newTaskName?: string;
   taskName?: string;
   taskDescription?: string;
   priority?: 'high' | 'medium' | 'low';
@@ -175,6 +176,19 @@ export function useVoiceCommands(tasks: Task[]) {
       {
         regex: /^(what\s+do\s+i\s+have\s+to\s+do|what'?s\s+on\s+my\s+list)(\s+today)?$/,
         action: 'show_tasks' as const
+      },
+      // Task editing patterns
+      {
+        regex: /^(change|update|edit|rename)\s+(.+?)\s+to\s+(.+)$/,
+        action: 'edit_task' as const,
+        taskNameIndex: 2,
+        newTaskNameIndex: 3
+      },
+      {
+        regex: /^(set|update|change)\s+deadline\s+for\s+(.+?)\s+to\s+(.+)$/,
+        action: 'edit_task' as const,
+        taskNameIndex: 2,
+        deadlineIndex: 3
       }
     ];
 
@@ -182,13 +196,15 @@ export function useVoiceCommands(tasks: Task[]) {
       const match = text.match(pattern.regex);
       if (match) {
         const taskName = pattern.taskNameIndex ? match[pattern.taskNameIndex] : undefined;
+        const newTaskName = (pattern as any).newTaskNameIndex ? match[(pattern as any).newTaskNameIndex] : undefined;
+        const deadlineStr = (pattern as any).deadlineIndex ? match[(pattern as any).deadlineIndex] : undefined;
         
         // For task creation, also detect priority from the task name
         let priority: 'high' | 'medium' | 'low' = 'medium';
         let cleanTaskName = taskName;
         
-        if (pattern.action === 'add_task' && taskName) {
-          // Use enhanced natural language parsing for task creation on the full transcript
+        if ((pattern.action === 'add_task' || pattern.action === 'edit_task') && !newTaskName && !deadlineStr) {
+          // Use enhanced natural language parsing
           const parsedTask = parseTaskFromSpeech(transcript);
           
           return {
@@ -200,13 +216,20 @@ export function useVoiceCommands(tasks: Task[]) {
             confidence: parsedTask.confidence === 'high' ? 0.9 : parsedTask.confidence === 'medium' ? 0.7 : 0.5
           };
         }
+
+        let deadline: Date | null = null;
+        if (deadlineStr) {
+          const parsed = parseTaskFromSpeech(deadlineStr);
+          deadline = parsed.deadline;
+        }
         
         return {
           command: transcript,
           action: pattern.action,
           taskName: cleanTaskName,
+          newTaskName,
           priority,
-          deadline: null,
+          deadline,
           confidence: 0.9
         };
       }
@@ -328,13 +351,27 @@ export function useVoiceCommands(tasks: Task[]) {
             return;
           }
 
+          let reminderTime: string | undefined;
+          let reminderType: 'manual' | 'morning' | 'default' = 'default';
+
+          if (commandResult.deadline) {
+            const hours = commandResult.deadline.getHours().toString().padStart(2, '0');
+            const minutes = commandResult.deadline.getMinutes().toString().padStart(2, '0');
+            // If it's not the end-of-day default (23:59)
+            if (!(hours === '23' && minutes === '59')) {
+              reminderTime = `${hours}:${minutes}`;
+              reminderType = 'manual';
+            }
+          }
+
           const taskData = {
             title: commandResult.taskName,
             priority: commandResult.priority || 'medium' as const,
-            reminderEnabled: false,
+            reminderEnabled: !!commandResult.deadline,
+            reminderType,
+            reminderTime,
             ...(commandResult.deadline && { 
               dueDate: commandResult.deadline.toISOString(),
-              reminderEnabled: true 
             })
           };
           
@@ -486,6 +523,42 @@ export function useVoiceCommands(tasks: Task[]) {
           description: `${pendingTasks.length} total pending${priorityPending.length > 0 ? `, ${priorityPending.length} high priority` : ''}. ${pendingTasks.length > 0 ? pendingTasks.slice(0, 3).map(t => t.title).join(', ') + (pendingTasks.length > 3 ? '...' : '') : 'No pending tasks!'}`,
           duration: 6000,
         });
+        break;
+        
+      case 'edit_task':
+        if (commandResult.taskName) {
+          const task = findTaskByName(commandResult.taskName);
+          if (task) {
+            const updates: any = {};
+            if (commandResult.newTaskName) updates.title = commandResult.newTaskName;
+            if (commandResult.deadline) updates.dueDate = commandResult.deadline.toISOString();
+            
+            if (Object.keys(updates).length > 0) {
+              updateTask.mutate({
+                id: task.id,
+                updates
+              }, {
+                onSuccess: () => {
+                  toast({
+                    title: "Task updated! ✨",
+                    description: `"${task.title}" has been updated successfully.`,
+                  });
+                }
+              });
+            } else {
+              toast({
+                title: "Nothing to update",
+                description: "Please specify what you want to change (e.g. 'Change lunch to dinner').",
+              });
+            }
+          } else {
+            toast({
+              title: "Task not found",
+              description: `Could not find a task named "${commandResult.taskName}".`,
+              variant: "destructive",
+            });
+          }
+        }
         break;
         
       case 'list_completed':

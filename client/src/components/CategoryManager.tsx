@@ -160,7 +160,7 @@ function CategoryItem({ category }: CategoryItemProps) {
           variant="ghost"
           size="icon"
           onClick={handleDelete}
-          className="h-8 w-8 rounded-lg hover:bg-rose-500/10 text-muted-foreground/40 hover:text-rose-500"
+          className="h-8 w-8 rounded-lg hover:bg-rose-500/10 text-muted-foreground/60 hover:text-rose-500"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
@@ -209,7 +209,7 @@ export function CategoryManager() {
         ) : categories?.length === 0 ? (
           <div className="text-center py-12 px-6 rounded-3xl bg-muted/20 border-2 border-dashed border-border">
             <Palette className="w-12 h-12 mx-auto mb-4 opacity-10" />
-            <p className="text-sm font-bold text-muted-foreground/60">No classes defined.</p>
+            <p className="text-sm font-bold text-muted-foreground/80">No classes defined.</p>
           </div>
         ) : (
           <div className="space-y-3">

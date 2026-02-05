@@ -192,7 +192,7 @@ export function VoiceCommandButton({ tasks, className }: VoiceCommandButtonProps
             animate={{ opacity: 1 }}
             className="text-center"
           >
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
               Press space or Ctrl+K to speak
             </p>
           </motion.div>

@@ -10,7 +10,7 @@ import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
 import { VoiceCommandButton } from '@/components/VoiceCommandButton';
 import { DeadlineFilter, getDeadlineFilteredTasks, getDeadlineCounts, type DeadlineFilter as DeadlineFilterType } from '@/components/DeadlineFilter';
-import { ClipboardList, CheckCircle, Clock, Search, Settings, Calendar, ListTodo, LayoutDashboard, Sparkles, Filter, Plus } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, Search, Settings, Calendar, ListTodo, LayoutDashboard, Sparkles, Filter, Plus, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -307,7 +307,7 @@ export default function Home() {
                   {completedTasks.length > 0 && (
                     <motion.div layout className="pt-12 space-y-6">
                       <div className="flex items-center gap-6">
-                        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40 whitespace-nowrap">Archive Buffer</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/70 whitespace-nowrap">Archive Buffer</span>
                         <div className="h-px w-full bg-border/50" />
                       </div>
                       {completedTasks.map((task) => (

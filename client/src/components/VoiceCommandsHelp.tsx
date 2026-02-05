@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Mic, CheckCircle, Trash2, List, Eye, Plus, Calendar, Clock } from 'lucide-react';
+import { HelpCircle, Mic, CheckCircle, Trash2, List, Eye, Plus, Calendar, Clock, Edit3, Bell } from 'lucide-react';
 
 export function VoiceCommandsHelp() {
   const [open, setOpen] = useState(false);
@@ -158,6 +158,72 @@ export function VoiceCommandsHelp() {
           command: "Note [task name]",
           example: "Note buy birthday gift",
           description: "Take a note as a task"
+        }
+      ]
+    },
+    {
+      title: "Task Editing & Renaming",
+      icon: Edit3,
+      color: "text-indigo-600",
+      commands: [
+        {
+          command: "Rename [old task name] to [new task name]",
+          example: "Rename 'Lunch' to 'Dinner'",
+          description: "Renames an existing task"
+        },
+        {
+          command: "Change deadline for [task name] to [date] [time]",
+          example: "Change deadline for 'Work' to tomorrow 5pm",
+          description: "Updates the deadline of a task"
+        },
+        {
+          command: "Update [task name] priority to [priority]",
+          example: "Update 'Meeting' priority to high",
+          description: "Changes the priority of a task"
+        }
+      ]
+    },
+    {
+      title: "Reminders & Priority Management",
+      icon: Bell,
+      color: "text-amber-600",
+      commands: [
+        {
+          command: "Set reminder for [task name] to [date] [time]",
+          example: "Set reminder for 'Audit' to 3 PM",
+          description: "Sets a reminder for a task"
+        },
+        {
+          command: "Set urgency of [task name] to [priority]",
+          example: "Set urgency of 'Tax' to high",
+          description: "Sets the priority/urgency of a task"
+        },
+        {
+          command: "Toggle reminder for [task name]",
+          example: "Toggle reminder for 'Task'",
+          description: "Toggles the reminder status of a task"
+        }
+      ]
+    },
+    {
+      title: "Task Deletion",
+      icon: Trash2,
+      color: "text-rose-600",
+      commands: [
+        {
+          command: "Delete [task name]",
+          example: "Delete task 'Old Project'",
+          description: "Deletes a specific task"
+        },
+        {
+          command: "Remove [task name]",
+          example: "Remove 'Grocery List'",
+          description: "Removes a specific task"
+        },
+        {
+          command: "Cancel [task name]",
+          example: "Cancel 'Dinner Plan'",
+          description: "Cancels and deletes a task"
         }
       ]
     },

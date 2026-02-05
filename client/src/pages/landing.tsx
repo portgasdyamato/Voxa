@@ -185,7 +185,7 @@ export default function Landing() {
                          <Mic className="w-14 h-14 text-white" />
                        </motion.div>
                        <div className="space-y-4 text-center">
-                          <h4 className="text-xl font-black text-foreground/80 tracking-tight">Listening for instructions...</h4>
+                           <h4 className="text-xl font-black text-foreground tracking-tight">Listening for instructions...</h4>
                           <div className="flex gap-2 justify-center">
                              {[1,2,3,4,5].map(i => (
                                <motion.div 
@@ -328,10 +328,10 @@ export default function Landing() {
           </div>
           
           <div className="mt-24 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">
+            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">
               © 2025 Voxa Intelligent Systems, Inc. / Global Distribution
             </p>
-            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
                <a href="#" className="hover:text-primary transition-colors">Security Protocol</a>
                <a href="#" className="hover:text-primary transition-colors">Data Privacy</a>
             </div>

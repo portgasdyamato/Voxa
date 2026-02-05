@@ -32,7 +32,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
   
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderType, setReminderType] = useState<'manual' | 'morning' | 'default'>('default');
-  const [reminderTime, setReminderTime] = useState<string>('');
+  const [reminderTime, setReminderTime] = useState<string>('09:00');
   
   const { toast } = useToast();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
@@ -48,11 +48,18 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
       if (task.dueDate) {
         const date = new Date(task.dueDate);
         setSelectedDeadline(date);
-        setDeadlineInputValue(date.toISOString().split('T')[0]);
+        
+        // Format for datetime-local input: YYYY-MM-DDTHH:mm
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        setDeadlineInputValue(`${year}-${month}-${day}T${hours}:${minutes}`);
       }
       setReminderEnabled(task.reminderEnabled ?? true);
       setReminderType(task.reminderType || 'default');
-      setReminderTime(task.reminderTime || '');
+      setReminderTime(task.reminderTime || '09:00');
     } else if (!open) {
       resetForm();
     }
@@ -68,7 +75,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     setManualPriority('');
     setReminderEnabled(true);
     setReminderType('default');
-    setReminderTime('');
+    setReminderTime('09:00');
   };
 
   const handleTaskTitleChange = (value: string) => {
@@ -78,8 +85,15 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
       if (dateResult.detectedDate && dateResult.confidence === 'high') {
         setDetectedDate(dateResult.detectedDate);
         if (!selectedDeadline) {
-          setSelectedDeadline(dateResult.detectedDate);
-          setDeadlineInputValue(dateResult.detectedDate.toISOString().split('T')[0]);
+          const date = dateResult.detectedDate;
+          setSelectedDeadline(date);
+          
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          setDeadlineInputValue(`${year}-${month}-${day}T${hours}:${minutes}`);
         }
       } else {
         setDetectedDate(null);
@@ -127,7 +141,6 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     setDeadlineInputValue(value);
     if (value) {
       const date = new Date(value);
-      date.setHours(23, 59, 59, 999);
       setSelectedDeadline(date);
     } else {
       setSelectedDeadline(null);
@@ -168,7 +181,9 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
         <div className="p-8 pt-4 space-y-8 max-h-[70vh] overflow-y-auto">
           <div className="space-y-6">
             <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-1">Primary Title</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/80 px-1">
+                Objective Title
+              </Label>
               <Input
                 value={taskTitle}
                 onChange={(e) => handleTaskTitleChange(e.target.value)}
@@ -178,7 +193,9 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
             </div>
 
             <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-1">Context & Details</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/80 px-1">
+                Strategic Class
+              </Label>
               <textarea
                 value={taskDescription}
                 onChange={(e) => setTaskDescription(e.target.value)}
@@ -234,10 +251,10 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
               </Label>
               <div className="relative">
                 <Input
-                  type="date"
+                  type="datetime-local"
                   value={deadlineInputValue}
                   onChange={(e) => handleDeadlineChange(e.target.value)}
-                  className="h-12 rounded-xl border-2 bg-muted/30 font-bold px-4"
+                  className="h-12 rounded-xl border-2 bg-muted/30 font-bold px-4 appearance-none"
                 />
               </div>
               <AnimatePresence>
