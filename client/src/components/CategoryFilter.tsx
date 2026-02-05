@@ -1,9 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
-import { Filter, X, Tag } from "lucide-react";
-import type { Category } from "@shared/schema";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface CategoryFilterProps {
@@ -23,45 +20,37 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
   }
   
   return (
-    <div className="flex flex-wrap gap-2.5 items-center">
-      <Button
-        variant="ghost"
-        size="sm"
+    <div className="flex flex-col gap-1">
+      <button
         onClick={() => onCategoryChange(null)}
         className={cn(
-          "h-9 px-4 rounded-xl font-bold uppercase tracking-wider text-[10px] transition-all border",
+          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all text-left",
           selectedCategory === null 
-            ? "bg-foreground text-background border-foreground shadow-md" 
-            : "border-border/30 text-muted-foreground/60 hover:text-foreground hover:bg-muted/30"
+            ? "bg-primary/10 text-primary" 
+            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
         )}
       >
+        <div className="w-2 h-2 rounded-full bg-muted-foreground/30 shrink-0" />
         All Contexts
-      </Button>
+      </button>
       
       {categories.map((category) => (
-        <Button
+        <button
           key={category.id}
-          variant="ghost"
-          size="sm"
           onClick={() => onCategoryChange(category.id)}
           className={cn(
-            "h-9 px-4 rounded-xl font-bold uppercase tracking-wider text-[10px] transition-all border",
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all text-left",
             selectedCategory === category.id 
-              ? "shadow-md border-opacity-50" 
-              : "border-border/20 text-muted-foreground/50 hover:bg-muted/30"
+              ? "bg-primary/10 text-primary font-semibold" 
+              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           )}
-          style={selectedCategory === category.id ? { 
-            backgroundColor: `${category.color}15`,
-            color: category.color,
-            borderColor: `${category.color}30`,
-          } : {}}
         >
           <div
-            className="w-1.5 h-1.5 rounded-full mr-2 shrink-0"
+            className="w-2 h-2 rounded-full shrink-0"
             style={{ backgroundColor: category.color }}
           />
           {category.name}
-        </Button>
+        </button>
       ))}
     </div>
   );
@@ -76,23 +65,17 @@ export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps
   if (!category) return null;
   
   return (
-    <Badge
-      variant="secondary"
-      className={cn(
-        "flex items-center gap-2 border font-bold uppercase tracking-wider leading-none",
-        size === "sm" ? "text-[9px] px-2 py-0.5 rounded-md" : "px-3 py-1 rounded-lg"
-      )}
-      style={{
-        backgroundColor: `${category.color}10`,
-        color: category.color,
-        borderColor: `${category.color}20`,
-      }}
-    >
-      <div
-        className={cn("rounded-full shrink-0", size === "sm" ? "w-1 h-1" : "w-1.5 h-1.5")}
+    <div className="flex items-center gap-1.5">
+      <div 
+        className={cn("rounded-full", size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2')} 
         style={{ backgroundColor: category.color }}
       />
-      {category.name}
-    </Badge>
+      <span className={cn(
+        "font-medium text-muted-foreground",
+        size === 'sm' ? 'text-[10px]' : 'text-xs'
+      )}>
+        {category.name}
+      </span>
+    </div>
   );
 }
