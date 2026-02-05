@@ -3,7 +3,7 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useCreateTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
-import { detectDateTimeFromText, formatRelativeDate } from '@/lib/dateDetection';
+import { detectDateTimeFromText, formatRelativeDate, parseTaskFromSpeech } from '@/lib/dateDetection';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const [selectedDeadline, setSelectedDeadline] = useState<Date | null>(null);
   const [deadlineInputValue, setDeadlineInputValue] = useState('');
   const [detectedDate, setDetectedDate] = useState<Date | null>(null);
+  const [parsedTaskName, setParsedTaskName] = useState<string>('');
+  const [detectedPriority, setDetectedPriority] = useState<'high' | 'medium' | 'low'>('medium');
   
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderType, setReminderType] = useState<'manual' | 'morning' | 'default'>('default');
@@ -64,6 +66,13 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   useEffect(() => {
     if (transcript && !isListening) {
       setShowTranscription(true);
+      
+      // Parse task details from speech
+      const { taskName, deadline, priority } = parseTaskFromSpeech(transcript);
+      setParsedTaskName(taskName);
+      setDetectedPriority(priority);
+      
+      // Detect date and time
       const dateTimeResult = detectDateTimeFromText(transcript);
       if (dateTimeResult.detectedDate && dateTimeResult.confidence === 'high') {
         setDetectedDate(dateTimeResult.detectedDate);
@@ -100,6 +109,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     setSelectedDeadline(null);
     setDetectedDate(null);
     setDeadlineInputValue('');
+    setParsedTaskName('');
+    setDetectedPriority('medium');
     setReminderEnabled(true);
     setReminderType('default');
     setReminderTime('');
@@ -108,33 +119,47 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   const handleSaveTask = async () => {
     if (!transcript.trim()) {
-      toast({ title: "Null Command", description: "No data available to commit.", variant: "destructive" });
+      toast({ title: "No Voice Input", description: "Please speak a task to add.", variant: "destructive" });
       return;
     }
 
-    const priority = detectPriority(transcript);
+    // Parse the speech to extract task details
+    const { taskName, deadline, priority, confidence } = parseTaskFromSpeech(transcript);
+    
+    // Use detected deadline if user hasn't manually set one
+    const finalDeadline = selectedDeadline || deadline;
+    
+    // Validate task name
+    if (!taskName || taskName.length < 2) {
+      toast({ 
+        title: "Invalid Task", 
+        description: "Could not understand the task. Please try again.", 
+        variant: "destructive" 
+      });
+      return;
+    }
     
     try {
       await createTask.mutateAsync({
-        title: transcript.slice(0, 100),
-        description: transcript.length > 100 ? transcript.slice(100) : undefined,
+        title: taskName,
+        description: undefined,
         priority,
         categoryId: selectedCategory && selectedCategory !== 'none' ? parseInt(selectedCategory) : undefined,
-        dueDate: selectedDeadline ? selectedDeadline.toISOString() : undefined,
+        dueDate: finalDeadline ? finalDeadline.toISOString() : undefined,
         reminderEnabled,
         reminderType,
         reminderTime: reminderType === 'manual' ? reminderTime : undefined,
       });
 
       toast({
-        title: "Objective Indexed",
-        description: `Targeting "${transcript.slice(0, 30)}..." with ${priority} priority.`,
+        title: "Task Created",
+        description: `Added "${taskName.slice(0, 40)}${taskName.length > 40 ? '...' : ''}" with ${priority} priority.`,
       });
 
       onOpenChange(false);
       resetTranscript();
     } catch (error) {
-      toast({ title: "Indexing Error", description: "Failed to persist objective.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to create task. Please try again.", variant: "destructive" });
     }
   };
 
@@ -237,8 +262,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                   <Sparkles className="w-12 h-12" />
                 </div>
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4">Transcription Engine Output</h4>
-                <p className="text-xl font-bold leading-relaxed">{transcript}</p>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-2">Transcription Engine Output</h4>
+                <p className="text-sm text-muted-foreground mb-4">{transcript}</p>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-2">Parsed Task</h4>
+                <p className="text-xl font-bold leading-relaxed">{parsedTaskName || 'Processing...'}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-6">
@@ -263,12 +290,12 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Detected Priority</Label>
                   <div className={cn(
                     "h-14 rounded-2xl border-2 flex items-center px-6 gap-3 font-black text-xs uppercase tracking-widest",
-                    detectPriority(transcript) === 'high' ? "bg-rose-500/5 border-rose-500/20 text-rose-500" :
-                    detectPriority(transcript) === 'medium' ? "bg-amber-500/5 border-amber-500/20 text-amber-500" :
+                    detectedPriority === 'high' ? "bg-rose-500/5 border-rose-500/20 text-rose-500" :
+                    detectedPriority === 'medium' ? "bg-amber-500/5 border-amber-500/20 text-amber-500" :
                     "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
                   )}>
                     <div className="w-2 h-2 rounded-full bg-current" />
-                    {detectPriority(transcript)} priority
+                    {detectedPriority} priority
                   </div>
                 </div>
               </div>
