@@ -350,12 +350,35 @@ async function handler(req, res) {
     }
     if (url.pathname.startsWith("/api/tasks/") && (req.method === "PATCH" || req.method === "PUT")) {
       const taskId = parseInt(url.pathname.split("/")[3]);
-      const updates = req.body;
+      
+      // Ensure body is parsed
+      let updates = req.body;
+      if (typeof updates === 'string') {
+        try {
+          updates = JSON.parse(updates);
+        } catch (e) {
+          console.error("Failed to parse body string:", e);
+        }
+      }
+      
       console.log("Updating task:", taskId, updates);
+      
+      if (!updates || typeof updates !== 'object') {
+        res.status(400).json({ error: "Invalid request body" });
+        return;
+      }
+
+      // Convert date strings to Date objects for Drizzle
+      const processedUpdates = { ...updates };
+      if (processedUpdates.dueDate) {
+        processedUpdates.dueDate = new Date(processedUpdates.dueDate);
+      }
+      
       const updatedTask = await db.update(tasks).set({
-        ...updates,
-        updatedAt: /* @__PURE__ */ new Date()
+        ...processedUpdates,
+        updatedAt: new Date()
       }).where(and(eq(tasks.id, taskId), eq(tasks.userId, currentUserId))).returning();
+
       if (updatedTask.length === 0) {
         res.status(404).json({ error: "Task not found" });
         return;
