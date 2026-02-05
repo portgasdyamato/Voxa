@@ -275,11 +275,18 @@ export default function Landing() {
                 and autonomous personal logistics.
               </p>
               <div className="flex items-center gap-6">
-                 {[Github, Twitter, Linkedin, Globe].map((Icon, i) => (
-                   <button key={i} className="w-12 h-12 rounded-2xl bg-muted/30 border-2 border-border/40 flex items-center justify-center hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all">
-                     <Icon className="w-5 h-5" />
-                   </button>
-                 ))}
+                 <a href="https://github.com/portgasdyamato" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-muted/30 border-2 border-border/40 flex items-center justify-center hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all">
+                   <Github className="w-5 h-5" />
+                 </a>
+                 <button className="w-12 h-12 rounded-2xl bg-muted/30 border-2 border-border/40 flex items-center justify-center hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all opacity-50 cursor-not-allowed">
+                   <Twitter className="w-5 h-5" />
+                 </button>
+                 <a href="https://www.linkedin.com/in/ethsakshi/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-muted/30 border-2 border-border/40 flex items-center justify-center hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all">
+                   <Linkedin className="w-5 h-5" />
+                 </a>
+                 <a href="https://pippoportfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-muted/30 border-2 border-border/40 flex items-center justify-center hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all">
+                   <Globe className="w-5 h-5" />
+                 </a>
               </div>
             </div>
             
