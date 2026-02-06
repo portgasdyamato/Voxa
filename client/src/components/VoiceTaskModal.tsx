@@ -275,8 +275,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 </div>
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary mb-2">What You Said</h4>
                 <p className="text-sm text-muted-foreground mb-4">{transcript}</p>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-violet-500 mb-2">Command Type</h4>
-                <p className="text-lg font-bold mb-4 text-violet-600">{commandDescription}</p>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-2">Command Type</h4>
+                <p className="text-lg font-bold mb-4 text-blue-600">{commandDescription}</p>
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">
                   {commandType === 'add' ? 'Task Name' : commandType === 'delete' ? 'Task to Delete' : commandType === 'complete' ? 'Task to Complete' : commandType === 'update' ? 'Task to Update' : 'Details'}
                 </h4>

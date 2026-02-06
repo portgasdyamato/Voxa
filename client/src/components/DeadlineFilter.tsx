@@ -24,7 +24,7 @@ export function DeadlineFilter({ value, onChange, counts }: DeadlineFilterProps)
     { value: 'all', label: 'All Tasks', icon: Calendar, count: counts?.total },
     { value: 'overdue', label: 'Overdue', icon: AlertTriangle, count: counts?.overdue, color: 'text-rose-500' },
     { value: 'today', label: 'Due Today', icon: Sun, count: counts?.today, color: 'text-amber-500' },
-    { value: 'tomorrow', label: 'Due Tomorrow', icon: Clock, count: counts?.tomorrow, color: 'text-indigo-500' },
+    { value: 'tomorrow', label: 'Due Tomorrow', icon: Clock, count: counts?.tomorrow, color: 'text-blue-500' },
     { value: 'this-week', label: 'Next 7 Days', icon: Calendar, count: counts?.thisWeek, color: 'text-emerald-500' },
     { value: 'no-deadline', label: 'Sometime', icon: Infinity, count: counts?.noDeadline, color: 'text-muted-foreground' },
   ];

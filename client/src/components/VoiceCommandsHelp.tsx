@@ -11,7 +11,7 @@ export function VoiceCommandsHelp() {
     {
       title: "Task Creation with Dates & Times",
       icon: Calendar,
-      color: "text-purple-600",
+      color: "text-blue-600",
       commands: [
         { 
           command: "Add task [task name] [date] [time]",
@@ -388,14 +388,14 @@ export function VoiceCommandsHelp() {
             </div>
           </div>
 
-          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-            <h4 className="font-medium text-purple-900 dark:text-purple-300 mb-2">Keyboard Shortcuts</h4>
-            <div className="text-sm text-purple-800 dark:text-purple-200 space-y-1">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">Keyboard Shortcuts</h4>
+            <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <div className="flex items-center space-x-2">
-                <kbd className="bg-purple-200 dark:bg-purple-700 px-2 py-1 rounded text-xs font-mono">Ctrl + K</kbd>
+                <kbd className="bg-blue-200 dark:bg-blue-700 px-2 py-1 rounded text-xs font-mono">Ctrl + K</kbd>
                 <span>Activate voice commands</span>
               </div>
-              <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                 Press Ctrl+K anywhere in the app to start listening for voice commands
               </p>
             </div>
