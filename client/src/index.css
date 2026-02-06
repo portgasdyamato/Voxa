@@ -126,3 +126,14 @@
   background-size: 200% 200%;
   animation: gradient 8s ease infinite;
 }
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(168, 85, 247, 0.3);
+  color: white;
+}
