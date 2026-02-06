@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Mic, ArrowRight, Zap, CheckCircle2, Star, Shield, Layout, Sparkles, Globe, Brain, Calendar, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
+import heroGif from '@/assets/hero.gif';
 
 export default function Landing() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -132,7 +133,7 @@ export default function Landing() {
                 </div>
                 <div className="aspect-[16/10] bg-muted/10">
                   <img 
-                    src="/hero.gif" 
+                    src={heroGif} 
                     alt="VoXa Interface Demo" 
                     className="w-full h-full object-cover"
                   />
