@@ -50,8 +50,10 @@ export function TaskCard({ task }: TaskCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -4 }}
-      className="task-node group"
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={() => setIsEditModalOpen(true)}
+      className="task-node group cursor-pointer"
     >
       <div className={cn(
         "task-node-inner transition-all duration-500",
@@ -59,12 +61,12 @@ export function TaskCard({ task }: TaskCardProps) {
       )}>
         {/* Status Indicator */}
         <button 
-          onClick={handleToggleComplete}
+          onClick={(e) => { e.stopPropagation(); handleToggleComplete(); }}
           className={cn(
-            "w-10 h-10 rounded-[0.85rem] border flex items-center justify-center transition-all duration-300 relative overflow-hidden shrink-0",
+            "w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-300 relative overflow-hidden shrink-0 group/btn",
             task.completed 
               ? "bg-primary border-primary shadow-none" 
-              : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] shadow-none"
+              : "border-white/10 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.06] shadow-none"
           )}
         >
           <AnimatePresence mode="wait">
@@ -73,7 +75,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 <Check className="w-5 h-5 text-white stroke-[3px]" />
               </motion.div>
             ) : (
-              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-all group-hover:scale-125" />
+              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover/btn:bg-white/80 transition-all duration-300 group-hover/btn:scale-[2]" />
             )}
           </AnimatePresence>
         </button>
@@ -113,27 +115,19 @@ export function TaskCard({ task }: TaskCardProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <Button 
-              onClick={() => setIsEditModalOpen(true)}
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9 rounded-xl hover:bg-white/5 shadow-none"
-            >
-              <Edit2 className="w-3.5 h-3.5 text-white/50 hover:text-white transition-colors" />
-            </Button>
+          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white/5 shadow-none">
-                  <MoreHorizontal className="w-4 h-4 text-white/50 hover:text-white transition-colors" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white/10 shadow-none text-white/50 hover:text-white transition-colors">
+                  <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 shadow-none border border-white/[0.05]">
+              <DropdownMenuContent align="end" className="w-40 shadow-2xl border border-white/[0.08] bg-[#111114] rounded-2xl p-1.5">
                 <DropdownMenuItem 
-                  onClick={() => deleteTask.mutate(task.id)}
-                  className="rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] gap-3 py-3 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer shadow-none relative"
+                  onClick={(e) => { e.stopPropagation(); deleteTask.mutate(task.id); }}
+                  className="rounded-xl font-bold text-[11px] uppercase tracking-[0.1em] gap-2.5 py-2.5 text-rose-500 focus:text-rose-400 focus:bg-rose-500/10 cursor-pointer shadow-none"
                 >
-                  <Trash2 className="w-4 h-4" /> Delete Task
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -36,9 +36,9 @@ rendering chunks...
 computing gzip size...
 [2m../dist/public/[22m[32mindex.html                               [39m[1m[2m    0.73 kB[22m[1m[22m[2m Γöé gzip:   0.43 kB[22m
 [2m../dist/public/[22m[32massets/hero-B6wd5Kjc.gif                 [39m[1m[2m6,340.53 kB[22m[1m[22m
-[2m../dist/public/[22m[35massets/index-DQRcCCdF.css                [39m[1m[2m   81.70 kB[22m[1m[22m[2m Γöé gzip:  12.50 kB[22m
-[2m../dist/public/[22m[36massets/voiceCommandExecutor-CRQZkQHW.js  [39m[1m[2m    3.79 kB[22m[1m[22m[2m Γöé gzip:   1.27 kB[22m
-[2m../dist/public/[22m[36massets/index-CLJ35h7O.js                 [39m[1m[33m1,032.89 kB[39m[22m[2m Γöé gzip: 299.03 kB[22m
+[2m../dist/public/[22m[35massets/index-Df-aVY49.css                [39m[1m[2m   81.94 kB[22m[1m[22m[2m Γöé gzip:  12.51 kB[22m
+[2m../dist/public/[22m[36massets/voiceCommandExecutor-wT4zsYyR.js  [39m[1m[2m    3.79 kB[22m[1m[22m[2m Γöé gzip:   1.27 kB[22m
+[2m../dist/public/[22m[36massets/index-BIOXsQRx.js                 [39m[1m[33m1,032.51 kB[39m[22m[2m Γöé gzip: 298.96 kB[22m
 [33m
 (!) Some chunks are larger 
 than 500 kB after 
@@ -53,4 +53,4 @@ anualchunks
 - Adjust chunk size limit for 
 this warning via build.chunkSiz
 eWarningLimit.[39m
-[32mΓ£ô built in 17.09s[39m
+[32mΓ£ô built in 19.15s[39m
