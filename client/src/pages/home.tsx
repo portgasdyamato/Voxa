@@ -5,7 +5,6 @@ import { TaskCard } from '@/components/TaskCard';
 import { ManualTaskModal } from '@/components/ManualTaskModal';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
-import { Button } from '@/components/ui/button';
 import { 
   Plus, History, Activity, Zap, Layers, Compass, BarChart3, ArrowUpRight
 } from 'lucide-react';
@@ -18,7 +17,6 @@ interface HomeProps {
 
 export default function Home({ searchQuery = '' }: HomeProps) {
   const { data: tasks, isLoading: tasksLoading } = useTasks();
-  const { data: categories } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
@@ -27,14 +25,11 @@ export default function Home({ searchQuery = '' }: HomeProps) {
     if (!tasks) return [];
     
     return tasks.filter(task => {
-      // Category Filter
       if (selectedCategory !== null && task.categoryId !== selectedCategory) return false;
       
-      // Status/Deadline Filter
       if (selectedFilter !== 'all') {
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
         if (!task.dueDate) return false;
         
         const dueDate = new Date(task.dueDate);
@@ -44,18 +39,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           if (taskDate.getTime() !== startOfToday.getTime()) return false;
         } else if (selectedFilter === 'overdue') {
           if (task.completed) return false;
-          const isOverdue = dueDate < now;
-          return isOverdue || task.priority === 'high';
+          return dueDate < now || task.priority === 'high';
         }
       }
       
-      // Search Filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        return (
-          task.title?.toLowerCase().includes(query) || 
-          task.description?.toLowerCase().includes(query)
-        );
+        return task.title?.toLowerCase().includes(query);
       }
       
       return true;
@@ -67,11 +57,11 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
   if (tasksLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#020204]">
+      <div className="min-h-screen flex items-center justify-center bg-[#030305]">
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent animate-spin"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent"
         />
       </div>
     );
@@ -80,8 +70,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="max-w-[1700px] mx-auto px-8 lg:px-16 pt-24 pb-48">
-      <div className="grid lg:grid-cols-[280px_1fr_320px] gap-12 lg:gap-20 items-start">
+    <div className="max-w-[1700px] mx-auto px-8 lg:px-16 pt-24 pb-64">
+      <div className="grid lg:grid-cols-[260px_1fr_300px] gap-12 lg:gap-20 items-start">
         
         {/* Workspace Sidebar */}
         <aside className="space-y-12 lg:sticky lg:top-28 hidden lg:block">
@@ -92,20 +82,20 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 {[
                   { id: 'all', label: 'All Tasks', icon: Layers },
                   { id: 'today', label: 'Due Today', icon: Activity },
-                  { id: 'overdue', label: 'Priority / Overdue', icon: Zap },
+                  { id: 'overdue', label: 'Priority', icon: Zap },
                 ].map((filter) => (
                   <button
                     key={filter.id}
                     onClick={() => setSelectedFilter(filter.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] transition-all duration-700 group relative",
+                      "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] transition-all duration-500 group relative",
                       selectedFilter === filter.id 
-                        ? "text-primary bg-primary/5 shadow-2xl border border-primary/20" 
+                        ? "text-primary bg-primary/5 border border-primary/20" 
                         : "text-white/20 hover:text-white hover:bg-white/[0.03]"
                     )}
                   >
                     <div className="flex items-center gap-4 relative z-10 italic">
-                      <filter.icon className={cn("w-4 h-4 transition-transform duration-700", selectedFilter === filter.id && "scale-110 rotate-6")} />
+                      <filter.icon className={cn("w-4 h-4 transition-transform", selectedFilter === filter.id && "scale-110 rotate-6")} />
                       <span>{filter.label}</span>
                     </div>
                   </button>
@@ -115,7 +105,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
             <div className="space-y-6 pt-10 border-t border-white/[0.03]">
               <div className="px-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic leading-none">Categories</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic leading-none">Folders</p>
               </div>
               <CategoryFilter 
                 selectedCategory={selectedCategory} 
@@ -130,11 +120,11 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dashboard Core */}
         <main className="space-y-16">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-white/[0.03] pb-12">
+          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-white/[0.03] pb-12">
             <div className="space-y-4">
-              <h1 className="text-7xl font-black tracking-[-0.08em] text-white leading-none">Workspace</h1>
+              <h1 className="text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
               <p className="text-white/20 font-black text-sm uppercase tracking-[0.4em] italic mt-2">
-                Managing {activeTasks.length} active projects
+                Optimizing {activeTasks.length} active tasks
               </p>
             </div>
             
@@ -142,40 +132,31 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsModalOpen(true)}
-              className="h-16 px-10 rounded-2xl bg-primary text-white flex items-center gap-4 shadow-2xl shadow-primary/30 group relative overflow-hidden active:scale-95 transition-all"
+              className="h-16 px-10 rounded-2xl bg-primary text-white flex items-center gap-4 shadow-2xl glass-shadow group relative overflow-hidden active:scale-95 transition-all"
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Plus className="w-6 h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10 italic">Create Task</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10 italic">New Task</span>
             </motion.button>
-          </div>
+          </header>
 
-          <div className="grid grid-cols-1 gap-5">
+          <div className="grid grid-cols-1 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {activeTasks.length > 0 ? (
                 activeTasks.map((task, idx) => (
-                  <motion.div
-                    key={task.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30, delay: idx * 0.04 }}
-                  >
-                    <TaskCard task={task} />
-                  </motion.div>
+                  <TaskCard key={task.id} task={task} />
                 ))
               ) : (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="py-40 flex flex-col items-center text-center space-y-10 premium-card border-dashed bg-transparent shadow-none"
+                  className="py-40 flex flex-col items-center text-center space-y-10 frosted-layer border-dashed bg-transparent shadow-none"
                 >
                   <Compass className="w-16 h-16 text-white/10 animate-pulse" />
                   <div className="space-y-4 max-w-sm relative z-10">
-                    <h3 className="text-3xl font-black text-white italic">Shelf is Empty</h3>
+                    <h3 className="text-3xl font-black text-white italic">Workspace Clear</h3>
                     <p className="text-white/10 text-[10px] font-black uppercase tracking-[0.4em] italic leading-relaxed">
-                      Your trajectory is fully aligned. <br/> Create a new task to continue.
+                      All systems optimal. Create a new task to resume.
                     </p>
                   </div>
                 </motion.div>
@@ -200,11 +181,11 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dynamic Activity Wing */}
         <aside className="space-y-12 lg:sticky lg:top-28 hidden xl:block">
-           <div className="premium-card p-10 space-y-10">
+           <div className="frosted-layer p-10 space-y-10">
               <div className="flex items-center justify-between pb-6 border-b border-white/[0.03]">
                 <div className="space-y-1">
-                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-white">Output</h4>
-                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic">Synchronized</p>
+                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-white leading-none">Efficiency</h4>
+                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic leading-none">Synchronized</p>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                   <BarChart3 className="w-5 h-5 text-emerald-500" />
@@ -215,9 +196,9 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 <div className="space-y-6">
                    <div className="flex items-end justify-between">
                       <div className="text-7xl font-black tracking-[-0.1em] text-white leading-none">{completionRate}%</div>
-                      <ArrowUpRight className="w-8 h-8 text-emerald-500/20 group-hover:text-emerald-500 transition-colors duration-700" />
+                      <ArrowUpRight className="w-8 h-8 text-emerald-500/20" />
                    </div>
-                   <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden p-0.5">
+                   <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden p-0.5">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${completionRate}%` }}

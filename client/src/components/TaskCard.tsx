@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Task } from '@/types/task';
 import { useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit2, Check, MoreHorizontal, Clock, Target, CalendarDays, Share2, CornerUpRight, Zap } from 'lucide-react';
+import { Trash2, Edit2, Check, MoreHorizontal, Calendar, Zap, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ManualTaskModal } from './ManualTaskModal';
@@ -24,7 +23,6 @@ export function TaskCard({ task }: TaskCardProps) {
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const { data: categories } = useCategories();
-  const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const category = categories?.find(c => c.id === task.categoryId);
@@ -38,124 +36,107 @@ export function TaskCard({ task }: TaskCardProps) {
 
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
 
-  const priorityColors = {
-    high: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
-    medium: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
-    low: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
+  const priorityMeta = {
+    high: { color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20', icon: AlertCircle },
+    medium: { color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20', icon: Zap },
+    low: { color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', icon: Check }
   };
 
-  const priorityIcons = {
-    high: <Zap className="w-3.5 h-3.5" />,
-    medium: <Clock className="w-3.5 h-3.5" />,
-    low: <CalendarDays className="w-3.5 h-3.5" />
-  };
+  const pm = priorityMeta[task.priority as keyof typeof priorityMeta];
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="group relative"
+      whileHover={{ y: -4 }}
+      className="task-node group"
     >
-      <div
-        className={cn(
-          "premium-card p-6 pl-12 transition-all duration-700 relative hover:bg-white/[0.08] hover:border-white/[0.2]",
-          task.completed ? "opacity-30 blur-[0.5px] pointer-events-none grayscale" : "opacity-100"
-        )}
-      >
-        {/* Modern Accent Bar */}
-        <div 
+      <div className={cn(
+        "task-node-inner transition-all duration-500",
+        task.completed ? "opacity-30 grayscale blur-[0.3px]" : "opacity-100"
+      )}>
+        {/* Status Indicator */}
+        <button 
+          onClick={handleToggleComplete}
           className={cn(
-            "absolute left-2 top-4 bottom-4 w-1.5 rounded-full shadow-2xl transition-all duration-700",
-            task.priority === 'high' ? "bg-rose-500 shadow-[2px_0_20px_rgba(244,63,94,0.4)]" :
-            task.priority === 'medium' ? "bg-amber-500 shadow-[2px_0_20px_rgba(245,158,11,0.2)]" :
-            "bg-emerald-500 shadow-[2px_0_20px_rgba(16,185,129,0.2)]"
+            "w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0",
+            task.completed 
+              ? "bg-primary border-primary shadow-[0_0_20px_rgba(59,130,246,0.4)]" 
+              : "border-white/5 bg-white/[0.02] hover:border-primary/40"
           )}
-        />
-
-        <div className="flex items-center gap-8">
-          {/* Interaction Switch */}
-          <button 
-            onClick={handleToggleComplete}
-            className={cn(
-              "w-9 h-9 rounded-2xl border-2 flex items-center justify-center transition-all duration-700 shrink-0",
-              task.completed 
-                ? "bg-primary border-primary shadow-2xl shadow-primary/40 rotate-12" 
-                : "border-white/10 hover:border-primary/40 bg-black/40 hover:scale-105 active:scale-90"
+        >
+          <AnimatePresence mode="wait">
+            {task.completed ? (
+              <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                <Check className="w-5 h-5 text-white stroke-[4px]" />
+              </motion.div>
+            ) : (
+              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-primary transition-all group-hover:scale-150" />
             )}
-          >
-            <AnimatePresence mode="wait">
-              {task.completed ? (
-                <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                  <Check className="w-5 h-5 text-white stroke-[4px]" />
-                </motion.div>
-              ) : (
-                <div className="w-2 h-2 rounded-full bg-white/20 group-hover:bg-primary transition-colors" />
+          </AnimatePresence>
+        </button>
+
+        <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h3 className={cn(
+                "text-[17px] font-bold tracking-tight truncate",
+                task.completed ? "text-white/20" : "text-white group-hover:text-primary transition-colors"
+              )}>
+                {task.title}
+              </h3>
+              {category && (
+                <div 
+                  className="px-2.5 py-0.5 rounded-lg border border-white/[0.05] bg-black/40 flex items-center gap-2"
+                  style={{ color: category.color }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{category.name}</span>
+                </div>
               )}
-            </AnimatePresence>
-          </button>
-
-          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-6 overflow-hidden">
-            <div className="space-y-2 flex-1 min-w-0">
-               <div className="flex items-center flex-wrap gap-4">
-                  <h3 className={cn(
-                    "text-xl font-black tracking-tight transition-all duration-700 truncate italic",
-                    task.completed ? "line-through text-white/10" : "text-white group-hover:text-primary"
-                  )}>
-                    {task.title}
-                  </h3>
-                  {category && (
-                    <div className="px-3 py-1 rounded-xl bg-black/60 border border-white/[0.1] flex items-center gap-2 group-hover:border-primary/20 transition-all">
-                       <div 
-                         className="w-1.5 h-1.5 rounded-full shadow-[0_0_10px_currentColor]" 
-                         style={{ backgroundColor: category.color, color: category.color }} 
-                       />
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 italic">{category.name}</span>
-                    </div>
-                  )}
-               </div>
-               
-               <div className="flex items-center flex-wrap gap-8 text-[11px] uppercase font-black tracking-widest text-white/20 italic">
-                  <div className={cn("flex items-center gap-2 px-3 py-1 rounded-lg border transition-all duration-700", priorityColors[task.priority as keyof typeof priorityColors])}>
-                    {priorityIcons[task.priority as keyof typeof priorityIcons]}
-                    <span>{task.priority}</span>
-                  </div>
-                  
-                  {task.dueDate && (
-                    <div className={cn("flex items-center gap-2 transition-colors duration-700", isOverdue ? "text-rose-500 animate-pulse" : "group-hover:text-white/40")}>
-                       <CalendarDays className="w-4 h-4" />
-                       {format(new Date(task.dueDate), 'MMM d, h:mm a')}
-                    </div>
-                  )}
-               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Button 
-                onClick={() => setIsEditModalOpen(true)}
-                variant="ghost" 
-                size="icon" 
-                className="h-11 w-11 rounded-xl bg-white/[0.03] hover:bg-white/10 hover:border-white/10 border border-transparent transition-all opacity-0 group-hover:opacity-100"
-              >
-                <Edit2 className="w-4 h-4 text-white/20 group-hover:text-white" />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl bg-white/[0.03] hover:bg-white/10 hover:border-white/10 border border-transparent transition-all opacity-0 group-hover:opacity-100">
-                    <MoreHorizontal className="w-4 h-4 text-white/20" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52 p-2 rounded-[1.5rem] bg-[#0c0c0e]/95 backdrop-blur-3xl border-white/[0.1] shadow-3xl">
-                  <DropdownMenuItem 
-                    onClick={() => deleteTask.mutate(task.id)}
-                    className="rounded-xl font-bold text-[10px] uppercase tracking-widest gap-4 py-3.5 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer italic px-4"
-                  >
-                    <Trash2 className="w-4 h-4" /> Delete Task
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            
+            <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-white/20">
+              <div className={cn("flex items-center gap-1.5", pm.color)}>
+                <pm.icon className="w-3.5 h-3.5" />
+                <span>{task.priority}</span>
+              </div>
+              
+              {task.dueDate && (
+                <div className={cn("flex items-center gap-1.5", isOverdue && !task.completed ? "text-rose-500 animate-pulse" : "")}>
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{format(new Date(task.dueDate), 'MMM d, h:mm a')}</span>
+                </div>
+              )}
             </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <Button 
+              onClick={() => setIsEditModalOpen(true)}
+              variant="ghost" 
+              size="icon" 
+              className="h-10 w-10 rounded-xl hover:bg-white/5"
+            >
+              <Edit2 className="w-3.5 h-3.5 text-white/40 group-hover:text-white" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5">
+                  <MoreHorizontal className="w-3.5 h-3.5 text-white/40" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl bg-[#0c0c0e] border border-white/[0.08]">
+                <DropdownMenuItem 
+                  onClick={() => deleteTask.mutate(task.id)}
+                  className="rounded-xl font-bold text-[10px] uppercase tracking-widest gap-3 py-3 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete Task
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

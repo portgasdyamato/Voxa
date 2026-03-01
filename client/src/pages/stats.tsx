@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTaskStats } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
-import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
 import { StatsCharts } from '@/components/StatsCharts';
 import { Button } from '@/components/ui/button';
 import { 
-  TrendingUp, CheckCircle, Clock, Target, CalendarDays, 
-  Zap, Trophy, ArrowUpRight, Activity, Layers, BarChart4, 
-  Layout, BarChart3, PieChart as PieIcon, Hexagon,
-  ArrowRightLeft, TargetIcon, Briefcase, Sparkles, Filter
+  TrendingUp, CheckCircle, Zap, ArrowUpRight, BarChart3, 
+  Hexagon, Sparkles, Target, Activity, Trophy, Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export default function Stats() {
@@ -27,11 +24,11 @@ export default function Stats() {
 
   if (statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#020204]">
+      <div className="min-h-screen flex items-center justify-center bg-[#030305]">
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent animate-spin"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent"
         />
       </div>
     );
@@ -42,128 +39,163 @@ export default function Stats() {
 
   return (
     <div className="max-w-[1700px] mx-auto px-8 lg:px-16 pt-24 pb-48">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row items-end justify-between gap-12 mb-20 border-b border-white/[0.03] pb-12"
-      >
-        <div className="space-y-4 text-left">
-          <h1 className="text-7xl font-black tracking-[-0.08em] text-white">Performance</h1>
-          <p className="text-white/20 font-black text-sm uppercase tracking-[0.4em] italic leading-none">
-            In-depth analysis of your work trajectory and accomplishment patterns.
-          </p>
+      <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-16 border-b border-white/[0.03] pb-12">
+        <div className="space-y-4">
+          <h1 className="text-7xl font-black tracking-[-0.05em] text-white">Performance</h1>
+          <p className="text-white/20 font-black text-sm uppercase tracking-[0.4em] italic">Visualizing your productivity trajectory</p>
         </div>
 
-        <div className="p-1.5 h-12 rounded-[1.2rem] border border-white/[0.08] bg-white/[0.02] backdrop-blur-3xl flex items-center gap-1">
-          {[
-            { value: 'week', label: '7 Days' },
-            { value: 'month', label: '30 Days' },
-            { value: '3months', label: '90 Days' }
-          ].map((period) => (
+        <div className="p-1 rounded-2xl border border-white/[0.05] bg-white/[0.02] backdrop-blur-3xl flex items-center gap-1">
+          {['week', 'month', '3months'].map((period) => (
             <Button
-              key={period.value}
+              key={period}
               variant="ghost"
               size="sm"
-              onClick={() => setSelectedPeriod(period.value)}
+              onClick={() => setSelectedPeriod(period)}
               className={cn(
-                "h-9 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] px-8 transition-all duration-700 italic",
-                selectedPeriod === period.value 
-                  ? "bg-primary text-white shadow-2xl shadow-primary/30" 
-                  : "text-white/20 hover:text-white"
+                "h-10 rounded-xl font-black text-[11px] uppercase tracking-widest px-8 transition-all duration-500",
+                selectedPeriod === period ? "bg-primary text-white shadow-2xl" : "text-white/20 hover:text-white"
               )}
             >
-              {period.label}
+              {period === 'week' ? '7 Days' : period === 'month' ? '30 Days' : '90 Days'}
             </Button>
           ))}
         </div>
-      </motion.div>
+      </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-        {[
-          { title: "Accomplished", value: stats?.completedTasks || 0, icon: <CheckCircle className="w-5 h-5" />, footer: `Daily Average: ${avgDaily}`, color: "primary", delay: 0.1 },
-          { title: "Resolution Rate", value: `${stats?.completionRate || 0}%`, icon: <Zap className="w-5 h-5" />, footer: "Overall Target Attainment", color: "emerald", delay: 0.2 },
-          { title: "Active Threads", value: stats?.pendingTasks || 0, icon: <Hexagon className="w-5 h-5" />, footer: `${stats?.overdueTasks || 0} Critical Drifts`, color: "rose", delay: 0.3 },
-          { title: "Daily Delta", value: todayProgress, icon: <Sparkles className="w-5 h-5" />, footer: "Real-time accomplished today", color: "amber", delay: 0.4 }
-        ].map((item, idx) => (
-          <StatCard key={idx} {...item} />
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+         {/* Key Metrics - Bento Style */}
+         <BentoStat 
+            title="Tasks Finished" 
+            value={stats?.completedTasks || 0} 
+            icon={<CheckCircle className="w-6 h-6 text-emerald-400" />} 
+            description={`Cycle average: ${avgDaily}`}
+            color="emerald"
+            delay={0.1}
+         />
+         <BentoStat 
+            title="Success Rate" 
+            value={`${stats?.completionRate || 0}%`} 
+            icon={<Target className="w-6 h-6 text-primary" />} 
+            description="Overall Target Attainment"
+            color="primary"
+            delay={0.2}
+         />
+         <BentoStat 
+            title="Active Projects" 
+            value={stats?.pendingTasks || 0} 
+            icon={<Activity className="w-6 h-6 text-rose-400" />} 
+            description={`${stats?.overdueTasks || 0} require focus`}
+            color="rose"
+            delay={0.3}
+         />
+         <BentoStat 
+            title="Daily Output" 
+            value={todayProgress} 
+            icon={<Sparkles className="w-6 h-6 text-amber-400" />} 
+            description="Accomplished today"
+            color="amber"
+            delay={0.4}
+         />
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, duration: 1 }}
-        className="premium-card p-16 md:p-20 relative overflow-hidden group shadow-3xl bg-white/[0.02] border-white/[0.05]"
-      >
-        <div className="absolute top-0 right-0 p-24 opacity-[0.01] pointer-events-none group-hover:rotate-12 transition-transform duration-[3000ms]">
-          <TrendingUp className="w-[600px] h-[600px] text-primary" />
-        </div>
-        
-        <div className="relative z-10 space-y-20">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-            <div className="flex items-center gap-8">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-2xl inner-glow group-hover:rotate-12 transition-transform duration-1000">
-                 <BarChart3 className="w-8 h-8 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-4xl font-black tracking-tight text-white leading-none italic">Task Dynamics</h2>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/5 mt-2 italic">Visualizing historical task data through high-end analytics</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-6 px-8 py-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] italic">
-               <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 leading-none">Efficiency Rank</span>
-                  <span className="text-xl font-bold text-emerald-500 mt-2">Elite +14%</span>
-               </div>
-               <TrendingUp className="w-8 h-8 text-emerald-500/30" />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          className="lg:col-span-2 bento-card relative overflow-hidden group"
+        >
+          <div className="flex items-center justify-between mb-12">
+             <div className="flex items-center gap-6">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                   <TrendingUp className="w-7 h-7 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black italic">Productivity Trend</h2>
+                  <p className="text-[10px] uppercase font-black tracking-widest text-white/10 mt-1">Vocalizing your workspace flow</p>
+                </div>
+             </div>
+             <ArrowUpRight className="w-8 h-8 text-white/5 group-hover:text-primary transition-colors" />
           </div>
           
-          {stats && (
-            <div className="min-h-[500px]">
+          <div className="h-[400px] chart-glow">
+            {stats && (
               <StatsCharts 
                 data={stats} 
                 period={selectedPeriod}
                 categories={categories || []}
               />
-            </div>
-          )}
-        </div>
-      </motion.div>
+            )}
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bento-card bg-gradient-to-br from-primary/10 to-transparent border-primary/10 space-y-12"
+        >
+           <div className="flex items-center gap-4">
+              <Trophy className="w-10 h-10 text-primary" />
+              <h3 className="text-2xl font-black italic">Efficiency Insight</h3>
+           </div>
+           
+           <div className="space-y-8">
+              <div className="space-y-4">
+                 <p className="text-[11px] font-black uppercase tracking-[0.3em] text-white/20">Today's Peak Output</p>
+                 <div className="text-6xl font-black">{Math.round(todayProgress * 1.5)}% <span className="text-lg text-emerald-400 font-bold ml-2">+12%</span></div>
+                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: '70%' }} className="h-full bg-primary" />
+                 </div>
+              </div>
+
+              <div className="space-y-6 pt-10 border-t border-white/[0.05]">
+                 <p className="text-[10px] uppercase font-black tracking-widest text-white/30 leading-relaxed italic">
+                    You are performing at an elite level. Your trajectory is optimal for meeting all quarterly goals.
+                 </p>
+                 <button className="w-full h-14 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-[10px] font-black uppercase tracking-widest italic group overflow-hidden relative">
+                    <span className="relative z-10 transition-transform group-hover:translate-x-2 flex items-center justify-center gap-3">
+                       Detailed Breakdown <ArrowUpRight className="w-4 h-4" />
+                    </span>
+                 </button>
+              </div>
+           </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon, footer, color, delay }: any) {
-  const colorMap: any = {
-    primary: "text-primary bg-primary/5 border-primary/20",
-    emerald: "text-emerald-500 bg-emerald-500/5 border-emerald-500/20",
-    rose: "text-rose-500 bg-rose-500/5 border-rose-500/20",
-    amber: "text-amber-500 bg-amber-500/5 border-amber-500/20",
+function BentoStat({ title, value, icon, description, color, delay }: any) {
+  const colors = {
+    emerald: "border-emerald-500/20 group-hover:border-emerald-500/40",
+    primary: "border-primary/20 group-hover:border-primary/40",
+    rose: "border-rose-500/20 group-hover:border-rose-500/40",
+    amber: "border-amber-500/20 group-hover:border-amber-500/40",
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring", stiffness: 200, damping: 20 }}
-      className="premium-card p-10 group inner-glow flex flex-col justify-between min-h-[280px]"
+      transition={{ delay }}
+      className={cn("bento-card !p-8 group relative overflow-hidden", colors[color as keyof typeof colors])}
     >
-      <div className="flex items-center justify-between">
-        <div className={cn("p-5 rounded-2xl border transition-all duration-700 group-hover:rotate-12 shadow-3xl", colorMap[color])}>
-          {icon}
+      <div className="flex flex-col h-full justify-between gap-8">
+        <div className="flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] group-hover:scale-110 group-hover:rotate-6 transition-all">
+            {icon}
+          </div>
+          <ArrowUpRight className="w-5 h-5 text-white/5 group-hover:text-white transition-opacity" />
         </div>
-        <ArrowUpRight className="w-8 h-8 text-white/5 opacity-0 group-hover:opacity-100 transition-all duration-1000 translate-x-10 group-hover:translate-x-0" />
-      </div>
-      
-      <div className="space-y-4">
-        <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/10 italic leading-none">{title}</p>
-        <h3 className="text-8xl font-black tracking-[-0.08em] text-white leading-none transition-all duration-1000 group-hover:tracking-normal group-hover:scale-105 origin-left">{value}</h3>
-      </div>
-      
-      <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 pt-8 border-t border-white/[0.03] italic leading-none">
-        {footer}
+        <div className="space-y-2">
+          <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/20 italic leading-none">{title}</h4>
+          <div className="text-6xl font-black tracking-tighter transition-all group-hover:tracking-normal group-hover:translate-x-1 origin-left">{value}</div>
+        </div>
+        <div className="text-[10px] font-black uppercase tracking-widest text-white/10 pt-6 border-t border-white/[0.03] italic">
+          {description}
+        </div>
       </div>
     </motion.div>
   );

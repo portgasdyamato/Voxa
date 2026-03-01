@@ -1,53 +1,35 @@
 import { useMemo } from 'react';
-import { TaskStats } from '@/types/task';
 import { 
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, AreaChart, Area 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, BarChart, Bar, Cell,
+  PieChart, Pie
 } from 'recharts';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { TaskStats } from '@/hooks/useTasks';
+import { Category } from '@/types/task';
 
 interface StatsChartsProps {
   data: TaskStats;
   period: string;
-  categories: any[];
+  categories: Category[];
 }
 
 export function StatsCharts({ data, period, categories }: StatsChartsProps) {
-  const completionData = useMemo(() => {
-    return data.chartData?.map((item: any) => ({
-      date: item.date,
-      day: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
-      completed: item.completed,
-      total: item.total,
-      pending: item.pending
-    })) || [];
-  }, [data.chartData]);
-
-  const priorityData = useMemo(() => {
-    const highCount = data.highPriority || 0;
-    const mediumCount = data.mediumPriority || 0;
-    const lowCount = data.lowPriority || 0;
-    
-    return [
-      { name: 'Critical', value: highCount, color: '#f43f5e' },
-      { name: 'Standard', value: mediumCount, color: '#3b82f6' },
-      { name: 'Minor', value: lowCount, color: '#10b981' },
-    ];
-  }, [data]);
+  const categoryData = useMemo(() => {
+    return categories.map(cat => ({
+      name: cat.name,
+      value: data.categoryDistribution[cat.id] || 0,
+      color: cat.color
+    })).filter(d => d.value > 0);
+  }, [data, categories]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/[0.05] p-6 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-500">
-          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4 pb-4 border-b border-white/[0.03] italic">
-             {label || payload[0].name} Cycle
-          </p>
-          <div className="flex items-baseline gap-3">
-            <p className="text-3xl font-black text-white tracking-tighter">
-              {payload[0].value}
-            </p>
-            <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em] italic">Segments</span>
+        <div className="bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/[0.1] p-5 rounded-2xl shadow-3xl">
+          <p className="text-[10px] uppercase font-black tracking-widest text-white/40 italic mb-2">{label}</p>
+          <div className="flex items-center gap-3">
+             <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+             <p className="text-xl font-black text-white">{payload[0].value} <span className="text-[10px] text-white/30 uppercase">Finished</span></p>
           </div>
         </div>
       );
@@ -56,109 +38,97 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-32">
-      <div className="space-y-12 relative">
-        <div className="flex flex-col gap-2 px-2">
-          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic leading-none">Activity Vector</p>
-          <h3 className="text-2xl font-black tracking-tight text-white">Daily Output Synthesis</h3>
-        </div>
-        <div className="h-[400px] w-full relative">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={completionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="rgba(255,255,255,0.03)" />
-              <XAxis 
-                dataKey="day" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: 900, letterSpacing: '0.2em' }} 
-                dy={20}
-              />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: 900 }}
-              />
-              <Tooltip 
-                content={<CustomTooltip />} 
-                cursor={{ stroke: 'rgba(59, 130, 246, 0.2)', strokeWidth: 1 }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="completed" 
-                stroke="#3b82f6" 
-                strokeWidth={4}
-                fillOpacity={1} 
-                fill="url(#colorCompleted)" 
-                animationDuration={2000}
-                animationEasing="cubic-bezier(0.23, 1, 0.32, 1)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+    <div className="grid grid-cols-1 gap-12">
+      {/* Primary Trend Chart */}
+      <div className="h-[400px] w-full relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+            <XAxis 
+              dataKey="date" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#ffffff20', fontSize: 10, fontWeight: 900 }}
+              dy={15}
+            />
+            <YAxis hide={true} />
+            <Tooltip content={<CustomTooltip />} />
+            <Area 
+              type="monotone" 
+              dataKey="completed" 
+              stroke="#3b82f6" 
+              strokeWidth={4}
+              fillOpacity={1} 
+              fill="url(#colorValue)" 
+              animationDuration={2000}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
 
-      <div className="space-y-12">
-        <div className="flex flex-col gap-2 px-2">
-          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic leading-none">Priority Mapping</p>
-          <h3 className="text-2xl font-black tracking-tight text-white">Registry Weight Distribution</h3>
-        </div>
-        <div className="h-[400px] flex flex-col items-center justify-center relative">
-          <div className="h-full w-full relative">
-             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center">
-                   <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.4em] mb-2 italic">Total Array</p>
-                   <p className="text-5xl font-black text-white tracking-[-0.05em]">
-                      {data.totalTasks || 0}
-                   </p>
-                </div>
-             </div>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={priorityData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={100}
-                  outerRadius={140}
-                  paddingAngle={12}
-                  dataKey="value"
-                  stroke="none"
-                  animationDuration={2000}
-                  animationEasing="cubic-bezier(0.23, 1, 0.32, 1)"
-                >
-                  {priorityData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color} 
-                      className="hover:opacity-80 transition-all duration-700 cursor-pointer outline-none"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-12 flex flex-wrap justify-center gap-12">
-            {priorityData.map((entry) => (
-              <div key={entry.name} className="flex flex-col items-center gap-3 group">
-                <div
-                  className="w-3 h-3 rounded-full shadow-[0_0_15px_currentColor] group-hover:scale-150 transition-all duration-700"
-                  style={{ backgroundColor: entry.color, color: entry.color }}
-                />
-                <div className="text-center">
-                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 leading-none group-hover:text-white/40 transition-colors italic">{entry.name}</span>
-                  <p className="text-lg font-black text-white tracking-tighter mt-1">{entry.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Breakdown Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-white/[0.03]">
+         <section className="space-y-8">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic px-4">Workspace Alignment</h4>
+            <div className="h-[250px] w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={categoryData}>
+                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                     <XAxis 
+                        dataKey="name" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#ffffff20', fontSize: 9, fontWeight: 900 }}
+                     />
+                     <Tooltip 
+                        contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px' }}
+                        itemStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900 }}
+                     />
+                     <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={24}>
+                        {categoryData.map((entry, index) => (
+                           <Cell key={`cell-${index}`} fill={entry.color} opacity={0.6} />
+                        ))}
+                     </Bar>
+                  </BarChart>
+               </ResponsiveContainer>
+            </div>
+         </section>
+
+         <section className="space-y-8">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic px-4">Distribution Balance</h4>
+            <div className="h-[250px] w-full relative flex items-center justify-center">
+               <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                     <Tooltip />
+                     <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={10}
+                        dataKey="value"
+                        stroke="none"
+                        animationDuration={1500}
+                     >
+                        {categoryData.map((entry, index) => (
+                           <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                     </Pie>
+                  </PieChart>
+               </ResponsiveContainer>
+               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white/10">Ratio</span>
+                  <span className="text-2xl font-black text-white">{data.completedTasks}</span>
+               </div>
+            </div>
+         </section>
       </div>
     </div>
   );
