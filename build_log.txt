@@ -1,0 +1,74 @@
+﻿[36mvite v5.4.19 [32mbuilding for production...[36m[39m
+transforming...
+node.exe : Browserslist: 
+browsers data (caniuse-lite) 
+is 17 months old. Please run:
+At C:\Program 
+Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (Browserslis  
+  t: b...ld. Please run::Str   
+ ing) [], RemoteException
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+  npx 
+update-browserslist-db@latest
+  Why you should do it 
+regularly: https://github.com/b
+rowserslist/update-db#readme
+[32mΓ£ô[39m 3 modules transformed.
+[31mx[39m Build failed in 
+746ms
+[31merror during build:
+[31m[vite:css] [postcss] 
+Cannot find module 
+'@tailwindcss/typography'
+Require stack:
+- C:\Users\HP\OneDrive\Desktop\
+appx\VoXa\tailwind.config.ts[3
+1m
+file: [36mC:/Users/HP/OneDrive
+/Desktop/appx/VoXa/client/src/i
+ndex.css:undefined:NaN[31m
+    at Module._resolveFilename 
+(node:internal/modules/cjs/load
+er:1212:15)
+    at Function.resolve (node:i
+nternal/modules/helpers:193:19)
+    at _resolve (C:\Users\HP\On
+eDrive\Desktop\appx\VoXa\node_m
+odules\tailwindcss\node_modules
+\jiti\dist\jiti.js:1:246378)
+    at jiti (C:\Users\HP\OneDri
+ve\Desktop\appx\VoXa\node_modul
+es\tailwindcss\node_modules\jit
+i\dist\jiti.js:1:249092)
+    at C:\Users\HP\OneDrive\Des
+ktop\appx\VoXa\tailwind.config.
+ts:150:45
+    at evalModule (C:\Users\HP\
+OneDrive\Desktop\appx\VoXa\node
+_modules\tailwindcss\node_modul
+es\jiti\dist\jiti.js:1:251913)
+    at jiti (C:\Users\HP\OneDri
+ve\Desktop\appx\VoXa\node_modul
+es\tailwindcss\node_modules\jit
+i\dist\jiti.js:1:249841)
+    at C:\Users\HP\OneDrive\Des
+ktop\appx\VoXa\node_modules\tai
+lwindcss\lib\lib\load-config.js
+:52:26
+    at loadConfig (C:\Users\HP\
+OneDrive\Desktop\appx\VoXa\node
+_modules\tailwindcss\lib\lib\lo
+ad-config.js:62:6)
+    at getTailwindConfig (C:\Us
+ers\HP\OneDrive\Desktop\appx\Vo
+Xa\node_modules\tailwindcss\lib
+\lib\setupTrackingContext.js:71
+:116)[39m

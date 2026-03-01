@@ -2,10 +2,11 @@ import { useMemo } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, BarChart, Bar, Cell,
-  PieChart, Pie
+  PieChart, Pie, Legend
 } from 'recharts';
-import { TaskStats } from '@/hooks/useTasks';
-import { Category } from '@/types/task';
+import { TaskStats } from '@/types/task';
+import type { Category } from '@shared/schema';
+import { format, parseISO } from 'date-fns';
 
 interface StatsChartsProps {
   data: TaskStats;
@@ -13,122 +14,322 @@ interface StatsChartsProps {
   categories: Category[];
 }
 
+// Format date for X-axis display
+function formatDate(dateStr: string, period: string) {
+  try {
+    const d = parseISO(dateStr);
+    if (period === 'week') return format(d, 'EEE');
+    if (period === 'month') return format(d, 'MMM d');
+    return format(d, 'MMM d');
+  } catch {
+    return dateStr;
+  }
+}
+
+// Custom Tooltip for Line/Area charts
+const AreaTooltip = ({ active, payload, label, period }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#0a0a0c]/95 backdrop-blur-3xl border border-white/[0.1] p-4 rounded-2xl shadow-2xl min-w-[140px]">
+        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-white/30 mb-3">
+          {label ? formatDate(label, period) : ''}
+        </p>
+        <div className="space-y-2">
+          {payload.map((entry: any, i: number) => (
+            <div key={i} className="flex items-center gap-2.5">
+              <div
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }}
+              />
+              <span className="text-xs font-black text-white">{entry.value}</span>
+              <span className="text-[9px] text-white/30 uppercase tracking-widest">
+                {entry.name === 'completed' ? 'done' : entry.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Custom Tooltip for Bar chart
+const BarTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#0a0a0c]/95 backdrop-blur-3xl border border-white/[0.1] p-3 rounded-xl shadow-2xl">
+        <p className="text-[9px] uppercase font-black tracking-widest text-white/40 mb-1">{payload[0].payload.name}</p>
+        <p className="text-xl font-black text-white">{payload[0].value} <span className="text-[9px] text-white/30">tasks</span></p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Custom Donut Label
+const DonutLabel = ({ cx, cy, total }: { cx: number; cy: number; total: number }) => (
+  <>
+    <text x={cx} y={cy - 8} textAnchor="middle" dominantBaseline="central" className="fill-white" style={{ fontSize: 28, fontWeight: 900 }}>
+      {total}
+    </text>
+    <text x={cx} y={cy + 18} textAnchor="middle" style={{ fontSize: 9, fontWeight: 900, fill: 'rgba(255,255,255,0.25)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+      TOTAL
+    </text>
+  </>
+);
+
 export function StatsCharts({ data, period, categories }: StatsChartsProps) {
   const categoryData = useMemo(() => {
-    return categories.map(cat => ({
-      name: cat.name,
-      value: data.categoryDistribution[cat.id] || 0,
-      color: cat.color
-    })).filter(d => d.value > 0);
+    if (!categories || categories.length === 0) return [];
+    return categories
+      .map(cat => ({
+        name: cat.name,
+        value: (data.categoryDistribution?.[cat.id]) || 0,
+        color: cat.color || '#3b82f6'
+      }))
+      .filter(d => d.value > 0)
+      .sort((a, b) => b.value - a.value);
   }, [data, categories]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/[0.1] p-5 rounded-2xl shadow-3xl">
-          <p className="text-[10px] uppercase font-black tracking-widest text-white/40 italic mb-2">{label}</p>
-          <div className="flex items-center gap-3">
-             <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-             <p className="text-xl font-black text-white">{payload[0].value} <span className="text-[10px] text-white/30 uppercase">Finished</span></p>
-          </div>
-        </div>
-      );
+  // Condense chart data for readability when period is long
+  const chartData = useMemo(() => {
+    if (!data.chartData) return [];
+    if (period === '3months') {
+      // Group by week for 3-month view
+      const weeks: Record<string, { date: string; completed: number; total: number; pending: number }> = {};
+      data.chartData.forEach(d => {
+        try {
+          const date = parseISO(d.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const key = format(weekStart, 'MMM d');
+          if (!weeks[key]) weeks[key] = { date: key, completed: 0, total: 0, pending: 0 };
+          weeks[key].completed += d.completed;
+          weeks[key].total += d.total;
+          weeks[key].pending += d.pending;
+        } catch {}
+      });
+      return Object.values(weeks);
     }
-    return null;
-  };
+    return data.chartData;
+  }, [data.chartData, period]);
+
+  const hasData = data.totalTasks > 0;
+  const hasCategoryData = categoryData.length > 0;
 
   return (
-    <div className="grid grid-cols-1 gap-12">
-      {/* Primary Trend Chart */}
-      <div className="h-[400px] w-full relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-            <XAxis 
-              dataKey="date" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#ffffff20', fontSize: 10, fontWeight: 900 }}
-              dy={15}
-            />
-            <YAxis hide={true} />
-            <Tooltip content={<CustomTooltip />} />
-            <Area 
-              type="monotone" 
-              dataKey="completed" 
-              stroke="#3b82f6" 
-              strokeWidth={4}
-              fillOpacity={1} 
-              fill="url(#colorValue)" 
-              animationDuration={2000}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+    <div className="space-y-0 w-full">
+      {/* Primary Trend Chart — Stacked Areas */}
+      <div className="h-[360px] w-full relative">
+        {!hasData ? (
+          <div className="h-full flex flex-col items-center justify-center gap-4 opacity-30">
+            <div className="w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <p className="text-[10px] uppercase tracking-widest font-black text-white/40">No activity yet — start adding tasks</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 20, right: 10, left: -30, bottom: 0 }}>
+              <defs>
+                <linearGradient id="gradCompleted" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                  <stop offset="75%" stopColor="#3b82f6" stopOpacity={0.05}/>
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.25}/>
+                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0}/>
+                </linearGradient>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid strokeDasharray="2 6" stroke="rgba(255,255,255,0.03)" vertical={false}/>
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: 900, letterSpacing: '0.1em' }}
+                tickFormatter={(v) => formatDate(v, period)}
+                interval={period === 'week' ? 0 : 'preserveStartEnd'}
+                dy={12}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: 900 }}
+                allowDecimals={false}
+              />
+              <Tooltip content={<AreaTooltip period={period}/>}/>
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke="#8b5cf6"
+                strokeWidth={1.5}
+                fill="url(#gradTotal)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#8b5cf6', strokeWidth: 0 }}
+                animationDuration={1500}
+                animationEasing="ease-out"
+              />
+              <Area
+                type="monotone"
+                dataKey="completed"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                fill="url(#gradCompleted)"
+                dot={false}
+                activeDot={{ r: 6, fill: '#3b82f6', stroke: 'rgba(59,130,246,0.4)', strokeWidth: 6 }}
+                filter="url(#glow)"
+                animationDuration={2000}
+                animationEasing="ease-out"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+        
+        {/* Legend */}
+        {hasData && (
+          <div className="absolute top-0 right-0 flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-[2px] bg-[#8b5cf6]/60 rounded-full"/>
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Created</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-[3px] bg-[#3b82f6] rounded-full" style={{ boxShadow: '0 0 8px #3b82f6' }}/>
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Done</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Breakdown Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-white/[0.03]">
-         <section className="space-y-8">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic px-4">Workspace Alignment</h4>
-            <div className="h-[250px] w-full">
-               <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categoryData}>
-                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                     <XAxis 
-                        dataKey="name" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#ffffff20', fontSize: 9, fontWeight: 900 }}
-                     />
-                     <Tooltip 
-                        contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px' }}
-                        itemStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900 }}
-                     />
-                     <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={24}>
-                        {categoryData.map((entry, index) => (
-                           <Cell key={`cell-${index}`} fill={entry.color} opacity={0.6} />
-                        ))}
-                     </Bar>
-                  </BarChart>
-               </ResponsiveContainer>
-            </div>
-         </section>
+      {/* Bottom section — Category Bar + Donut */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/[0.04] mt-8">
+        {/* Bar Chart — Category Breakdown */}
+        <div className="space-y-5">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">By Category</h4>
+          <div className="h-[200px]">
+            {!hasCategoryData ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[9px] uppercase tracking-widest font-black text-white/15">No categories yet</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryData} margin={{ top: 0, right: 0, left: -30, bottom: 0 }} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="2 6" stroke="rgba(255,255,255,0.03)" vertical={false}/>
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: 900 }}
+                  />
+                  <YAxis hide allowDecimals={false}/>
+                  <Tooltip content={<BarTooltip/>}/>
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={40}>
+                    {categoryData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        fillOpacity={0.75}
+                        style={{ filter: `drop-shadow(0 4px 12px ${entry.color}60)` }}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
 
-         <section className="space-y-8">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic px-4">Distribution Balance</h4>
-            <div className="h-[250px] w-full relative flex items-center justify-center">
-               <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                     <Tooltip />
-                     <Pie
-                        data={categoryData}
+        {/* Donut Chart with Legend */}
+        <div className="space-y-5">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Task Split</h4>
+          <div className="flex items-center gap-6">
+            <div className="h-[200px] w-[200px] flex-shrink-0 relative">
+              {!hasData ? (
+                <div className="h-full flex items-center justify-center opacity-20">
+                  <div className="w-28 h-28 rounded-full border-4 border-dashed border-white/20"/>
+                </div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Completed', value: data.completedTasks, color: '#3b82f6' },
+                          { name: 'Pending', value: data.pendingTasks, color: '#8b5cf6' },
+                          { name: 'Overdue', value: data.overdueTasks, color: '#f43f5e' },
+                        ].filter(d => d.value > 0)}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={10}
+                        innerRadius={55}
+                        outerRadius={82}
+                        paddingAngle={4}
                         dataKey="value"
                         stroke="none"
-                        animationDuration={1500}
-                     >
-                        {categoryData.map((entry, index) => (
-                           <Cell key={`cell-${index}`} fill={entry.color} />
+                        animationDuration={1800}
+                        animationEasing="ease-out"
+                      >
+                        {[
+                          { name: 'Completed', value: data.completedTasks, color: '#3b82f6' },
+                          { name: 'Pending', value: data.pendingTasks, color: '#8b5cf6' },
+                          { name: 'Overdue', value: data.overdueTasks, color: '#f43f5e' },
+                        ].filter(d => d.value > 0).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} style={{ filter: `drop-shadow(0 0 8px ${entry.color}80)` }}/>
                         ))}
-                     </Pie>
-                  </PieChart>
-               </ResponsiveContainer>
-               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white/10">Ratio</span>
-                  <span className="text-2xl font-black text-white">{data.completedTasks}</span>
-               </div>
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center label */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-3xl font-black text-white leading-none">{data.totalTasks}</span>
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25 mt-1">tasks</span>
+                  </div>
+                </>
+              )}
             </div>
-         </section>
+
+            {/* Legend */}
+            <div className="flex flex-col gap-4 flex-1">
+              {[
+                { label: 'Completed', value: data.completedTasks, color: '#3b82f6' },
+                { label: 'Pending', value: data.pendingTasks, color: '#8b5cf6' },
+                { label: 'Overdue', value: data.overdueTasks, color: '#f43f5e' },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-3">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}` }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-white/30 truncate">{item.label}</span>
+                      <span className="text-sm font-black text-white flex-shrink-0">{item.value}</span>
+                    </div>
+                    <div className="mt-1.5 h-[2px] w-full bg-white/[0.05] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-1000 delay-300"
+                        style={{
+                          width: data.totalTasks > 0 ? `${(item.value / data.totalTasks) * 100}%` : '0%',
+                          backgroundColor: item.color,
+                          boxShadow: `0 0 8px ${item.color}60`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

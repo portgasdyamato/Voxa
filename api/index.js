@@ -206,7 +206,7 @@ async function handler(req, res) {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({
             client_id: process.env.GOOGLE_CLIENT_ID || "33589766455-q4l78megmocn1n758mt220lek0vl617a.apps.googleusercontent.com",
-            client_secret: process.env.GOOGLE_CLIENT_SECRET || "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",
+            client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
             code,
             grant_type: "authorization_code",
             redirect_uri: process.env.GOOGLE_CALLBACK_URL || "https://voxa-taupe.vercel.app/auth/google/callback"
@@ -525,6 +525,13 @@ async function handler(req, res) {
         });
       }
       
+      const categoryDistribution = {};
+      periodTasks.forEach(task => {
+        if (task.categoryId) {
+          categoryDistribution[task.categoryId] = (categoryDistribution[task.categoryId] || 0) + 1;
+        }
+      });
+      
       const stats = {
         totalTasks,
         completedTasks,
@@ -532,7 +539,8 @@ async function handler(req, res) {
         overdueTasks,
         completionRate,
         period,
-        chartData
+        chartData,
+        categoryDistribution
       };
       console.log(`Returning stats for ${period}:`, stats);
       res.status(200).json(stats);

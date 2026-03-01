@@ -17,7 +17,7 @@ export interface VoiceCommand {
   updates?: {
     title?: string;
     priority?: 'high' | 'medium' | 'low';
-    deadline?: Date;
+    deadline?: Date | null;
     category?: string;
   };
   confidence: 'high' | 'medium' | 'low';

@@ -46,6 +46,7 @@ export interface TaskStats {
   weeklyData: Array<{ day: string; completed: number; total: number }>;
   completedToday: number;
   completedThisWeek: number;
+  categoryDistribution: Record<number, number>;
 }
 
 export interface CreateTaskData {

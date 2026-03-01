@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { 
   Plus, Search, SlidersHorizontal, Layers, Activity, Zap, 
-  ListTodo, History, LayoutGrid, Mic, Command, X, Calendar, Tag, AlertCircle, Quote, Radio, AudioLines
+  ListTodo, History, LayoutGrid, Mic, Command, X, Calendar, Tag, AlertCircle, Quote, Radio, AudioLines, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -144,9 +144,9 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="rounded-3xl border-white/[0.05] bg-[#050505] p-16">
-          <DialogTitle className="text-white">Speech Interface Offline</DialogTitle>
+          <DialogTitle className="text-white">Voice Not Supported</DialogTitle>
           <DialogDescription className="text-white/20">
-            Aural detection requires a Chromium-based telemetry core.
+            Voice input requires a browser with microphone support (e.g. Chrome).
           </DialogDescription>
         </DialogContent>
       </Dialog>
@@ -176,10 +176,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
             </motion.div>
             <div>
               <DialogTitle className="text-3xl font-black tracking-[-0.05em] text-white">
-                {isListening ? 'Aural Decoding...' : 'Processing...'}
+                {isListening ? 'Listening...' : 'Processing...'}
               </DialogTitle>
               <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 mt-1 italic">
-                {isListening ? "Capturing intentional acoustic waves." : "Synthesizing aural commands."}
+                {isListening ? "Speak clearly — say a task or command." : "Analyzing your voice input."}
               </DialogDescription>
             </div>
           </div>
@@ -212,7 +212,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 </AnimatePresence>
               </div>
               <p className="text-white/20 text-sm font-bold tracking-widest animate-pulse italic uppercase">
-                Synchronizing with vocal frequency...
+                Listening — speak your task or command...
               </p>
             </div>
           ) : (
@@ -222,7 +222,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               className="space-y-12"
             >
               <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Recovered Signal</Label>
+                <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Heard</Label>
                 <div className="p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 italic text-2xl font-black tracking-tight leading-relaxed text-white">
                    "{transcript}"
                 </div>
@@ -235,10 +235,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                   </div>
                   <div className="flex items-center gap-4 text-primary">
                     <AudioLines className="w-6 h-6 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">Synthesized Action</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">Task Detected</span>
                   </div>
                   <div className="space-y-3 relative z-10">
-                    <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Proposed Node:</p>
+                    <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Will add:</p>
                     <h3 className="text-4xl font-black tracking-tight text-white leading-none">"{parsedTaskName}"</h3>
                   </div>
                   {detectedDate && (
@@ -261,7 +261,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
             onClick={() => onOpenChange(false)}
             className="flex-1 h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic hover:bg-rose-500/10 hover:text-rose-500 transition-all border border-white/[0.05]"
           >
-            Purge Signal
+            Cancel
           </Button>
           <Button
             onClick={() => {
@@ -273,7 +273,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           >
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             <span className="relative z-10 flex items-center gap-4">
-               {isListening ? 'End Recording' : 'Commit Action'}
+               {isListening ? 'Stop Recording' : 'Save Task'}
                {!isListening && <Plus className="w-4 h-4" />}
             </span>
           </Button>
