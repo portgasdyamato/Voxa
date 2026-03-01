@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, LogOut, Shield, Crown, Zap, User as UserIcon } from 'lucide-react';
+import { Settings, LogOut, Crown, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
@@ -43,52 +43,41 @@ export function ProfileDropdown() {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-72 rounded-[2rem] glass border-white/5 p-2 shadow-3xl bg-popover/80" align="end">
-          <DropdownMenuLabel className="font-normal p-6">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12 border-2 border-primary/20">
-                   <AvatarImage src={(user as any)?.profileImageUrl || ''} className="object-cover" />
-                   <AvatarFallback className="bg-primary text-primary-foreground font-black">{userInitials}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col min-w-0">
-                  <p className="text-base font-black tracking-tight truncate italic">{displayName}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 truncate">{(user as any)?.email || 'Personal Account'}</p>
-                </div>
-              </div>
-              <div className="flex gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 items-center justify-center">
-                 <Crown className="w-3.5 h-3.5 text-primary" />
-                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Pro Membership</span>
+        <DropdownMenuContent className="w-64 rounded-2xl border border-white/[0.08] bg-[#0d1117] p-1.5 shadow-[0_16px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl" align="end">
+          <DropdownMenuLabel className="font-normal px-3 py-3">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-white/[0.1] flex-shrink-0">
+                 <AvatarImage src={(user as any)?.profileImageUrl || ''} className="object-cover" />
+                 <AvatarFallback className="bg-primary text-white text-sm font-black">{userInitials}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0">
+                <p className="text-sm font-bold text-white truncate">{displayName}</p>
+                <p className="text-[11px] text-white/30 truncate">{(user as any)?.email || 'Personal Account'}</p>
               </div>
             </div>
           </DropdownMenuLabel>
           
           <DropdownMenuSeparator className="mx-2 opacity-5" />
           
-          <div className="p-2 space-y-1">
+          <div className="p-1 space-y-0.5">
             <DropdownMenuItem 
               onClick={() => setShowEditProfile(true)} 
-              className="rounded-xl gap-3 py-3 px-4 focus:bg-primary/10 transition-all cursor-pointer group"
+              className="rounded-xl gap-3 py-2.5 px-3 focus:bg-white/[0.06] transition-all cursor-pointer group"
             >
-              <Settings className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
-              <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:text-primary">Account Settings</span>
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem className="rounded-xl gap-3 py-3 px-4 opacity-30 cursor-not-allowed">
-               <Shield className="h-4 w-4 text-muted-foreground/40" />
-               <span className="text-[10px] font-black uppercase tracking-widest italic">Privacy Shield</span>
+              <Settings className="h-4 w-4 text-white/30 group-hover:text-white transition-colors" />
+              <span className="text-sm font-semibold text-white/60 group-hover:text-white">Account settings</span>
             </DropdownMenuItem>
           </div>
           
           <DropdownMenuSeparator className="mx-2 opacity-5" />
           
-          <div className="p-2">
+          <div className="p-1">
             <DropdownMenuItem 
               onClick={handleLogout} 
-              className="rounded-xl gap-3 py-3 px-4 text-rose-500 focus:bg-rose-500/10 focus:text-rose-500 transition-all cursor-pointer group"
+              className="rounded-xl gap-3 py-2.5 px-3 text-rose-400 focus:bg-rose-500/10 focus:text-rose-400 transition-all cursor-pointer group"
             >
-              <LogOut className="h-4 w-4 text-rose-500/40 group-hover:text-rose-500 transition-colors" />
-              <span className="text-[10px] font-black uppercase tracking-widest italic">Sign Out</span>
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm font-semibold">Sign out</span>
             </DropdownMenuItem>
           </div>
         </DropdownMenuContent>

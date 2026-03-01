@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReminderSettings } from '@/components/ReminderSettings';
-import { X, Calendar, Clock, Tag, AlertCircle, Quote, Layout, Layers, ShieldCheck, Zap, ArrowRight, Command } from 'lucide-react';
+import { Calendar, Clock, Plus, Edit3, ArrowRight, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -98,7 +98,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
   const handleSaveTask = async () => {
     if (!taskTitle.trim()) {
-      toast({ title: "Task name required", description: "Entry identification missing.", variant: "destructive" });
+      toast({ title: 'Task name is required', variant: 'destructive' });
       return;
     }
     const fullText = `${taskTitle} ${taskDescription}`.trim();
@@ -116,14 +116,14 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     try {
       if (isEditing) {
         await updateTask({ id: task.id, updates: payload });
-        toast({ title: "Protocol updated" });
+        toast({ title: 'Task updated successfully' });
       } else {
         await createTask(payload);
-        toast({ title: "New node synchronized" });
+        toast({ title: 'Task added!' });
       }
       onOpenChange(false);
     } catch (error) {
-      toast({ title: "Sync failed", description: "Telemetry connection error.", variant: "destructive" });
+      toast({ title: 'Something went wrong', description: 'Please try again.', variant: 'destructive' });
     }
   };
 
@@ -137,156 +137,164 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     }
   };
 
+  const isPending = isCreating || isUpdating;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-[3rem] border border-white/[0.05] bg-[#050505] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
-        <DialogHeader className="p-16 pb-8 border-b border-white/[0.03] relative bg-[#0a0a0a]">
-          <div className="absolute top-0 right-0 p-16 opacity-[0.02] pointer-events-none">
-            <Layers className="w-64 h-64 text-primary" />
-          </div>
-          <div className="flex items-center gap-8 relative z-10">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center border border-primary/20 shadow-2xl inner-glow">
-               <Command className="w-8 h-8 text-primary" />
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col max-h-[88vh]">
+        
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className={cn(
+              'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
+              isEditing ? 'bg-amber-500/15 border border-amber-500/25' : 'bg-primary/15 border border-primary/25'
+            )}>
+              {isEditing ? <Edit3 className="w-5 h-5 text-amber-400" /> : <Plus className="w-5 h-5 text-primary" />}
             </div>
             <div>
-              <DialogTitle className="text-4xl font-black tracking-[-0.05em] text-white">
-                {isEditing ? 'Modify Entry' : 'New Deployment'}
+              <DialogTitle className="text-xl font-black text-white tracking-tight">
+                {isEditing ? 'Edit Task' : 'New Task'}
               </DialogTitle>
-              <DialogDescription className="text-sm font-bold uppercase tracking-[0.2em] text-white/20 mt-1">
-                Synchronizing intentions with reality.
+              <DialogDescription className="text-[11px] text-white/30 font-medium mt-0.5">
+                {isEditing ? 'Update task details below' : 'Add the details for your new task'}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-16 pt-12 space-y-12 overflow-y-auto custom-scrollbar flex-1 pb-24">
-          <div className="space-y-10">
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Active Title</Label>
-              <Input
-                value={taskTitle}
-                onChange={(e) => handleTaskTitleChange(e.target.value)}
-                placeholder="What defines this node?"
-                className="h-20 rounded-2xl border-white/[0.05] bg-white/[0.03] focus-visible:ring-primary/40 text-2xl font-black tracking-tight px-8 placeholder:text-white/5"
-              />
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Contextual Depth</Label>
-              <textarea
-                value={taskDescription}
-                onChange={(e) => setTaskDescription(e.target.value)}
-                placeholder="Expand the core mission details..."
-                className="w-full min-h-[160px] rounded-[2rem] border border-white/[0.05] bg-white/[0.03] p-8 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 text-base font-medium transition-all duration-500 resize-none placeholder:text-white/5"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Focus Level</Label>
-                <Select value={manualPriority} onValueChange={setManualPriority}>
-                  <SelectTrigger className="h-16 rounded-2xl border-white/[0.05] bg-white/[0.03] text-sm font-bold px-8">
-                    <SelectValue placeholder="Intelligence Core" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-3xl border-white/[0.05] bg-[#0a0a0a] p-4 shadow-3xl">
-                    <SelectItem value="none" className="rounded-2xl py-4 font-bold text-[10px] uppercase tracking-widest">Auto Detection</SelectItem>
-                    <SelectItem value="low" className="rounded-2xl py-4 font-bold text-[10px] uppercase tracking-widest text-emerald-500/80">Minor Focus</SelectItem>
-                    <SelectItem value="medium" className="rounded-2xl py-4 font-bold text-[10px] uppercase tracking-widest text-amber-500/80">Standard Focus</SelectItem>
-                    <SelectItem value="high" className="rounded-2xl py-4 font-bold text-[10px] uppercase tracking-widest text-rose-500/80">Critical Focus</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Category Linkage</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="h-16 rounded-2xl border-white/[0.05] bg-white/[0.03] text-sm font-bold px-8">
-                    <SelectValue placeholder="General Registry" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-3xl border-white/[0.05] bg-[#0a0a0a] p-4 max-h-[300px]">
-                    <SelectItem value="none" className="rounded-2xl py-4 font-bold text-[10px] uppercase tracking-widest">Universal Sector</SelectItem>
-                    {categories?.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-2xl py-4 font-bold text-[10px] uppercase tracking-widest">
-                        <div className="flex items-center gap-4">
-                          <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor]" style={{ backgroundColor: cat.color }} />
-                          {cat.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-6 pt-6 border-t border-white/[0.03]">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 italic">Chronological Target</Label>
-                  <Clock className="w-4 h-4 text-white/10" />
-                </div>
-                <Input
-                  type="datetime-local"
-                  value={deadlineInputValue}
-                  onChange={(e) => handleDeadlineChange(e.target.value)}
-                  className="h-16 rounded-2xl border-white/[0.05] bg-white/[0.03] text-sm font-bold px-8"
-                />
-              </div>
-
-              <AnimatePresence>
-                {selectedDeadline && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-6 rounded-[1.5rem] bg-primary/5 border border-primary/20 flex items-center gap-6"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                       <Zap className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60 italic">Temporal Resolution</p>
-                      <p className="text-sm font-bold text-white mt-1">
-                        Deployment finalized within: <span className="text-primary">{formatRelativeDate(selectedDeadline)}</span>
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {selectedDeadline && (
-              <div className="pt-10 border-t border-white/[0.03]">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 mb-8 px-2 italic">Aural Alert Protocols</p>
-                <ReminderSettings
-                  reminderEnabled={reminderEnabled}
-                  reminderType={reminderType}
-                  reminderTime={reminderTime}
-                  onReminderEnabledChange={setReminderEnabled}
-                  onReminderTypeChange={setReminderType}
-                  onReminderTimeChange={setReminderTime}
-                />
-              </div>
-            )}
+        {/* Scrollable body */}
+        <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+          
+          {/* Task name */}
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Task name *</Label>
+            <Input
+              value={taskTitle}
+              onChange={(e) => handleTaskTitleChange(e.target.value)}
+              placeholder="What do you need to do?"
+              className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] focus-visible:ring-primary/40 text-base font-semibold px-4 placeholder:text-white/15"
+              autoFocus
+            />
           </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Notes <span className="normal-case tracking-normal text-white/20">(optional)</span></Label>
+            <textarea
+              value={taskDescription}
+              onChange={(e) => setTaskDescription(e.target.value)}
+              placeholder="Add any additional details..."
+              rows={3}
+              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all resize-none placeholder:text-white/15 text-white"
+            />
+          </div>
+
+          {/* Priority + Category row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Priority</Label>
+              <Select value={manualPriority} onValueChange={setManualPriority}>
+                <SelectTrigger className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold px-4">
+                  <SelectValue placeholder="Auto-detect" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-white/[0.08] bg-[#0d1117] p-1.5">
+                  <SelectItem value="none" className="rounded-lg py-2.5 text-sm font-medium">Auto-detect</SelectItem>
+                  <SelectItem value="low" className="rounded-lg py-2.5 text-sm font-medium text-emerald-400">Low</SelectItem>
+                  <SelectItem value="medium" className="rounded-lg py-2.5 text-sm font-medium text-amber-400">Medium</SelectItem>
+                  <SelectItem value="high" className="rounded-lg py-2.5 text-sm font-medium text-rose-400">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Category</Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold px-4">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-white/[0.08] bg-[#0d1117] p-1.5 max-h-[220px]">
+                  <SelectItem value="none" className="rounded-lg py-2.5 text-sm font-medium">No category</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-lg py-2.5 text-sm font-medium">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                        {cat.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Due date */}
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" /> Due date <span className="normal-case tracking-normal text-white/20">(optional)</span>
+            </Label>
+            <Input
+              type="datetime-local"
+              value={deadlineInputValue}
+              onChange={(e) => handleDeadlineChange(e.target.value)}
+              className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold px-4"
+            />
+            <AnimatePresence>
+              {selectedDeadline && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20"
+                >
+                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-xs font-semibold text-white/60">Due {formatRelativeDate(selectedDeadline)}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Reminders — only show if deadline set */}
+          {selectedDeadline && (
+            <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Reminder</Label>
+              <ReminderSettings
+                reminderEnabled={reminderEnabled}
+                reminderType={reminderType}
+                reminderTime={reminderTime}
+                onReminderEnabledChange={setReminderEnabled}
+                onReminderTypeChange={setReminderType}
+                onReminderTimeChange={setReminderTime}
+              />
+            </div>
+          )}
         </div>
 
-        <div className="p-16 border-t border-white/[0.03] bg-[#0a0a0a] flex gap-6 shrink-0">
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex gap-3 flex-shrink-0">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic hover:bg-rose-500/10 hover:text-rose-500 transition-all border border-white/[0.05]"
+            className="flex-1 h-11 rounded-xl font-bold text-sm text-white/40 hover:text-white hover:bg-white/[0.06] transition-all border border-white/[0.06]"
           >
-            Abort Sync
+            Cancel
           </Button>
           <Button
             onClick={handleSaveTask}
-            disabled={isCreating || isUpdating}
-            className="flex-[2] h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic bg-primary text-white shadow-2xl shadow-primary/30 group relative overflow-hidden"
+            disabled={isPending || !taskTitle.trim()}
+            className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-            <span className="relative z-10 flex items-center gap-4">
-               {(isCreating || isUpdating) ? 'Synchronizing...' : (isEditing ? 'Commit Changes' : 'Execute Deployment')}
-               <ArrowRight className="w-4 h-4" />
-            </span>
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                {isEditing ? 'Save Changes' : 'Add Task'}
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>
