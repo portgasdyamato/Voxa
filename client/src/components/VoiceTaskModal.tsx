@@ -189,56 +189,27 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           {!showTranscription ? (
             <div className="flex flex-col items-center py-8 gap-6">
               <div className="relative flex items-center justify-center w-full h-32 mt-4">
-                <AnimatePresence>
-                  {isListening && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.5 }}
+                <AnimatePresence mode="wait">
+                  {isListening ? (
+                    <motion.img 
+                      key="talk"
+                      initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="relative flex items-center justify-center w-24 h-24"
-                    >
-                      {/* Ambient Glow */}
-                      <motion.div 
-                        animate={{ 
-                          scale: [1, 1.4, 1],
-                          opacity: [0.3, 0.8, 0.3],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-0 bg-primary/40 rounded-full blur-[25px]" 
-                      />
-                      
-                      {/* Dynamic Morphing Layer 1 */}
-                      <motion.div 
-                        animate={{ 
-                          scale: [1, 0.9, 1.2, 1],
-                          rotate: [0, 90, 180, 360],
-                          borderRadius: ["50%", "40% 60% 70% 30%", "60% 40% 30% 70%", "50%"],
-                        }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        className="absolute w-16 h-16 bg-primary shadow-[0_0_40px_rgba(59,130,246,0.8)] mix-blend-screen" 
-                      />
-                      
-                      {/* Dynamic Morphing Layer 2 */}
-                      <motion.div 
-                        animate={{ 
-                          scale: [1, 1.15, 0.85, 1],
-                          rotate: [360, 270, 90, 0],
-                          borderRadius: ["50%", "60% 40% 30% 70%", "30% 70% 60% 40%", "50%"],
-                        }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                        className="absolute w-16 h-16 bg-blue-300 text-transparent shadow-[0_0_30px_rgba(147,197,253,0.8)] mix-blend-screen opacity-70" 
-                      />
-                      
-                      {/* Outer Ring Pulse */}
-                      <motion.div 
-                        animate={{ 
-                          scale: [1, 1.6, 1],
-                          opacity: [0.5, 0, 0.5]
-                        }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute w-16 h-16 border-[1px] border-primary/50 rounded-full" 
-                      />
-                    </motion.div>
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      src="/talk.gif" 
+                      alt="Listening..." 
+                      className="w-32 h-32 object-contain"
+                    />
+                  ) : (
+                    <motion.img 
+                      key="stop"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      src="/stop.gif" 
+                      alt="Processing..." 
+                      className="w-32 h-32 object-contain opacity-50 grayscale"
+                    />
                   )}
                 </AnimatePresence>
               </div>
