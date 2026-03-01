@@ -162,15 +162,15 @@ export default function Landing() {
               <motion.div 
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-10 -right-10 p-5 rounded-2xl glass shadow-2xl border-white/20 hidden md:block"
+                className="absolute -top-10 -right-10 p-5 rounded-2xl bg-[#0f1117]/80 backdrop-blur-xl border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hidden md:block"
               >
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-500">
                        <CheckCircle2 className="w-6 h-6" />
                     </div>
                     <div>
-                       <p className="text-[10px] font-black uppercase tracking-widest opacity-40">System</p>
-                       <p className="text-sm font-bold">Objectives Synced</p>
+                       <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-0.5">System</p>
+                       <p className="text-sm font-bold text-white">Objectives Synced</p>
                     </div>
                  </div>
               </motion.div>
@@ -178,15 +178,15 @@ export default function Landing() {
               <motion.div 
                 animate={{ y: [0, 20, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-10 -left-10 p-5 rounded-2xl glass shadow-2xl border-white/20 hidden md:block"
+                className="absolute -bottom-10 -left-10 p-5 rounded-2xl bg-[#0f1117]/80 backdrop-blur-xl border border-white/12 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hidden md:block"
               >
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
                        <Mic className="w-6 h-6" />
                     </div>
                     <div>
-                       <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Voice</p>
-                       <p className="text-sm font-bold">Heuristic Listening</p>
+                       <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-0.5">Voice</p>
+                       <p className="text-sm font-bold text-white">Heuristic Listening</p>
                     </div>
                  </div>
               </motion.div>
