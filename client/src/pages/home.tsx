@@ -167,8 +167,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           {completedTasks.length > 0 && (
             <section className="space-y-10 pt-20 border-t border-white/[0.05]">
               <div className="flex items-center gap-6 px-6">
-                 <History className="w-6 h-6 text-white/10" />
-                 <h3 className="text-3xl font-black tracking-tight text-white/20 italic">Archived</h3>
+                 <History className="w-6 h-6 text-white" />
+                 <h3 className="text-3xl font-black tracking-tight text-white italic">Archived</h3>
               </div>
               <div className="grid grid-cols-1 gap-4 opacity-40 hover:opacity-100 transition-all duration-[1000ms] grayscale hover:grayscale-0">
                 {completedTasks.slice(0, 10).map((task) => (
