@@ -13,7 +13,7 @@ export function parseCategoryFromText(text: string, categories: Category[]): { c
   let categoryId: number | null = null;
   const sortedCategories = [...categories].sort((a, b) => b.name.length - a.name.length);
   
-  // 1. Try pattern matches first (most specific)
+  // 1. Specific phrase matches (most specific)
   // Like "in work", "personal category", "shopping task"
   for (const category of sortedCategories) {
     const lowerName = category.name.toLowerCase();
@@ -35,33 +35,32 @@ export function parseCategoryFromText(text: string, categories: Category[]): { c
     if (categoryId) break;
   }
 
-  // 2. Try exact name match if still not found
+  // 2. Exact name match with aggressive separator cleaning (at start or end)
   if (!categoryId) {
     for (const category of sortedCategories) {
       const lowerName = category.name.toLowerCase();
-      const namePattern = new RegExp(`\\b${lowerName}\\b`, 'i');
-      if (namePattern.test(cleanedText)) {
+      
+      // Look for the category name at the very end or very start
+      // Often separated by punctuation (., #, -, /, :) and whitespace
+      // We handle optional trailing punctuation as well
+      const endPattern = new RegExp(`[\\s\\.#\\-:/]+\\b${lowerName}\\b[\\s\\.#\\-:/]*$`, 'i');
+      const startPattern = new RegExp(`^\\b${lowerName}\\b[\\s\\.#\\-:/]+`, 'i');
+      
+      if (endPattern.test(cleanedText)) {
         categoryId = category.id;
-        
-        // This pattern matches the category name when it's at the start or end,
-        // often preceded by separators like dots, hashes, or spaces.
-        // Example: "Interview . personal" -> "Interview"
-        const endPattern = new RegExp(`[\\s\\.#\\-:]+\\b${lowerName}\\b$`, 'i');
-        const startPattern = new RegExp(`^\\b${lowerName}\\b[\\s\\.#\\-:]+`, 'i');
-        
-        if (endPattern.test(cleanedText)) {
-          cleanedText = cleanedText.replace(endPattern, '').trim();
-        } else if (startPattern.test(cleanedText)) {
-          cleanedText = cleanedText.replace(startPattern, '').trim();
-        }
+        cleanedText = cleanedText.replace(endPattern, '').trim();
+        break;
+      } else if (startPattern.test(cleanedText)) {
+        categoryId = category.id;
+        cleanedText = cleanedText.replace(startPattern, '').trim();
         break;
       }
     }
   }
 
-  // 3. Keyword fallback (don't strip keywords as they are usually part of the actual task content)
+  // 3. Keyword fallback (Broad categories)
   const keywordMap: Record<string, string[]> = {
-    'work': ['meeting', 'email', 'project', 'client', 'report', 'office', 'presentation', 'deadline', 'colleague', 'manager', 'business', 'job', 'task', 'doc', 'spreadsheet', 'zoom', 'call'],
+    'work': ['work', 'meeting', 'email', 'project', 'client', 'report', 'office', 'presentation', 'deadline', 'colleague', 'manager', 'business', 'job', 'task', 'doc', 'spreadsheet', 'zoom', 'call'],
     'personal': ['personal', 'home', 'family', 'friend', 'social', 'call', 'party', 'dinner', 'birthday', 'anniversary', 'vacation', 'trip', 'bank', 'insurance'],
     'shopping': ['buy', 'purchase', 'get', 'grocery', 'store', 'market', 'amazon', 'shopping', 'milk', 'bread', 'food', 'items', 'list'],
     'health': ['gym', 'workout', 'exercise', 'run', 'doctor', 'dentist', 'medicine', 'pill', 'health', 'fitness', 'yoga', 'appointment', 'clinic', 'hospital'],
@@ -77,15 +76,20 @@ export function parseCategoryFromText(text: string, categories: Category[]): { c
       const keywords = keywordMap[lowerName];
       if (keywords && keywords.some(keyword => cleanedText.toLowerCase().includes(keyword))) {
         categoryId = category.id;
+        // Strip if it's the exact keyword at the end
+        const kwEndPattern = new RegExp(`[\\s\\.#\\-:/]+\\b${lowerName}\\b[\\s\\.#\\-:/]*$`, 'i');
+        if (kwEndPattern.test(cleanedText)) {
+           cleanedText = cleanedText.replace(kwEndPattern, '').trim();
+        }
         break;
       }
     }
   }
 
-  // Final cleanup of extra separators
+  // 4. Final Aggressive Cleanup
   cleanedText = cleanedText
-    .replace(/[ \.\-#:]{2,}/g, ' ')
-    .replace(/^[ \.\-#:]+|[ \.\-#:]+$/g, '')
+    .replace(/[ \.\-#:/]{2,}/g, ' ')
+    .replace(/^[ \.\-#:/]+|[ \.\-#:/]+$/g, '')
     .trim();
 
   return { categoryId, cleanedText };

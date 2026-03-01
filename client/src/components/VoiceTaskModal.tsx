@@ -92,6 +92,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       setCommandDescription(descriptions[command.type] || 'Processing');
       
       // Handle different command types
+      let finalCategoryId = '';
+      let finalDeadline: Date | null = null;
+      let finalTaskName = '';
+
       if (command.type === 'add') {
         let textToParse = transcript;
         
@@ -99,21 +103,24 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         if (categories) {
           const { categoryId, cleanedText } = parseCategoryFromText(transcript, categories);
           if (categoryId) {
-            setSelectedCategory(categoryId.toString());
+            finalCategoryId = categoryId.toString();
+            setSelectedCategory(finalCategoryId);
             textToParse = cleanedText;
           }
         }
 
         // Parse task details from speech (using cleaned text)
         const { taskName, deadline, priority } = parseTaskFromSpeech(textToParse);
+        finalTaskName = taskName;
         setParsedTaskName(taskName);
         setDetectedPriority(priority);
 
         // Detect date and time (using cleaned text)
         const dateTimeResult = detectDateTimeFromText(textToParse);
         if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
-          setDetectedDate(dateTimeResult.detectedDate);
-          setSelectedDeadline(dateTimeResult.detectedDate);
+          finalDeadline = dateTimeResult.detectedDate;
+          setDetectedDate(finalDeadline);
+          setSelectedDeadline(finalDeadline);
           
           // Format for datetime-local input (YYYY-MM-DDTHH:MM)
           const date = dateTimeResult.detectedDate;
@@ -127,14 +134,17 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           setDetectedDate(null);
         }
       } else if (command.type === 'delete' || command.type === 'complete' || command.type === 'uncomplete' || command.type === 'update') {
-        setParsedTaskName(command.taskIdentifier || '');
-      } else {
-        setParsedTaskName('');
+        finalTaskName = command.taskIdentifier || '';
+        setParsedTaskName(finalTaskName);
       }
       
       // AUTO-EXECUTE: Execute command immediately after parsing
+      const executionCategory = finalCategoryId || selectedCategory;
+      const executionDeadline = finalDeadline !== null ? finalDeadline : selectedDeadline;
+      const executionTaskName = finalTaskName || parsedTaskName;
+
       setTimeout(() => {
-        handleExecuteCommand();
+        handleExecuteCommand(executionCategory, executionDeadline, executionTaskName);
       }, 500); // Small delay to show the parsed result
     }
   }, [transcript, isListening]);
@@ -164,14 +174,18 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     startListening();
   };
 
-  const handleExecuteCommand = async () => {
+  const handleExecuteCommand = async (
+    overrideCategory?: string,
+    overrideDeadline?: Date | null,
+    overrideTaskName?: string
+  ) => {
     const { executeVoiceCommand } = await import('@/lib/voiceCommandExecutor');
     
     await executeVoiceCommand(
       transcript,
       tasks || [],
-      selectedCategory,
-      selectedDeadline,
+      overrideCategory !== undefined ? overrideCategory : selectedCategory,
+      overrideDeadline !== undefined ? overrideDeadline : selectedDeadline,
       reminderEnabled,
       reminderType,
       reminderTime,
@@ -183,7 +197,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         onOpenChange(false);
         resetTranscript();
       },
-      parsedTaskName
+      overrideTaskName !== undefined ? overrideTaskName : parsedTaskName
     );
   };
 

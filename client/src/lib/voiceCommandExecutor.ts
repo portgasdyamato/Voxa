@@ -30,8 +30,16 @@ export async function executeVoiceCommand(
     switch (command.type) {
       case 'add': {
         const { taskName: parsedName, deadline, priority } = parseTaskFromSpeech(transcript);
-        const taskName = overriddenTitle || parsedName;
+        const taskName = (overriddenTitle || parsedName || '').trim();
         const finalDeadline = selectedDeadline || deadline;
+        
+        let finalCategoryId: number | undefined = undefined;
+        if (selectedCategory && selectedCategory !== 'none' && selectedCategory !== '') {
+          const parsed = parseInt(selectedCategory);
+          if (!isNaN(parsed)) {
+            finalCategoryId = parsed;
+          }
+        }
         
         if (!taskName || taskName.length < 2) {
           toast({ 
@@ -46,7 +54,7 @@ export async function executeVoiceCommand(
           title: taskName,
           description: undefined,
           priority,
-          categoryId: selectedCategory && selectedCategory !== 'none' ? parseInt(selectedCategory) : undefined,
+          categoryId: finalCategoryId || null,
           dueDate: finalDeadline ? finalDeadline.toISOString() : undefined,
           reminderEnabled,
           reminderType,
