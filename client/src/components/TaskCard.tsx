@@ -60,21 +60,22 @@ export function TaskCard({ task }: TaskCardProps) {
         "task-node-inner transition-all duration-200",
         task.completed ? "opacity-50" : "opacity-100"
       )}>
-        {/* Status Indicator */}
         <button 
           onClick={(e) => { e.stopPropagation(); handleToggleComplete(); }}
           className={cn(
-            "w-5 h-5 rounded-[6px] border flex items-center justify-center transition-all duration-200 shrink-0",
+            "w-7 h-7 rounded-[10px] border flex items-center justify-center transition-all duration-300 relative overflow-hidden shrink-0 group/btn backdrop-blur-md",
             task.completed 
-              ? "bg-primary border-primary text-white" 
-              : "border-white/20 bg-transparent hover:border-white/50"
+              ? "bg-primary/20 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]" 
+              : "bg-white/[0.02] border-white/10 hover:bg-white/[0.05] hover:border-white/30"
           )}
         >
           <AnimatePresence mode="wait">
-            {task.completed && (
-              <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.15 }}>
-                <Check className="w-3.5 h-3.5 stroke-[3px]" />
+            {task.completed ? (
+              <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                <Check className="w-4 h-4 text-primary stroke-[4px] drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" />
               </motion.div>
+            ) : (
+              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover/btn:bg-white/80 transition-all duration-300 group-hover/btn:scale-[1.5]" />
             )}
           </AnimatePresence>
         </button>
