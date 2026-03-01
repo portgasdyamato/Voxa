@@ -74,8 +74,12 @@ export function CategoryManager() {
              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">New Category</Label>
              <div className="flex gap-3">
                <Input 
+                 autoFocus
                  value={newCatName}
                  onChange={(e) => setNewCatName(e.target.value)}
+                 onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreate();
+                 }}
                  placeholder="Category name"
                  className="h-11 rounded-xl bg-white/[0.04] border-white/[0.08] text-sm font-semibold placeholder:text-white/20 focus-visible:ring-primary/40"
                />

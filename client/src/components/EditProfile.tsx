@@ -148,6 +148,7 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
               <div className="space-y-2">
                 <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">First name</Label>
                 <Input
+                  autoFocus
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold"

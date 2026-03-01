@@ -164,7 +164,8 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
         </DialogHeader>
 
         {/* Scrollable body */}
-        <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+        <form onSubmit={(e) => { e.preventDefault(); handleSaveTask(); }} className="flex flex-col flex-1 overflow-hidden">
+          <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
           
           {/* Task name */}
           <div className="space-y-2">
@@ -270,33 +271,34 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex gap-3 flex-shrink-0">
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            className="flex-1 h-11 rounded-xl font-bold text-sm text-white/40 hover:text-white hover:bg-white/[0.06] transition-all border border-white/[0.06]"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSaveTask}
-            disabled={isPending || !taskTitle.trim()}
-            className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-          >
-            {isPending ? (
-              <>
-                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                {isEditing ? 'Save Changes' : 'Add Task'}
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </div>
+          <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex gap-3 flex-shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="flex-1 h-11 rounded-xl font-bold text-sm text-white/40 hover:text-white hover:bg-white/[0.06] transition-all border border-white/[0.06]"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending || !taskTitle.trim()}
+              className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            >
+              {isPending ? (
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  {isEditing ? 'Save Changes' : 'Add Task'}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
