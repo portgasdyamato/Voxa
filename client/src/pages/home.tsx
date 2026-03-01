@@ -88,14 +88,14 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                     key={filter.id}
                     onClick={() => setSelectedFilter(filter.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] transition-all duration-500 group relative",
+                      "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] group relative overflow-hidden transition-all duration-500",
                       selectedFilter === filter.id 
-                        ? "text-primary bg-primary/5 border border-primary/20" 
+                        ? "bg-primary text-white shadow-2xl shadow-primary/20" 
                         : "text-white/20 hover:text-white hover:bg-white/[0.03]"
                     )}
                   >
                     <div className="flex items-center gap-4 relative z-10 italic">
-                      <filter.icon className={cn("w-4 h-4 transition-transform", selectedFilter === filter.id && "scale-110 rotate-6")} />
+                      <filter.icon className={cn("w-4 h-4 transition-transform", selectedFilter === filter.id ? "scale-110" : "opacity-30 group-hover:opacity-100")} />
                       <span>{filter.label}</span>
                     </div>
                   </button>
@@ -132,7 +132,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsModalOpen(true)}
-              className="h-16 px-10 rounded-2xl bg-primary text-white flex items-center gap-4 shadow-2xl glass-shadow group relative overflow-hidden active:scale-95 transition-all"
+              className="h-16 px-10 rounded-2xl bg-primary text-white flex items-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all"
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Plus className="w-6 h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />
