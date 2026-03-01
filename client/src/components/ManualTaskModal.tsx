@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReminderSettings } from '@/components/ReminderSettings';
-import { X, Calendar, Clock, Sparkles, Tag, AlertCircle, Quote, Layout, Layers, ShieldCheck, Zap } from 'lucide-react';
+import { X, Calendar, Clock, Tag, AlertCircle, Quote, Layout, Layers, ShieldCheck, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -98,7 +98,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
   const handleSaveTask = async () => {
     if (!taskTitle.trim()) {
-      toast({ title: "Identification Required", description: "All mission nodes must be identified.", variant: "destructive" });
+      toast({ title: "Task name required", description: "Please enter a name for your task.", variant: "destructive" });
       return;
     }
     const fullText = `${taskTitle} ${taskDescription}`.trim();
@@ -116,14 +116,14 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     try {
       if (isEditing) {
         await updateTask({ id: task.id, updates: payload });
-        toast({ title: "Node Synchronized" });
+        toast({ title: "Task updated successfully" });
       } else {
         await createTask(payload);
-        toast({ title: "Protocol Initiated" });
+        toast({ title: "New task created" });
       }
       onOpenChange(false);
     } catch (error) {
-      toast({ title: "Synchronization Failure", description: "Database uplink failed.", variant: "destructive" });
+      toast({ title: "Failed to save task", description: "Please check your connection and try again.", variant: "destructive" });
     }
   };
 
@@ -139,87 +139,73 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden noise-surface border-2 border-white/5 bg-slate-950/80 backdrop-blur-[40px] shadow-[0_0_100px_rgba(0,0,0,0.4)] rounded-[4rem] flex flex-col max-h-[92vh]">
-        <DialogHeader className="p-12 pb-8 border-b border-white/5 relative bg-white/[0.02] flex-shrink-0">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
-          <div className="flex items-center gap-8 relative z-10">
-            <div className="w-20 h-20 rounded-[2.5rem] bg-foreground/5 flex items-center justify-center border-2 border-white/10 shadow-2xl group transition-all">
-               <Layers className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-500" />
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-[2.5rem] border-border bg-background shadow-2xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="p-10 pb-6 border-b border-border/50 relative bg-muted/20">
+          <div className="flex items-center gap-6 relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+               <Layers className="w-7 h-7 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-4xl font-black tracking-tighter text-gradient italic uppercase">
-                {isEditing ? 'RECONFIGURING' : 'DEPLOYING'} NODE
+              <DialogTitle className="text-2xl font-bold tracking-tight">
+                {isEditing ? 'Edit Task' : 'Create New Task'}
               </DialogTitle>
-              <DialogDescription className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/40 mt-1 italic">
-                Strategic Intelligence Unit v.4.2
+              <DialogDescription className="text-sm text-muted-foreground font-medium mt-0.5">
+                Set clear goals and keep track of your progress.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-12 space-y-12 overflow-y-auto custom-scrollbar flex-1">
-          {/* Main Content Sections */}
-          <div className="space-y-12">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 px-2">
-                <Quote className="w-3.5 h-3.5 text-primary opacity-40" />
-                <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Mission Descriptor</Label>
-              </div>
+        <div className="p-10 space-y-10 overflow-y-auto custom-scrollbar flex-1 pb-16">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Task Name</Label>
               <Input
                 value={taskTitle}
                 onChange={(e) => handleTaskTitleChange(e.target.value)}
-                placeholder="DEFINE OBJECTIVE..."
-                className="h-20 rounded-[1.5rem] border-white/5 bg-white/5 focus-visible:ring-primary/40 focus-visible:border-primary/20 text-2xl font-black tracking-tight italic placeholder:not-italic placeholder:text-muted-foreground/10 px-10 transition-all shadow-inner"
+                placeholder="What needs to be done?"
+                className="h-14 rounded-2xl border-border bg-muted/30 focus-visible:ring-primary/20 text-lg font-semibold px-6"
               />
             </div>
 
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 px-2">
-                <Layout className="w-3.5 h-3.5 text-primary opacity-40" />
-                <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Operational Context</Label>
-              </div>
+            <div className="space-y-3">
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Description (Optional)</Label>
               <textarea
                 value={taskDescription}
                 onChange={(e) => setTaskDescription(e.target.value)}
-                placeholder="APPEND SUB-ROUTINES..."
-                className="w-full min-h-[160px] rounded-[2rem] border-2 border-white/5 bg-white/5 p-8 focus:outline-none focus:border-primary/20 text-base font-medium transition-all resize-none placeholder:opacity-20 shadow-inner group-hover:bg-white/[0.07] text-neutral-300"
+                placeholder="Add any additional details or notes..."
+                className="w-full min-h-[140px] rounded-[1.5rem] border border-border bg-muted/30 p-6 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 text-sm font-medium transition-all resize-none placeholder:text-muted-foreground/30"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 px-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-rose-500 opacity-40" />
-                  <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Threat Level</Label>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Priority</Label>
                 <Select value={manualPriority} onValueChange={setManualPriority}>
-                  <SelectTrigger className="h-16 rounded-2xl border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-[0.3em] pl-8 italic transition-all hover:bg-white/10">
-                    <SelectValue placeholder="AUTO_ANALYZE" />
+                  <SelectTrigger className="h-14 rounded-xl border-border bg-muted/30 text-sm font-semibold pl-6">
+                    <SelectValue placeholder="Automatic Detection" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-[2.5rem] glass border-white/5 p-2">
-                    <SelectItem value="none" className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] py-4 italic">Analysis Mode</SelectItem>
-                    <SelectItem value="low" className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] py-4 italic text-emerald-500">Low Protocol</SelectItem>
-                    <SelectItem value="medium" className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] py-4 italic text-amber-500">Mid Protocol</SelectItem>
-                    <SelectItem value="high" className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] py-4 italic text-rose-500">High Protocol</SelectItem>
+                  <SelectContent className="rounded-2xl border-border p-2">
+                    <SelectItem value="none" className="rounded-xl py-3 font-semibold text-xs">Based on keywords</SelectItem>
+                    <SelectItem value="low" className="rounded-xl py-3 font-semibold text-xs text-emerald-600">Low Priority</SelectItem>
+                    <SelectItem value="medium" className="rounded-xl py-3 font-semibold text-xs text-amber-600">Medium Priority</SelectItem>
+                    <SelectItem value="high" className="rounded-xl py-3 font-semibold text-xs text-rose-600">High Priority</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 px-2">
-                  <Tag className="w-3.5 h-3.5 text-primary opacity-40" />
-                  <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Mission Sector</Label>
-                </div>
+              <div className="space-y-3">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Category</Label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="h-16 rounded-2xl border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-[0.3em] pl-8 italic transition-all hover:bg-white/10">
-                    <SelectValue placeholder="NEUTRAL_ZONE" />
+                  <SelectTrigger className="h-14 rounded-xl border-border bg-muted/30 text-sm font-semibold pl-6">
+                    <SelectValue placeholder="Uncategorized" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-[2.5rem] glass border-white/5 p-2 max-h-[280px]">
-                    <SelectItem value="none" className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] py-4 italic">Unassigned</SelectItem>
+                  <SelectContent className="rounded-2xl border-border p-2 max-h-[200px]">
+                    <SelectItem value="none" className="rounded-xl py-3 font-semibold text-xs">General</SelectItem>
                     {categories?.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl font-black uppercase tracking-[0.2em] text-[10px] py-4 italic">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: cat.color, color: cat.color }} />
+                      <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl py-3 font-semibold text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
                           {cat.name}
                         </div>
                       </SelectItem>
@@ -229,36 +215,32 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
               </div>
             </div>
 
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 px-2">
-                  <Calendar className="w-3.5 h-3.5 text-primary opacity-40" />
-                   <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Temporal Target</Label>
+            <div className="space-y-4 pt-4 border-t border-border/40">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Due Date & Time</Label>
+                  <Calendar className="w-3.5 h-3.5 text-muted-foreground/30" />
                 </div>
-                <div className="relative group overflow-hidden rounded-2xl">
-                  <Input
-                    type="datetime-local"
-                    value={deadlineInputValue}
-                    onChange={(e) => handleDeadlineChange(e.target.value)}
-                    className="h-16 rounded-2xl border-2 border-white/5 bg-white/5 text-[11px] font-black uppercase tracking-[0.2em] px-8 italic focus:border-primary/40 focus:bg-white/[0.08] transition-all"
-                  />
-                </div>
+                <Input
+                  type="datetime-local"
+                  value={deadlineInputValue}
+                  onChange={(e) => handleDeadlineChange(e.target.value)}
+                  className="h-14 rounded-xl border-border bg-muted/30 text-sm font-semibold px-6"
+                />
               </div>
-              
+
               <AnimatePresence>
                 {selectedDeadline && (
                   <motion.div 
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    className="flex items-center justify-between px-8 py-5 rounded-[1.5rem] bg-primary/5 text-[10px] font-black uppercase tracking-[0.3em] text-primary border border-primary/20 shadow-[0_0_30px_rgba(var(--primary),0.05)]"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-xl bg-primary/5 border border-primary/10"
                   >
-                    <div className="flex items-center gap-4">
-                      <Zap className="w-4 h-4 animate-pulse" />
-                      <span>Temporal Sync: <span className="text-white/80">{formatRelativeDate(selectedDeadline)}</span></span>
-                    </div>
-                    <div className="flex gap-1.5">
-                       {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-primary/20 rounded-full" />)}
+                    <div className="flex items-center gap-3">
+                      <Zap className="w-4 h-4 text-primary" />
+                      <p className="text-xs font-bold text-primary uppercase tracking-widest">
+                        Task due: <span className="text-foreground">{formatRelativeDate(selectedDeadline)}</span>
+                      </p>
                     </div>
                   </motion.div>
                 )}
@@ -266,11 +248,8 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
             </div>
 
             {selectedDeadline && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="pt-10 border-t border-white/5"
-              >
+              <div className="pt-6 border-t border-border/40">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-6 px-1">Reminder Notifications</p>
                 <ReminderSettings
                   reminderEnabled={reminderEnabled}
                   reminderType={reminderType}
@@ -279,30 +258,28 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
                   onReminderTypeChange={setReminderType}
                   onReminderTimeChange={setReminderTime}
                 />
-              </motion.div>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Global Control Bar */}
-        <div className="p-12 bg-white/[0.03] border-t border-white/5 flex gap-8 items-center flex-shrink-0">
+        <div className="p-10 border-t border-border bg-muted/20 flex gap-4 shrink-0">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-20 rounded-[1.5rem] font-black uppercase tracking-[0.4em] text-[10px] border border-white/5 hover:bg-white/5 transition-all italic hover:text-rose-500"
+            className="flex-1 h-14 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-rose-500/10 hover:text-rose-600 transition-all border border-border/50"
           >
-            Abort Operation
+            Cancel
           </Button>
           <Button
             onClick={handleSaveTask}
             disabled={isCreating || isUpdating}
-            className="flex-[2] h-20 rounded-[1.5rem] font-black uppercase tracking-[0.4em] text-[10px] gradient-primary shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all italic"
+            className="flex-[2] h-14 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
           >
-            {(isCreating || isUpdating) ? 'SYNCING DATA...' : `CONFIRM ${isEditing ? 'RECONFIG' : 'DEPLOYMENT'}`}
+            {(isCreating || isUpdating) ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create Task')}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-

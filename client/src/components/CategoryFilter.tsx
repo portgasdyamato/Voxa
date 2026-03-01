@@ -1,108 +1,70 @@
-import { useCategories } from "@/hooks/useCategories";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { Layers, Box, Globe, Shield, Target } from "lucide-react";
+import { useCategories } from '@/hooks/useCategories';
+import { Button } from '@/components/ui/button';
+import { LayoutGrid, Box, Target, Zap, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CategoryFilterProps {
   selectedCategory: number | null;
-  onCategoryChange: (categoryId: number | null) => void;
+  onCategoryChange: (id: number | null) => void;
 }
 
 export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
-  const { data: categoriesData } = useCategories();
-  
-  const categories = categoriesData ? categoriesData.filter((category, index, self) => 
-    index === self.findIndex(c => c.name === category.name)
-  ) : [];
-  
-  if (!categories || categories.length === 0) {
-    return null;
+  const { data: categories, isLoading } = useCategories();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3 px-1">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-11 w-full rounded-xl bg-muted/40 animate-pulse" />
+        ))}
+      </div>
+    );
   }
-  
+
   return (
-    <div className="flex flex-col gap-3 py-2">
-      <motion.button
-        whileHover={{ x: 4 }}
-        whileTap={{ scale: 0.98 }}
+    <div className="space-y-1.5 px-1">
+      <button
         onClick={() => onCategoryChange(null)}
         className={cn(
-          "flex items-center gap-4 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all text-left italic relative overflow-hidden group",
+          "w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-300 group relative overflow-hidden",
           selectedCategory === null 
-            ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
-            : "text-muted-foreground/40 hover:text-white hover:bg-white/5 border border-transparent"
+            ? "bg-primary text-primary-foreground shadow-md" 
+            : "text-muted-foreground hover:bg-muted/50"
         )}
       >
-        <div className={cn(
-          "w-5 h-5 flex items-center justify-center transition-all duration-500",
-          selectedCategory === null ? "text-primary scale-110" : "text-muted-foreground/30 group-hover:text-white/60"
-        )}>
-          <Globe className="w-4 h-4" />
+        <div className="flex items-center gap-3 relative z-10">
+          <Box className={cn("w-4 h-4 transition-all", selectedCategory === null ? "scale-110" : "opacity-40 group-hover:opacity-100")} />
+          <span>All Tasks</span>
         </div>
-        <span className="relative z-10">All Sectors</span>
-        {selectedCategory === null && (
-          <motion.div 
-            layoutId="activeFilter"
-            className="absolute left-0 w-1 h-6 bg-primary rounded-full"
-          />
-        )}
-      </motion.button>
+      </button>
       
-      {categories.map((category) => (
-        <motion.button
+      {categories?.map((category) => (
+        <button
           key={category.id}
-          whileHover={{ x: 4 }}
-          whileTap={{ scale: 0.98 }}
           onClick={() => onCategoryChange(category.id)}
           className={cn(
-            "flex items-center gap-4 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all text-left italic relative overflow-hidden group",
+            "w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-300 group relative overflow-hidden",
             selectedCategory === category.id 
-              ? "bg-white/5 text-white border border-white/10 shadow-xl" 
-              : "text-muted-foreground/40 hover:text-white hover:bg-white/5 border border-transparent"
+              ? "bg-muted text-foreground border border-border shadow-sm" 
+              : "text-muted-foreground hover:bg-muted/50"
           )}
         >
-          <div
-            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-125"
-            style={{ 
-              backgroundColor: category.color,
-              filter: selectedCategory === category.id ? `drop-shadow(0 0 5px ${category.color})` : 'none'
-            }}
-          />
-          <span className="relative z-10 truncate">{category.name}</span>
+          <div className="flex items-center gap-3 relative z-10">
+            <div 
+              className="w-2.5 h-2.5 rounded-full shadow-sm transition-transform duration-300 group-hover:scale-125 border border-white/10" 
+              style={{ backgroundColor: category.color }} 
+            />
+            <span>{category.name}</span>
+          </div>
           {selectedCategory === category.id && (
             <motion.div 
-              layoutId="activeFilter"
-              className="absolute left-0 w-1 h-6 bg-white rounded-full shadow-[0_0_10px_white]"
+              layoutId="categoryActive" 
+              className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" 
             />
           )}
-        </motion.button>
+        </button>
       ))}
-    </div>
-  );
-}
-
-interface CategoryBadgeProps {
-  category: any;
-  size?: "sm" | "default";
-}
-
-export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps) {
-  if (!category) return null;
-  
-  return (
-    <div className={cn(
-      "flex items-center gap-2 px-2 py-1 rounded-full border border-white/5 bg-white/[0.03] backdrop-blur-sm",
-      size === 'sm' ? 'px-1.5 gap-1.5' : 'px-2.5 gap-2'
-    )}>
-      <div 
-        className={cn("rounded-full shadow-[0_0_5px_rgba(0,0,0,0.5)]", size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2')} 
-        style={{ backgroundColor: category.color }}
-      />
-      <span className={cn(
-        "font-black uppercase tracking-widest text-muted-foreground/80 italic",
-        size === 'sm' ? 'text-[8px]' : 'text-[10px]'
-      )}>
-        {category.name}
-      </span>
     </div>
   );
 }

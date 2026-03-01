@@ -80,7 +80,7 @@
   }
 
   body {
-    @apply antialiased selection:bg-primary/30 selection:text-foreground;
+    @apply antialiased selection:bg-primary/20 selection:text-foreground;
     font-family: 'Inter', sans-serif;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -89,8 +89,8 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
-    @apply tracking-tight font-black uppercase italic;
+    font-family: 'Inter', sans-serif;
+    @apply tracking-tight font-semibold text-foreground;
   }
 
   code, kbd, samp, pre {
@@ -100,27 +100,23 @@
 
 @layer components {
   .glass {
-    background: var(--glass-background);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid var(--glass-border);
+    @apply bg-background/40 backdrop-blur-md border border-border/50 shadow-sm;
   }
 
   .premium-card {
-    @apply relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-muted/20 backdrop-blur-3xl transition-all duration-700 hover:border-primary/40 hover:shadow-[0_0_80px_rgba(var(--primary),0.1)] hover:-translate-y-2;
-    background-image: linear-gradient(135deg, var(--surface-glass), transparent);
+    @apply relative overflow-hidden rounded-[2rem] border border-border bg-card/50 backdrop-blur-xl transition-all duration-500 hover:bg-card/80 hover:shadow-xl hover:-translate-y-1;
   }
 
   .nav-blur {
-    @apply sticky top-0 z-50 w-full border-b border-white/5 bg-background/60 backdrop-blur-2xl;
+    @apply sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl;
   }
 
   .gradient-primary {
-    @apply bg-gradient-to-br from-primary via-primary/80 to-blue-500 text-white shadow-xl shadow-primary/20;
+    @apply bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/10;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground/90 to-primary/80;
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70;
   }
 
   .mesh-gradient {
@@ -128,15 +124,13 @@
     inset: 0;
     z-index: -1;
     background: 
-      radial-gradient(at 0% 0%, hsla(217,91%,60%,0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(280,91%,60%,0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(217,91%,60%,0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(280,91%,60%,0.1) 0px, transparent 50%);
-    filter: blur(100px);
+      radial-gradient(at 0% 0%, hsla(221,83%,53%,0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(221,83%,53%,0.03) 0px, transparent 50%);
+    filter: blur(80px);
   }
 
   .btn-premium {
-    @apply relative overflow-hidden h-14 rounded-2xl font-black uppercase tracking-widest text-xs transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply relative overflow-hidden h-12 rounded-2xl font-semibold tracking-tight text-sm transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
   }
 }
 
