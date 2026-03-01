@@ -34,7 +34,13 @@ export default function Home() {
         if (!task.dueDate) return false;
         const now = new Date();
         const dueDate = new Date(task.dueDate);
-        const diffDays = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Reset time parts for accurate day-only comparison
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+        
+        const diffTime = taskDate.getTime() - today.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
         
         if (selectedDeadline === 'today' && diffDays !== 0) return false;
         if (selectedDeadline === 'tomorrow' && diffDays !== 1) return false;
