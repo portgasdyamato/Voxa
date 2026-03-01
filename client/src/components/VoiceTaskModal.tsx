@@ -200,7 +200,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       exit={{ opacity: 0, scale: 0.8 }}
                       src={heroGif} 
                       alt="Listening..." 
-                      className="w-40 h-40 object-contain"
+                      className="w-[260px] h-[260px] object-contain"
                     />
                   ) : (
                     <motion.img 
@@ -210,7 +210,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       exit={{ opacity: 0, scale: 0.8 }}
                       src={processGif} 
                       alt="Processing..." 
-                      className="w-40 h-40 object-contain opacity-80 mix-blend-screen"
+                      className="w-[260px] h-[260px] object-contain opacity-80 mix-blend-screen"
                     />
                   )}
                 </AnimatePresence>
