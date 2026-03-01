@@ -168,16 +168,16 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
              <Sparkles className="w-24 h-24" />
           </div>
           <DialogTitle className="text-3xl font-black tracking-tighter text-gradient italic">
-            {isEditing ? 'RECONFIGURE' : 'INITIATE'} OBJECTIVE
+            {isEditing ? 'RECONFIGURING' : 'INITIATING'} TASK
           </DialogTitle>
           <DialogDescription className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">
-            Mission-critical node configuration
+            Fine-tune your next mission data
           </DialogDescription>
         </DialogHeader>
 
         <div className="p-10 space-y-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
           <div className="space-y-4">
-            <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary px-1">Objective Vector (Title)</Label>
+            <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary px-1">Task Vector (Title)</Label>
             <Input
               value={taskTitle}
               onChange={(e) => handleTaskTitleChange(e.target.value)}
@@ -187,11 +187,11 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           </div>
 
           <div className="space-y-4">
-            <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 italic">Contextual Metadata (Description)</Label>
+            <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 italic">Contextual Metadata (Details)</Label>
             <textarea
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
-              placeholder="Append relevant operational data..."
+              placeholder="Append relevant task notes here..."
               className="w-full min-h-[120px] rounded-2xl border border-white/5 bg-muted/30 p-5 focus:outline-none focus:border-primary/30 text-sm font-medium transition-all resize-none placeholder:opacity-30"
             />
           </div>
@@ -207,9 +207,9 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl glass border-white/5">
                   <SelectItem value="none" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3">AUTO-DETECT</SelectItem>
-                  <SelectItem value="low" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-emerald-500">LOW PRIORITY</SelectItem>
-                  <SelectItem value="medium" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-amber-500">MID PRIORITY</SelectItem>
-                  <SelectItem value="high" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-rose-500">HIGH PRIORITY</SelectItem>
+                  <SelectItem value="low" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-emerald-500 font-black">LOW PRIORITY</SelectItem>
+                  <SelectItem value="medium" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-amber-500 font-black">MEDIUM PRIORITY</SelectItem>
+                  <SelectItem value="high" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-rose-500 font-black">HIGH PRIORITY</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -240,7 +240,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           <div className="space-y-6">
             <div className="space-y-4">
                <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 flex items-center gap-1.5 italic">
-                 <Calendar className="w-3.5 h-3.5 text-primary" /> Temporal Deadline
+                 <Calendar className="w-3.5 h-3.5 text-primary" /> Target Deadline
                </Label>
                <div className="relative group">
                  <Input
@@ -259,7 +259,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
                 className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-primary/5 text-[10px] font-black uppercase tracking-widest text-primary border border-primary/10"
               >
                 <Clock className="w-4 h-4" />
-                DUE IN: {formatRelativeDate(selectedDeadline)}
+                TIME REMAINING: {formatRelativeDate(selectedDeadline)}
               </motion.div>
             )}
           </div>
@@ -289,9 +289,9 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           <Button
             onClick={handleSaveTask}
             disabled={isCreating || isUpdating}
-            className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all"
+            className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all font-black"
           >
-            {(isCreating || isUpdating) ? 'EXECUTING...' : `CONFIRM ${isEditing ? 'UPDATE' : 'INITIATION'}`}
+            {(isCreating || isUpdating) ? 'SAVING...' : `CONFIRM ${isEditing ? 'CHANGES' : 'ENTRY'}`}
           </Button>
         </div>
       </DialogContent>

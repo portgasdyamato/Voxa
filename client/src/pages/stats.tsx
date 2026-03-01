@@ -60,21 +60,21 @@ export default function Stats() {
         <div className="space-y-6 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.3em]">
             <Activity className="w-4 h-4" />
-            Heuristic Insights
+            Performance Insights
           </div>
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-none text-gradient">
-            Analytics <span className="text-primary italic opacity-40">Studio.</span>
+            Insights <span className="text-primary italic opacity-40">Studio.</span>
           </h1>
           <p className="text-muted-foreground/60 font-medium text-xl max-w-xl">
-            Heuristic analysis of your productivity flow and execution velocity.
+            A deep dive into your productivity habits and completion velocity.
           </p>
         </div>
 
         <div className="bg-muted/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-border/20 flex items-center gap-1.5 shadow-xl glass">
           {[
-            { value: 'week', label: '7-Day Cycle' },
-            { value: 'month', label: 'Monthly Archive' },
-            { value: '3months', label: 'Strategic Quarter' }
+            { value: 'week', label: 'Weekly View' },
+            { value: 'month', label: 'Monthly Recap' },
+            { value: '3months', label: 'Quarterly Trends' }
           ].map((period) => (
             <Button
               key={period.value}
@@ -96,35 +96,35 @@ export default function Stats() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
         <StatCard 
-          title="Total Payload" 
+          title="Overall Volume" 
           value={stats?.totalTasks || 0} 
           icon={<BarChart4 className="w-6 h-6" />} 
-          footer={`${avgDaily} units / cycle`}
+          footer={`${avgDaily} tasks / day`}
           color="primary"
           delay={0.1}
         />
         <StatCard 
-          title="Throughput Rate" 
+          title="Completion Rate" 
           value={stats?.completedTasks || 0} 
           icon={<Zap className="w-6 h-6" />} 
-          footer={`${stats?.completionRate || 0}% Efficiency`}
+          footer={`${stats?.completionRate || 0}% Success`}
           color="indigo"
           delay={0.2}
         />
         <StatCard 
-          title="Pending Nodes" 
+          title="Tasks Pending" 
           value={stats?.pendingTasks || 0} 
           icon={<Clock className="w-6 h-6" />} 
-          footer={`${stats?.overdueTasks || 0} Critical`}
+          footer={`${stats?.overdueTasks || 0} Overdue`}
           color="rose"
           isUrgent={(stats?.overdueTasks || 0) > 0}
           delay={0.3}
         />
         <StatCard 
-          title="Current Velocity" 
+          title="Today's Output" 
           value={todayProgress} 
           icon={<Trophy className="w-6 h-6" />} 
-          footer="Items today"
+          footer="Tasks Finished"
           color="amber"
           delay={0.4}
         />

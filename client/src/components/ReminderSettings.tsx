@@ -46,15 +46,15 @@ export function ReminderSettings({
         <div className="space-y-4 pt-4 border-t border-border/10 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 ml-0.5">Trigger</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 ml-0.5">Alert Mode</Label>
               <Select value={reminderType} onValueChange={onReminderTypeChange}>
                 <SelectTrigger className="h-9 rounded-lg border-border/50 bg-muted/20 text-xs font-medium">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="default" className="text-xs">Standard (2h)</SelectItem>
-                  <SelectItem value="morning" className="text-xs">Morning (8 AM)</SelectItem>
-                  <SelectItem value="manual" className="text-xs">Custom</SelectItem>
+                  <SelectItem value="default" className="text-xs">Standard Alert (2h)</SelectItem>
+                  <SelectItem value="morning" className="text-xs">Morning Brief (8 AM)</SelectItem>
+                  <SelectItem value="manual" className="text-xs">Custom Schedule</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -81,8 +81,8 @@ export function ReminderSettings({
           <div className="p-3 rounded-xl bg-primary/[0.03] border border-primary/10 flex gap-2.5">
             <Info className="w-3.5 h-3.5 text-primary/60 shrink-0 mt-0.5" />
             <p className="text-[10px] text-primary/60 font-medium leading-relaxed">
-              {reminderType === 'default' && "System will fire a push notification exactly 2 hours prior to the deadline."}
-              {reminderType === 'morning' && "Operational brief will be delivered at 08:00 on the day of the objective."}
+              {reminderType === 'default' && "System will deliver a push notification exactly 2 hours prior to the deadline."}
+              {reminderType === 'morning' && "Task summary will be delivered at 08:00 on the day of the objective."}
               {reminderType === 'manual' && `Scheduled alert for ${reminderTime} on the day of the deadline.`}
             </p>
           </div>

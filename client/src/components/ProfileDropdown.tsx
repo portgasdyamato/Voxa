@@ -58,7 +58,7 @@ export function ProfileDropdown() {
               </div>
               <div className="flex gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 items-center justify-center">
                  <Crown className="w-3.5 h-3.5 text-primary" />
-                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Strategic Access</span>
+                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Pro Membership</span>
               </div>
             </div>
           </DropdownMenuLabel>
@@ -71,12 +71,12 @@ export function ProfileDropdown() {
               className="rounded-xl gap-3 py-3 px-4 focus:bg-primary/10 transition-all cursor-pointer group"
             >
               <Settings className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
-              <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:text-primary">Configuration</span>
+              <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:text-primary">Account Settings</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem className="rounded-xl gap-3 py-3 px-4 opacity-30 cursor-not-allowed">
                <Shield className="h-4 w-4 text-muted-foreground/40" />
-               <span className="text-[10px] font-black uppercase tracking-widest italic">Encrypted Vault</span>
+               <span className="text-[10px] font-black uppercase tracking-widest italic">Privacy Shield</span>
             </DropdownMenuItem>
           </div>
           
@@ -88,7 +88,7 @@ export function ProfileDropdown() {
               className="rounded-xl gap-3 py-3 px-4 text-rose-500 focus:bg-rose-500/10 focus:text-rose-500 transition-all cursor-pointer group"
             >
               <LogOut className="h-4 w-4 text-rose-500/40 group-hover:text-rose-500 transition-colors" />
-              <span className="text-[10px] font-black uppercase tracking-widest italic">Terminate Session</span>
+              <span className="text-[10px] font-black uppercase tracking-widest italic">Sign Out</span>
             </DropdownMenuItem>
           </div>
         </DropdownMenuContent>

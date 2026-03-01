@@ -41,13 +41,13 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
                   isActive={activeTab === 'home'} 
                   onClick={() => handleNavigation('/home', 'home')}
                   icon={<LayoutGrid className="w-4 h-4" />}
-                  label="Mission Control"
+                  label="Strategic Dashboard"
                 />
                 <NavButton 
                   isActive={activeTab === 'stats'} 
                   onClick={() => handleNavigation('/stats', 'stats')}
                   icon={<BarChart3 className="w-4 h-4" />}
-                  label="Analytics"
+                  label="Performance Hub"
                 />
               </div>
 
@@ -76,13 +76,13 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
                isActive={activeTab === 'home'} 
                onClick={() => handleNavigation('/home', 'home')}
                icon={<LayoutGrid className="w-5 h-5" />}
-               label="Tasks"
+               label="Task View"
             />
             <MobileNavButton 
                isActive={activeTab === 'stats'} 
                onClick={() => handleNavigation('/stats', 'stats')}
                icon={<BarChart3 className="w-5 h-5" />}
-               label="Stats"
+               label="Insights"
             />
           </div>
         </motion.div>

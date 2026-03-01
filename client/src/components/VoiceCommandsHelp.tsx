@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Mic, CheckCircle, Trash2, List, Eye, Plus, Calendar, Clock, Edit3, Bell } from 'lucide-react';
+import { HelpCircle, Mic, CheckCircle, Trash2, List, Eye, Plus, Calendar, Clock, Edit3, Bell, Activity } from 'lucide-react';
 
 export function VoiceCommandsHelp() {
   const [open, setOpen] = useState(false);
 
   const commandCategories = [
     {
-      title: "Task Creation with Dates & Times",
+      title: "Mission Initiation (Date & Time)",
       icon: Calendar,
       color: "text-blue-600",
       commands: [
@@ -110,7 +110,7 @@ export function VoiceCommandsHelp() {
       ]
     },
     {
-      title: "Task Creation",
+      title: "Standard Mission Entry",
       icon: Plus,
       color: "text-green-600",
       commands: [
@@ -162,7 +162,7 @@ export function VoiceCommandsHelp() {
       ]
     },
     {
-      title: "Task Editing & Renaming",
+      title: "Mission Refinement",
       icon: Edit3,
       color: "text-indigo-600",
       commands: [
@@ -206,7 +206,7 @@ export function VoiceCommandsHelp() {
       ]
     },
     {
-      title: "Task Deletion",
+      title: "Mission Removal",
       icon: Trash2,
       color: "text-rose-600",
       commands: [
@@ -228,7 +228,7 @@ export function VoiceCommandsHelp() {
       ]
     },
     {
-      title: "Task Completion",
+      title: "Mission Finalization",
       icon: CheckCircle,
       color: "text-blue-600",
       commands: [
@@ -265,7 +265,7 @@ export function VoiceCommandsHelp() {
       ]
     },
     {
-      title: "Task Management",
+      title: "Task Lifecycle Management",
       icon: Trash2,
       color: "text-red-600",
       commands: [
@@ -282,7 +282,7 @@ export function VoiceCommandsHelp() {
       ]
     },
     {
-      title: "Task Viewing",
+      title: "Visual Intelligence (Viewing)",
       icon: Eye,
       color: "text-blue-600",
       commands: [
@@ -323,22 +323,26 @@ export function VoiceCommandsHelp() {
           Voice Commands Help
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Mic className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span>Voice Commands Guide</span>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl p-0">
+        <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-primary/5">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
+          <DialogTitle className="flex items-center space-x-3 text-3xl font-black tracking-tighter italic relative z-10 uppercase">
+            <Mic className="w-8 h-8 text-primary shadow-lg shadow-primary/20" />
+            <span>Command Protocol</span>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">How to use Voice Commands</h4>
-            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
-              <li>Click the microphone button to start listening</li>
-              <li>Speak clearly and wait for the command to be processed</li>
-              <li>Check the notification for confirmation</li>
-              <li>Use exact or similar task names for best results</li>
+        <div className="p-10 pt-4 space-y-10">
+          <div className="bg-primary/5 rounded-[2rem] p-8 border border-primary/10 relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-6 opacity-5">
+               <Activity className="w-20 h-20" />
+             </div>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-4">Command Execution Flow</h4>
+            <ol className="text-sm text-foreground/70 space-y-3 font-medium">
+              <li className="flex gap-4"><span className="text-primary font-black">01</span> Activate the microphone to start audio scanning</li>
+              <li className="flex gap-4"><span className="text-primary font-black">02</span> Speak clearly for natural language processing</li>
+              <li className="flex gap-4"><span className="text-primary font-black">03</span> Verify the identified intent in the transcription bay</li>
+              <li className="flex gap-4"><span className="text-primary font-black">04</span> Operations execute instantly upon voice confirmation</li>
             </ol>
           </div>
 

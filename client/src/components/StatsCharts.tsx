@@ -26,13 +26,13 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
 
   const priorityData = useMemo(() => {
     // Fallback if data is missing, though the API should provide it
-    const highCount = data.priorityDistribution?.high || (data.totalTasks ? Math.round(data.totalTasks * 0.2) : 0);
-    const mediumCount = data.priorityDistribution?.medium || (data.totalTasks ? Math.round(data.totalTasks * 0.5) : 0);
-    const lowCount = data.priorityDistribution?.low || (data.totalTasks ? data.totalTasks - (data.priorityDistribution?.high || 0) - (data.priorityDistribution?.medium || 0) : 0);
+    const highCount = data.highPriority || 0;
+    const mediumCount = data.mediumPriority || 0;
+    const lowCount = data.lowPriority || 0;
     
     return [
-      { name: 'Critical', value: highCount, color: 'hsl(var(--destructive))' },
-      { name: 'Moderate', value: mediumCount, color: 'hsl(var(--primary))' },
+      { name: 'High', value: highCount, color: 'hsl(var(--destructive))' },
+      { name: 'Medium', value: mediumCount, color: 'hsl(var(--primary))' },
       { name: 'Low', value: lowCount, color: 'hsl(var(--muted-foreground) / 0.5)' },
     ];
   }, [data]);
@@ -43,7 +43,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
         <div className="bg-popover/90 backdrop-blur-xl border border-border/50 p-3 rounded-xl shadow-xl">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{label || payload[0].name}</p>
           <p className="text-sm font-bold text-foreground">
-            {payload[0].value} <span className="text-[10px] text-muted-foreground font-medium">Operations</span>
+            {payload[0].value} <span className="text-[10px] text-muted-foreground font-medium">Tasks</span>
           </p>
         </div>
       );
@@ -55,8 +55,8 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
       <div className="space-y-8">
         <div className="flex flex-col gap-1">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Throughput Matrix</h3>
-          <p className="text-xl font-bold tracking-tight text-foreground">Activity Stream</p>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Activity Trends</h3>
+          <p className="text-xl font-bold tracking-tight text-foreground">Daily Completion</p>
         </div>
         <div className="h-72 w-full relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -97,8 +97,8 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
 
       <div className="space-y-8">
         <div className="flex flex-col gap-1">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Objective Weights</h3>
-          <p className="text-xl font-bold tracking-tight text-foreground">Task Segmentation</p>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Priority Split</h3>
+          <p className="text-xl font-bold tracking-tight text-foreground">Priority Breakdown</p>
         </div>
         <div className="h-72 flex flex-col items-center justify-center relative">
           <div className="h-full w-full">

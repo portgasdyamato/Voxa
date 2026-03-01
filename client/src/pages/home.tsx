@@ -101,12 +101,12 @@ export default function Home() {
         <aside className="w-full lg:sticky lg:top-32 space-y-10">
           <div className="space-y-6">
             <div className="space-y-2">
-               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary px-1">Execute</p>
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary px-1">Actions</p>
                <Button 
                   onClick={() => setIsModalOpen(true)}
                   className="w-full h-14 rounded-2xl gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 active:translate-y-0 transition-all font-black uppercase tracking-widest text-sm"
                >
-                 <Plus className="w-5 h-5 mr-3" /> New Objective
+                 <Plus className="w-5 h-5 mr-3" /> New Task
                </Button>
             </div>
 
@@ -115,7 +115,7 @@ export default function Home() {
               <Input 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search indices..."
+                placeholder="Search all tasks..."
                 className="h-12 rounded-2xl border-border/10 bg-muted/20 pl-12 focus-visible:ring-primary/20 focus-visible:border-primary/30 font-medium"
               />
             </div>
@@ -123,12 +123,12 @@ export default function Home() {
 
           <div className="space-y-10">
             <div className="space-y-4">
-               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Timeline Index</Label>
+               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Schedule Index</Label>
                <div className="space-y-1">
                  {[
-                   { id: 'all', label: 'All Operations', icon: Layers },
-                   { id: 'today', label: 'Active Today', icon: Activity },
-                   { id: 'overdue', label: 'Priority / Overdue', icon: Zap },
+                   { id: 'all', label: 'All Activities', icon: Layers },
+                   { id: 'today', label: "Today's Focus", icon: Activity },
+                   { id: 'overdue', label: 'Critical / Overdue', icon: Zap },
                  ].map((d) => (
                    <button
                     key={d.id}
@@ -151,7 +151,7 @@ export default function Home() {
             </div>
 
             <div className="space-y-4">
-               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Operational Contexts</Label>
+               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Task Categories</Label>
                <CategoryFilter 
                  selectedCategory={selectedCategory} 
                  onCategoryChange={setSelectedCategory} 
@@ -169,12 +169,12 @@ export default function Home() {
           <section className="space-y-8">
             <div className="flex items-end justify-between border-b border-border/10 pb-4">
               <div className="space-y-1">
-                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Active Queue</p>
-                 <h2 className="text-3xl font-black tracking-tighter italic">Dynamic Focus</h2>
+                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Priority Queue</p>
+                 <h2 className="text-3xl font-black tracking-tighter italic">Current Stack</h2>
               </div>
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/30 border border-border/10">
                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{activeTasks.length} NODES ACTIVE</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{activeTasks.length} TASKS ACTIVE</span>
               </div>
             </div>
 
@@ -196,10 +196,10 @@ export default function Home() {
                    <Zap className="w-10 h-10 text-primary/20" />
                 </div>
                 <div className="space-y-2">
-                   <h3 className="text-xl font-black tracking-tight italic">Clear Horizon Detected</h3>
-                   <p className="text-muted-foreground/60 text-sm font-medium">No active objectives in the current operational index.</p>
+                   <h3 className="text-xl font-black tracking-tight italic">All Clear</h3>
+                   <p className="text-muted-foreground/60 text-sm font-medium">No active tasks found in your current view.</p>
                 </div>
-                <Button variant="outline" className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-xs border-2" onClick={() => setIsModalOpen(true)}>Create Objective</Button>
+                <Button variant="outline" className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-xs border-2" onClick={() => setIsModalOpen(true)}>Create Task</Button>
               </motion.div>
             )}
           </section>
@@ -209,9 +209,9 @@ export default function Home() {
                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-muted-foreground/40">
                     <History className="w-5 h-5" />
-                    <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.2em] italic">Archive</h2>
+                    <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.2em] italic">Completed</h2>
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20">Last 5 Operations</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20">Recent History</span>
                </div>
                <div className="grid grid-cols-1 gap-4 opacity-70 hover:opacity-100 transition-opacity duration-500">
                   {completedTasks.slice(0, 5).map((task) => (

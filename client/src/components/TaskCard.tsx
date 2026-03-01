@@ -108,13 +108,13 @@ export function TaskCard({ task }: TaskCardProps) {
                       onClick={() => setIsEditModalOpen(true)}
                       className="rounded-xl font-bold uppercase tracking-widest text-[10px] gap-2 py-2.5 focus:bg-primary/10"
                     >
-                      <Edit2 className="w-3.5 h-3.5" /> Reconfigure
+                      <Edit2 className="w-3.5 h-3.5" /> Refine
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => deleteTask.mutate(task.id)}
                       className="rounded-xl font-bold uppercase tracking-widest text-[10px] gap-2 py-2.5 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Terminate
+                      <Trash2 className="w-3.5 h-3.5" /> Remove
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -139,7 +139,7 @@ export function TaskCard({ task }: TaskCardProps) {
                   "text-emerald-500 border-emerald-500/20 bg-emerald-500/5"
                 )}
               >
-                {task.priority} PLD
+                {task.priority === 'medium' ? 'MID' : task.priority.toUpperCase()} PRIORITY
               </div>
 
               {task.dueDate && (

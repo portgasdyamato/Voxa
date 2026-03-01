@@ -80,14 +80,14 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       
       // Set command description for UI
       const descriptions: Record<string, string> = {
-        add: 'Adding new task',
-        delete: 'Deleting task',
-        complete: 'Completing task',
-        uncomplete: 'Reopening task',
-        update: 'Updating task',
-        list: 'Listing tasks',
-        clear_completed: 'Clearing completed tasks',
-        unknown: 'Processing command',
+        add: 'Creating mission...',
+        delete: 'Removing task...',
+        complete: 'Finalizing task...',
+        uncomplete: 'Restoring task...',
+        update: 'Refining details...',
+        list: 'Scanning tasks...',
+        clear_completed: 'Purging history...',
+        unknown: 'Analyzing command...',
       };
       setCommandDescription(descriptions[command.type] || 'Processing');
       
@@ -229,8 +229,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
             </div>
             <div>
               <DialogTitle className="text-3xl font-black tracking-tighter">Voice Commands</DialogTitle>
-              <DialogDescription className="text-xs font-semibold text-muted-foreground/60 mt-1">
-                Speak and it happens instantly
+              <DialogDescription className="text-xs font-semibold text-muted-foreground/60 mt-1 italic tracking-widest uppercase">
+                Your voice, your command.
               </DialogDescription>
             </div>
           </div>
@@ -300,11 +300,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               </div>
               
               <div className="text-center space-y-2">
-                <h4 className="text-xl font-bold tracking-tight">
-                  {isListening ? 'Listening...' : 'Ready to Record'}
+                <h4 className="text-xl font-bold tracking-tight italic uppercase tracking-widest">
+                  {isListening ? 'LISTENING...' : 'READY'}
                 </h4>
-                <p className="text-sm font-medium text-muted-foreground max-w-xs mx-auto">
-                  {isListening ? 'Speak your task clearly' : 'Click the button to start recording'}
+                <p className="text-sm font-medium text-muted-foreground/40 max-w-xs mx-auto italic">
+                  {isListening ? 'Speak your command clearly' : 'Activate to begin audio processing'}
                 </p>
               </div>
 
@@ -325,15 +325,15 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               className="space-y-8"
             >
               <div className="bg-muted/30 rounded-[2rem] p-8 border-2 border-border/40 relative group overflow-hidden shadow-inner">
-                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Sparkles className="w-12 h-12" />
                 </div>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary mb-2">What You Said</h4>
-                <p className="text-sm text-muted-foreground mb-4">{transcript}</p>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-2">Command Type</h4>
-                <p className="text-lg font-bold mb-4 text-blue-600">{commandDescription}</p>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">
-                  {commandType === 'add' ? 'Task Name' : commandType === 'delete' ? 'Task to Delete' : commandType === 'complete' ? 'Task to Complete' : commandType === 'update' ? 'Task to Update' : 'Details'}
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary/40 mb-2">Audio Transcript</h4>
+                <p className="text-sm text-neutral-400 font-medium mb-4 italic">"{transcript}"</p>
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500/40 mb-2">Operation Mode</h4>
+                <p className="text-lg font-black tracking-tighter italic mb-4 text-blue-500">{commandDescription}</p>
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500/40 mb-2">
+                  {commandType === 'add' ? 'Target Intent' : commandType === 'delete' ? 'Remove Target' : commandType === 'complete' ? 'Complete Target' : commandType === 'update' ? 'Refine Target' : 'Identified Subject'}
                 </h4>
                 <p className="text-xl font-bold leading-relaxed">{parsedTaskName || 'Processing...'}</p>
               </div>
