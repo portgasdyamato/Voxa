@@ -61,44 +61,44 @@ export function TaskCard({ task }: TaskCardProps) {
         <button 
           onClick={handleToggleComplete}
           className={cn(
-            "w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0",
+            "w-10 h-10 rounded-[0.85rem] border flex items-center justify-center transition-all duration-300 relative overflow-hidden shrink-0",
             task.completed 
-              ? "bg-primary border-primary shadow-[0_0_20px_rgba(59,130,246,0.4)]" 
-              : "border-white/5 bg-white/[0.02] hover:border-primary/40"
+              ? "bg-primary border-primary shadow-none" 
+              : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] shadow-none"
           )}
         >
           <AnimatePresence mode="wait">
             {task.completed ? (
               <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                <Check className="w-5 h-5 text-white stroke-[4px]" />
+                <Check className="w-5 h-5 text-white stroke-[3px]" />
               </motion.div>
             ) : (
-              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-primary transition-all group-hover:scale-150" />
+              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-all group-hover:scale-125" />
             )}
           </AnimatePresence>
         </button>
 
-        <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+          <div className="space-y-1.5 min-w-0 flex-1">
+            <div className="flex items-center gap-3">
               <h3 className={cn(
-                "text-[17px] font-bold tracking-tight truncate",
-                task.completed ? "text-white/20" : "text-white group-hover:text-primary transition-colors"
+                "text-[15px] sm:text-[17px] font-bold tracking-tight truncate",
+                task.completed ? "text-white/20" : "text-white"
               )}>
                 {task.title}
               </h3>
               {category && (
                 <div 
-                  className="px-2.5 py-0.5 rounded-lg border border-white/[0.05] bg-black/40 flex items-center gap-2"
+                  className="px-2.5 py-1 rounded-full border border-white/[0.03] bg-white/[0.03] flex items-center gap-1.5"
                   style={{ color: category.color }}
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{category.name}</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">{category.name}</span>
                 </div>
               )}
             </div>
             
-            <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-white/20">
+            <div className="flex items-center gap-4 text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">
               <div className={cn("flex items-center gap-1.5", pm.color)}>
                 <pm.icon className="w-3.5 h-3.5" />
                 <span>{task.priority}</span>
@@ -106,7 +106,7 @@ export function TaskCard({ task }: TaskCardProps) {
               
               {task.dueDate && (
                 <div className={cn("flex items-center gap-1.5", isOverdue && !task.completed ? "text-rose-500 animate-pulse" : "")}>
-                  <Calendar className="w-3.5 h-3.5" />
+                  <Calendar className="w-3.5 h-3.5 opacity-50" />
                   <span>{format(new Date(task.dueDate), 'MMM d, h:mm a')}</span>
                 </div>
               )}
@@ -118,20 +118,20 @@ export function TaskCard({ task }: TaskCardProps) {
               onClick={() => setIsEditModalOpen(true)}
               variant="ghost" 
               size="icon" 
-              className="h-10 w-10 rounded-xl hover:bg-white/5"
+              className="h-9 w-9 rounded-xl hover:bg-white/5 shadow-none"
             >
-              <Edit2 className="w-3.5 h-3.5 text-white/40 group-hover:text-white" />
+              <Edit2 className="w-3.5 h-3.5 text-white/50 hover:text-white transition-colors" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5">
-                  <MoreHorizontal className="w-3.5 h-3.5 text-white/40" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white/5 shadow-none">
+                  <MoreHorizontal className="w-4 h-4 text-white/50 hover:text-white transition-colors" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 shadow-none border border-white/[0.05]">
                 <DropdownMenuItem 
                   onClick={() => deleteTask.mutate(task.id)}
-                  className="rounded-xl font-bold text-[10px] uppercase tracking-widest gap-3 py-3 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer"
+                  className="rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] gap-3 py-3 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer shadow-none relative"
                 >
                   <Trash2 className="w-4 h-4" /> Delete Task
                 </DropdownMenuItem>

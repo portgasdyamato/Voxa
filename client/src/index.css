@@ -72,11 +72,11 @@
 
 /* Unique Task Card Aesthetics */
 .task-node {
-  @apply relative p-1 rounded-[1.75rem] bg-gradient-to-br from-white/[0.08] to-transparent;
+  @apply relative rounded-[1.25rem] bg-[#0c0c0e] border border-white/[0.04] transition-colors duration-300 hover:border-white/[0.08];
 }
 
 .task-node-inner {
-  @apply bg-[#0c0c0e] rounded-[1.5rem] p-6 flex items-center gap-6 border border-white/[0.02];
+  @apply p-4 sm:p-5 flex items-center gap-4 sm:gap-5;
 }
 
 .chart-glow {
