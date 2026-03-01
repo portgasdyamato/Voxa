@@ -232,7 +232,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                     tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: 900 }}
                   />
                   <YAxis hide allowDecimals={false}/>
-                  <Tooltip content={<BarTooltip/>}/>
+                  <Tooltip cursor={{fill: 'transparent'}} content={<BarTooltip/>}/>
                   <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={40}>
                     {categoryData.map((entry, index) => (
                       <Cell
