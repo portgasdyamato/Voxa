@@ -8,7 +8,8 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigation } from "@/components/Navigation";
 import { VoiceTaskModal } from "@/components/VoiceTaskModal";
-import { Mic } from "lucide-react";
+import { Mic, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
@@ -19,6 +20,7 @@ function Router() {
   const [location] = useLocation();
   const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Update active tab based on current location
   useEffect(() => {
@@ -31,90 +33,71 @@ function Router() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
-            <img src="/logo.png" alt="VoXa Logo" className="w-full h-full object-contain" />
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#020202]">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-20 h-20 rounded-[2rem] gradient-primary flex items-center justify-center shadow-3xl inner-glow"
+        >
+          <Zap className="w-10 h-10 text-white fill-white" />
+        </motion.div>
       </div>
     );
   }
 
+  const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
+    <div className="min-h-screen bg-[#020202] selection:bg-primary/30">
+      <div className="mesh-gradient" />
+      <Navigation 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+      <main className="relative z-10">
+        {children}
+      </main>
+      
+      {/* Floating Elite Voice Trigger */}
+      <div className="fixed bottom-10 right-10 z-50">
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setVoiceModalOpen(true)}
+          className="w-20 h-20 gradient-primary text-white rounded-[1.8rem] shadow-[0_20px_50px_-10px_rgba(var(--primary),0.6)] flex items-center justify-center group relative overflow-hidden inner-glow"
+        >
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+          <Mic className="w-8 h-8 relative z-10 group-hover:scale-110 transition-transform duration-500 shadow-2xl" />
+        </motion.button>
+      </div>
+
+      <VoiceTaskModal
+        open={voiceModalOpen}
+        onOpenChange={setVoiceModalOpen}
+      />
+    </div>
+  );
+
   return (
     <Switch>
-      <Route path="/home">
-        <div className="min-h-screen">
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-          <main>
-            <Home />
-          </main>
-          
-          {/* Floating Voice Button */}
-          <div className="fixed bottom-6 right-6 z-50">
-            <button
-              onClick={() => setVoiceModalOpen(true)}
-              className="w-16 h-16 gradient-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110"
-            >
-              <Mic className="w-8 h-8 group-hover:scale-110 transition-transform duration-200" />
-            </button>
-          </div>
-
-          <VoiceTaskModal
-            open={voiceModalOpen}
-            onOpenChange={setVoiceModalOpen}
-          />
-        </div>
-      </Route>
       <Route path="/">
         {!isAuthenticated ? (
           <Landing />
         ) : (
-          <div className="min-h-screen">
-            <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-            <main>
-              {activeTab === 'home' ? <Home /> : <Stats />}
-            </main>
-            
-            {/* Floating Voice Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-              <button
-                onClick={() => setVoiceModalOpen(true)}
-                className="w-16 h-16 gradient-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110"
-              >
-                <Mic className="w-8 h-8 group-hover:scale-110 transition-transform duration-200" />
-              </button>
-            </div>
-
-            <VoiceTaskModal
-              open={voiceModalOpen}
-              onOpenChange={setVoiceModalOpen}
-            />
-          </div>
+          <ProtectedLayout>
+            <Home searchQuery={searchQuery} />
+          </ProtectedLayout>
         )}
       </Route>
+      <Route path="/home">
+         <ProtectedLayout>
+            <Home searchQuery={searchQuery} />
+         </ProtectedLayout>
+      </Route>
       <Route path="/stats">
-        <div className="min-h-screen">
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-          <main>
+         <ProtectedLayout>
             <Stats />
-          </main>
-          
-          {/* Floating Voice Button */}
-          <div className="fixed bottom-6 right-6 z-50">
-            <button
-              onClick={() => setVoiceModalOpen(true)}
-              className="w-16 h-16 gradient-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110"
-            >
-              <Mic className="w-8 h-8 group-hover:scale-110 transition-transform duration-200" />
-            </button>
-          </div>
-
-          <VoiceTaskModal
-            open={voiceModalOpen}
-            onOpenChange={setVoiceModalOpen}
-          />
-        </div>
+         </ProtectedLayout>
       </Route>
       <Route component={NotFound} />
     </Switch>
