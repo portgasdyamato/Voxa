@@ -191,25 +191,54 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               <div className="relative flex items-center justify-center w-full h-32 mt-4">
                 <AnimatePresence mode="wait">
                   {isListening ? (
-                    <motion.img 
+                    <motion.div 
                       key="talk"
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
-                      src="/talk.gif" 
-                      alt="Listening..." 
-                      className="w-32 h-32 object-contain"
-                    />
+                      className="relative flex items-center justify-center w-32 h-32"
+                    >
+                      {/* Pulse waves to simulate a 'talk' gif */}
+                      <motion.div 
+                        animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                        className="absolute inset-0 m-auto w-12 h-12 bg-primary/40 rounded-full" 
+                      />
+                      <motion.div 
+                        animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
+                        className="absolute inset-0 m-auto w-12 h-12 bg-primary/30 rounded-full" 
+                      />
+                      <motion.div 
+                        animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut", delay: 1 }}
+                        className="absolute inset-0 m-auto w-12 h-12 bg-primary/20 rounded-full" 
+                      />
+                      {/* Central Mic Icon */}
+                      <div className="relative z-10 w-16 h-16 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                        <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" x2="12" y1="19" y2="22" />
+                          </svg>
+                        </motion.div>
+                      </div>
+                    </motion.div>
                   ) : (
-                    <motion.img 
+                    <motion.div 
                       key="stop"
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
-                      src="/stop.gif" 
-                      alt="Processing..." 
-                      className="w-32 h-32 object-contain opacity-50 grayscale"
-                    />
+                      className="relative flex items-center justify-center w-32 h-32"
+                    >
+                      <div className="relative z-10 w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
+                          <rect width="12" height="12" x="6" y="6" rx="2" ry="2"/>
+                        </svg>
+                      </div>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
