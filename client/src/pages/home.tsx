@@ -31,20 +31,30 @@ export default function Home() {
       if (selectedCategory !== null && task.categoryId !== selectedCategory) return false;
       
       if (selectedDeadline !== 'all') {
-        if (!task.dueDate) return false;
         const now = new Date();
-        const dueDate = new Date(task.dueDate);
+        const isHighPriority = task.priority === 'high';
         
-        // Reset time parts for accurate day-only comparison
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-        
-        const diffTime = taskDate.getTime() - today.getTime();
-        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (selectedDeadline === 'today' && diffDays !== 0) return false;
-        if (selectedDeadline === 'tomorrow' && diffDays !== 1) return false;
-        if (selectedDeadline === 'overdue' && (task.completed || dueDate >= now)) return false;
+        let isOverdue = false;
+        let diffDays = -999;
+
+        if (task.dueDate) {
+          const dueDate = new Date(task.dueDate);
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+          const diffTime = taskDate.getTime() - today.getTime();
+          diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+          isOverdue = !task.completed && dueDate < now;
+        }
+
+        if (selectedDeadline === 'today') {
+          if (!task.dueDate || diffDays !== 0) return false;
+        } else if (selectedDeadline === 'tomorrow') {
+          if (!task.dueDate || diffDays !== 1) return false;
+        } else if (selectedDeadline === 'overdue') {
+          // Show if it's high priority OR overdue (and not completed)
+          if (task.completed) return false;
+          if (!isHighPriority && !isOverdue) return false;
+        }
       }
       
       if (searchQuery.trim()) {
