@@ -50,15 +50,14 @@ export function TaskCard({ task }: TaskCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       onClick={() => setIsEditModalOpen(true)}
       className="task-node group cursor-pointer"
       style={{ '--glow-color': task.completed ? '#3b82f6' : (category?.color || '#3b82f6') } as React.CSSProperties}
     >
-      <div className="task-node-glow" />
       <div className={cn(
-        "task-node-inner transition-all duration-500",
+        "task-node-inner transition-all duration-300",
         task.completed ? "opacity-40 grayscale blur-[0.5px]" : "opacity-100"
       )}>
         {/* Status Indicator */}
@@ -77,7 +76,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 <Check className="w-5 h-5 text-primary stroke-[4px] drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
               </motion.div>
             ) : (
-              <div className="w-1.5 h-1.5 rounded-full bg-white/30 group-hover/btn:bg-white group-hover/btn:shadow-[0_0_12px_white] transition-all duration-500 group-hover/btn:scale-[2.5]" />
+              <div className="w-1.5 h-1.5 rounded-full bg-white/30 group-hover/btn:bg-white group-hover/btn:shadow-[0_0_12px_white] transition-all duration-300 group-hover/btn:scale-[1.5]" />
             )}
           </AnimatePresence>
         </button>

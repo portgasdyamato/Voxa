@@ -72,38 +72,31 @@
 
 /* Unique Task Card Aesthetics */
 .task-node {
-  @apply relative rounded-[1.25rem] bg-[#0a0a0c]/40 border border-white/[0.04] backdrop-blur-[20px] transition-all duration-500 overflow-hidden;
-  box-shadow: 
-    0 4px 20px -2px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  @apply relative rounded-[1.25rem] bg-[#0c0c0e] border border-white/[0.04] transition-all duration-300 overflow-hidden;
+  box-shadow: 0 4px 15px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* Category Accent Line - Makes the resting state visually pleasing without bleeding */
+.task-node::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--glow-color, #3b82f6);
+  opacity: 0.5;
+  transition: all 0.3s ease;
 }
 
 .task-node:hover {
-  @apply bg-[#111116]/60 border-white/[0.15] backdrop-blur-[30px];
-  box-shadow: 
-    0 20px 50px -10px rgba(0, 0, 0, 0.8), 
-    inset 0 1px 2px rgba(255, 255, 255, 0.15),
-    0 0 40px -10px var(--glow-color, rgba(59, 130, 246, 0.5));
+  @apply bg-[#121216] border-white/[0.08] translate-y-[-2px];
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.03);
 }
 
-.task-node-glow {
-  position: absolute;
-  width: 150%;
-  height: 150%;
-  top: -25%;
-  left: -25%;
-  background: radial-gradient(circle at 80% 50%, var(--glow-color, #3b82f6) 0%, transparent 40%);
-  opacity: 0;
-  transition: opacity 0.7s ease, transform 0.7s ease;
-  mix-blend-mode: color-dodge;
-  pointer-events: none;
-  z-index: 0;
-  transform: scale(0.8) translateX(-20px);
-}
-
-.task-node:hover .task-node-glow {
-  opacity: 0.15;
-  transform: scale(1) translateX(0);
+.task-node:hover::before {
+  opacity: 1;
+  box-shadow: 2px 0 15px var(--glow-color, #3b82f6);
 }
 
 .task-node-inner {
