@@ -28,88 +28,75 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 nav-blur h-24 flex items-center px-8 lg:px-16 border-b border-white/[0.03]">
+      <header className="fixed top-0 left-0 right-0 z-50 h-24 flex items-center px-8 lg:px-16 nav-blur border-b border-white/[0.03]">
         <div className="max-w-[1800px] mx-auto w-full flex items-center justify-between gap-12">
-          {/* Elite Brand Hub */}
+          {/* Elite Brand Signature */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={() => handleNavigation('/home', 'home')}
-            className="flex items-center gap-5 group cursor-pointer shrink-0"
+            className="flex items-center gap-4 group cursor-pointer shrink-0"
           >
-            <div className="w-11 h-11 rounded-[1.1rem] gradient-primary flex items-center justify-center inner-glow group-hover:scale-110 transition-transform duration-500">
-              <Zap className="w-5 h-5 fill-current" />
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(var(--primary),0.3)] transition-all duration-500 group-hover:scale-110 group-active:scale-95 group-hover:rotate-6">
+              <Zap className="w-6 h-6 fill-white text-white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-black tracking-[-0.05em] text-white">VoXa</h1>
-              <p className="text-[8px] font-black text-primary tracking-[0.3em] uppercase opacity-40 italic">Intelligence</p>
+              <h1 className="text-2xl font-black tracking-tight text-white leading-none">VoXa</h1>
+              <p className="text-[10px] font-black text-primary tracking-[0.3em] uppercase opacity-40 mt-1 italic">Personal Assistant</p>
             </div>
           </motion.div>
 
-          {/* Unified Navigation Core */}
-          <div className="flex items-center gap-2 p-1 bg-white/[0.03] border border-white/[0.05] rounded-[1.5rem] hidden lg:flex">
-             <NavButton 
-               isActive={activeTab === 'home'} 
-               onClick={() => handleNavigation('/home', 'home')}
-               icon={<LayoutGrid className="w-4 h-4" />}
-               label="Strategic Deck"
-             />
-             <NavButton 
-               isActive={activeTab === 'stats'} 
-               onClick={() => handleNavigation('/stats', 'stats')}
-               icon={<BarChart3 className="w-4 h-4" />}
-               label="Performance Hub"
-             />
-          </div>
-
-          {/* Center Search - Raycast Style */}
-          <div className="flex-1 max-w-xl relative group hidden md:block">
+          {/* Precision Command Hub */}
+          <div className="flex-1 max-w-2xl relative group hidden md:block group">
+            <div className="absolute inset-0 bg-primary/2 blur-[40px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-1000" />
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors duration-500" />
             <Input 
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search nodes or sectoral arrays..."
-              className="h-12 rounded-2xl bg-white/[0.02] border-white/[0.05] pl-16 pr-8 text-xs font-bold tracking-tight focus:bg-white/[0.04] focus:border-white/[0.1] transition-all duration-500 placeholder:text-white/5"
+              placeholder="Search tasks, categories, or filters..."
+              className="h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] pl-16 pr-24 text-sm font-medium focus:bg-white/[0.04] focus:ring-0 focus:border-white/[0.1] transition-all duration-500 placeholder:text-white/10"
             />
-            <div className="absolute right-6 top-1/2 -translate-y-1/2 flex gap-1 opacity-20">
-              <kbd className="h-5 px-1.5 rounded-md bg-white/5 border border-white/10 text-[8px] font-black text-white flex items-center">CTRL</kbd>
-              <kbd className="h-5 px-1.5 rounded-md bg-white/5 border border-white/10 text-[8px] font-black text-white flex items-center">K</kbd>
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-20 group-focus-within:opacity-40 transition-opacity">
+              <kbd className="h-6 px-1.5 rounded bg-white/5 border border-white/10 text-[10px] font-black text-white flex items-center">CTRL</kbd>
+              <kbd className="h-6 px-1.5 rounded bg-white/5 border border-white/10 text-[10px] font-black text-white flex items-center">K</kbd>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 shrink-0 border-l border-white/5 pl-6">
-            <div className="hidden sm:flex items-center gap-4">
+          {/* Universal Actions */}
+          <div className="flex items-center gap-6 shrink-0 h-12 pl-6 border-l border-white/[0.05]">
+            <div className="hidden sm:flex items-center gap-3">
                <ThemeToggle />
-               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative hover:bg-white/5 group border border-transparent hover:border-white/5">
-                 <Bell className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
-                 <span className="absolute top-3 right-3 w-1.5 h-1.5 bg-rose-500 rounded-full shadow-[0_0_10px_#f43f5e]" />
+               <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl relative border border-transparent hover:border-white/5 hover:bg-white/5 transition-all group">
+                 <Bell className="w-5 h-5 text-white/20 group-hover:text-white transition-colors" />
+                 <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full shadow-[0_0_15px_#f43f5e] group-hover:scale-125 transition-transform" />
                </Button>
             </div>
-            <div className="h-8 w-[1px] bg-white/[0.05] hidden sm:block" />
+            <div className="h-4 w-[1px] bg-white/[0.05] hidden sm:block" />
             <ProfileDropdown />
           </div>
         </div>
       </header>
 
-      {/* Mobile Bottom Dock - Elite Style */}
+      {/* Global Tab Navigation */}
       <AnimatePresence>
         <motion.div 
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="lg:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm"
+          transition={{ type: "spring", stiffness: 260, damping: 30 }}
+          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] p-1.5 rounded-[2.5rem] bg-[#050505]/80 frosted-glass shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] border border-white/[0.05]"
         >
-          <div className="bg-[#0a0a0a]/80 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] flex items-center justify-around h-20">
-            <MobileNavButton 
+          <div className="flex items-center">
+            <TabButton 
                isActive={activeTab === 'home'} 
                onClick={() => handleNavigation('/home', 'home')}
                icon={<LayoutGrid className="w-5 h-5" />}
-               label="Dashboard"
+               label="Workspace"
             />
-            <MobileNavButton 
+            <TabButton 
                isActive={activeTab === 'stats'} 
                onClick={() => handleNavigation('/stats', 'stats')}
                icon={<BarChart3 className="w-5 h-5" />}
-               label="Analytics"
+               label="Performance"
             />
           </div>
         </motion.div>
@@ -118,47 +105,30 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
   );
 }
 
-function NavButton({ isActive, onClick, icon, label }: { isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+function TabButton({ isActive, onClick, icon, label }: { isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 overflow-hidden group",
-        isActive 
-          ? "text-primary bg-primary/5" 
-          : "text-white/20 hover:text-white hover:bg-white/5"
+        "relative flex flex-col items-center justify-center w-28 h-20 rounded-[2rem] transition-all duration-700 overflow-hidden group",
+        isActive ? "text-white" : "text-white/20 hover:text-white/40"
       )}
     >
-      <span className="relative z-10 flex items-center gap-3 italic">
-        {icon}
-        {label}
-      </span>
+      <div className="relative z-10 space-y-1.5 flex flex-col items-center">
+        <div className={cn("transition-transform duration-700", isActive ? "scale-110" : "scale-100 group-hover:scale-105")}>{icon}</div>
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] italic">{label}</span>
+      </div>
       {isActive && (
         <motion.div 
-          layoutId="nav-pill"
-          className="absolute inset-0 border border-primary/20 rounded-[inherit] z-0"
+          layoutId="active-nav-glow"
+          className="absolute inset-0 bg-primary/10 rounded-[inherit] z-0"
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
-    </button>
-  );
-}
-
-function MobileNavButton({ isActive, onClick, icon, label }: { isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "relative flex flex-col items-center gap-1 py-3 px-10 rounded-2xl transition-all duration-500",
-        isActive ? "text-primary" : "text-white/10"
-      )}
-    >
-      <div className="relative z-10">{icon}</div>
-      <span className="relative z-10 text-[8px] font-black uppercase tracking-[0.2em] italic">{label}</span>
       {isActive && (
         <motion.div 
-          layoutId="mobile-nav-marker"
-          className="absolute -top-1 w-8 h-1 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+          layoutId="active-marker"
+          className="absolute bottom-2 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.8)]"
         />
       )}
     </button>

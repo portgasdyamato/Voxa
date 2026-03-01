@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigation } from "@/components/Navigation";
 import { VoiceTaskModal } from "@/components/VoiceTaskModal";
-import { Mic, Zap } from "lucide-react";
+import { Mic, Zap, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -33,20 +33,24 @@ function Router() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#020202]">
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-20 h-20 rounded-[2rem] gradient-primary flex items-center justify-center shadow-3xl inner-glow"
-        >
-          <Zap className="w-10 h-10 text-white fill-white" />
-        </motion.div>
-      </div>
+       <div className="min-h-screen flex items-center justify-center bg-[#050505] selection:bg-primary/20">
+         <motion.div 
+           animate={{ 
+             scale: [1, 1.1, 1],
+             rotate: [0, 5, -5, 0],
+             opacity: [0.3, 1, 0.3]
+           }}
+           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+           className="w-24 h-24 rounded-[3rem] bg-primary flex items-center justify-center shadow-3xl inner-glow"
+         >
+           <Zap className="w-10 h-10 text-white fill-white shadow-2xl" />
+         </motion.div>
+       </div>
     );
   }
 
   const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-[#020202] selection:bg-primary/30">
+    <div className="min-h-screen bg-[#020202] text-white selection:bg-primary/30 overflow-x-hidden">
       <div className="mesh-gradient" />
       <Navigation 
         activeTab={activeTab} 
@@ -54,20 +58,26 @@ function Router() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
-      <main className="relative z-10">
+      <main className="relative z-10 w-full overflow-hidden">
         {children}
       </main>
       
-      {/* Floating Elite Voice Trigger */}
-      <div className="fixed bottom-10 right-10 z-50">
+      {/* Floating Elite Assistant Trigger */}
+      <div className="fixed bottom-12 right-12 z-[100]">
         <motion.button
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.1, rotate: 6 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setVoiceModalOpen(true)}
-          className="w-20 h-20 gradient-primary text-white rounded-[1.8rem] shadow-[0_20px_50px_-10px_rgba(var(--primary),0.6)] flex items-center justify-center group relative overflow-hidden inner-glow"
+          className="w-24 h-24 rounded-[3rem] bg-primary text-white flex items-center justify-center shadow-[0_30px_70px_-15px_rgba(var(--primary),0.1)] hover:shadow-[0_40px_80px_-20px_rgba(var(--primary),0.3)] transition-all duration-700 group relative overflow-hidden group/btn"
         >
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-          <Mic className="w-8 h-8 relative z-10 group-hover:scale-110 transition-transform duration-500 shadow-2xl" />
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-700" />
+          <div className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-1000 bg-gradient-to-tr from-transparent via-white/5 to-white/10" />
+          <Mic className="w-10 h-10 relative z-10 transition-transform duration-700 group-hover/btn:scale-110 drop-shadow-2xl" />
+          <motion.div 
+            animate={{ scale: [1, 1.4, 1], opacity: [0, 0.4, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 rounded-full border border-white/20"
+          />
         </motion.button>
       </div>
 
