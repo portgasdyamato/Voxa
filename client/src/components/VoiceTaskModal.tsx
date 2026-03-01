@@ -188,30 +188,61 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
           {!showTranscription ? (
             <div className="flex flex-col items-center py-8 gap-6">
-              <div className="relative flex items-center justify-center w-full h-20">
+              <div className="relative flex items-center justify-center w-full h-32 mt-4">
                 <AnimatePresence>
                   {isListening && (
-                    <div className="flex items-center gap-2 h-full">
-                      {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
-                        <motion.div 
-                          key={i}
-                          animate={{ 
-                            height: [8, 40 + (Math.random() * 30), 8],
-                            opacity: [0.2, 0.8, 0.2]
-                          }}
-                          transition={{ 
-                            duration: 0.3 + (Math.random() * 0.4), 
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                          className="w-1.5 bg-primary/50 rounded-full" 
-                        />
-                      ))}
-                    </div>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      className="relative flex items-center justify-center w-24 h-24"
+                    >
+                      {/* Ambient Glow */}
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 1.4, 1],
+                          opacity: [0.3, 0.8, 0.3],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-primary/40 rounded-full blur-[25px]" 
+                      />
+                      
+                      {/* Dynamic Morphing Layer 1 */}
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 0.9, 1.2, 1],
+                          rotate: [0, 90, 180, 360],
+                          borderRadius: ["50%", "40% 60% 70% 30%", "60% 40% 30% 70%", "50%"],
+                        }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className="absolute w-16 h-16 bg-primary shadow-[0_0_40px_rgba(59,130,246,0.8)] mix-blend-screen" 
+                      />
+                      
+                      {/* Dynamic Morphing Layer 2 */}
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 1.15, 0.85, 1],
+                          rotate: [360, 270, 90, 0],
+                          borderRadius: ["50%", "60% 40% 30% 70%", "30% 70% 60% 40%", "50%"],
+                        }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="absolute w-16 h-16 bg-blue-300 text-transparent shadow-[0_0_30px_rgba(147,197,253,0.8)] mix-blend-screen opacity-70" 
+                      />
+                      
+                      {/* Outer Ring Pulse */}
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 1.6, 1],
+                          opacity: [0.5, 0, 0.5]
+                        }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute w-16 h-16 border-[1px] border-primary/50 rounded-full" 
+                      />
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-              <p className="text-white/30 text-sm font-semibold italic">
+              <p className="text-white/30 text-sm font-semibold italic mt-6">
                 Listening — speak your task or command...
               </p>
             </div>
