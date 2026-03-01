@@ -3,11 +3,20 @@ import {
   BarChart3, Bell, LayoutGrid, Zap, Search, Mic 
 } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
-import { ThemeToggle } from './ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { useTasks } from '@/hooks/useTasks';
+import { format, isAfter } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 interface NavigationProps {
   activeTab: 'home' | 'stats';
@@ -18,6 +27,12 @@ interface NavigationProps {
 
 export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange }: NavigationProps) {
   const [location, setLocation] = useLocation();
+  const { data: tasks = [] } = useTasks();
+
+  const upcomingTasks = tasks
+    .filter(t => !t.completed && t.dueDate && isAfter(new Date(t.dueDate), new Date()))
+    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+    .slice(0, 3);
 
   const handleNavigation = (path: string, tab: 'home' | 'stats') => {
     setLocation(path);
@@ -61,11 +76,54 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
 
           <div className="flex items-center gap-6 shrink-0 h-10 pl-6 border-l border-white/[0.05]">
             <div className="hidden sm:flex items-center gap-2">
-               <ThemeToggle />
-               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative hover:bg-white/5 group transition-all">
-                 <Bell className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
-                 <span className="absolute top-3 right-3 w-1.5 h-1.5 bg-rose-500 rounded-full shadow-[0_0_10px_#f43f5e] group-hover:scale-125 transition-transform" />
-               </Button>
+               <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                   <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative hover:bg-white/5 group transition-all">
+                     <Bell className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
+                     {upcomingTasks.length > 0 && (
+                       <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full shadow-[0_0_10px_#f43f5e] group-hover:scale-125 transition-transform" />
+                     )}
+                   </Button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent align="end" className="w-72">
+                   <DropdownMenuLabel className="font-normal px-3 py-3">
+                     <div className="flex flex-col gap-1">
+                       <h4 className="text-sm font-bold text-white">Upcoming Reminders</h4>
+                       <p className="text-[11px] text-white/30 truncate">Top 3 scheduled tasks</p>
+                     </div>
+                   </DropdownMenuLabel>
+                   <DropdownMenuSeparator className="mx-2 opacity-5" />
+                   <div className="p-1">
+                     {upcomingTasks.length === 0 ? (
+                       <div className="px-3 py-4 text-center text-[12px] font-medium text-white/20">
+                         No upcoming reminders
+                       </div>
+                     ) : (
+                       upcomingTasks.map((task) => (
+                         <DropdownMenuItem key={task.id} className="rounded-xl flex-col items-start gap-1 py-3 px-3">
+                           <span className="font-bold text-sm text-white truncate w-full">{task.title}</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">
+                             {format(new Date(task.dueDate!), 'MMM d, h:mm a')}
+                           </span>
+                         </DropdownMenuItem>
+                       ))
+                     )}
+                   </div>
+                   {upcomingTasks.length > 0 && (
+                     <>
+                       <DropdownMenuSeparator className="mx-2 opacity-5" />
+                       <div className="p-1">
+                         <DropdownMenuItem 
+                           onClick={() => handleNavigation('/home', 'home')}
+                           className="rounded-xl justify-center text-xs font-bold text-white/40 hover:text-white py-2"
+                         >
+                           View all tasks
+                         </DropdownMenuItem>
+                       </div>
+                     </>
+                   )}
+                 </DropdownMenuContent>
+               </DropdownMenu>
             </div>
             <div className="h-4 w-[1px] bg-white/[0.1] hidden sm:block" />
             <ProfileDropdown />

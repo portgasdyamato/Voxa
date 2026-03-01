@@ -49,7 +49,8 @@ function Router() {
     );
   }
 
-  const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
+function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
+  return (
     <div className="min-h-screen bg-[#020202] text-white selection:bg-primary/30 overflow-x-hidden">
       <div className="mesh-gradient" />
       <Navigation 
@@ -87,6 +88,7 @@ function Router() {
       />
     </div>
   );
+}
 
   return (
     <Switch>
@@ -94,18 +96,30 @@ function Router() {
         {!isAuthenticated ? (
           <Landing />
         ) : (
-          <ProtectedLayout>
+          <ProtectedLayout 
+            activeTab={activeTab} setActiveTab={setActiveTab}
+            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+            voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
+          >
             <Home searchQuery={searchQuery} />
           </ProtectedLayout>
         )}
       </Route>
       <Route path="/home">
-         <ProtectedLayout>
+         <ProtectedLayout 
+            activeTab={activeTab} setActiveTab={setActiveTab}
+            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+            voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
+         >
             <Home searchQuery={searchQuery} />
          </ProtectedLayout>
       </Route>
       <Route path="/stats">
-         <ProtectedLayout>
+         <ProtectedLayout
+            activeTab={activeTab} setActiveTab={setActiveTab}
+            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+            voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
+         >
             <Stats />
          </ProtectedLayout>
       </Route>

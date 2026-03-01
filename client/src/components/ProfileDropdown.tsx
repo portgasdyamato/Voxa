@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Settings, LogOut, Crown, User as UserIcon } from 'lucide-react';
+import { Settings, LogOut, Crown, User as UserIcon, Moon, Sun, Monitor } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +9,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -16,6 +21,7 @@ import { cn } from '@/lib/utils';
 
 export function ProfileDropdown() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [showEditProfile, setShowEditProfile] = useState(false);
 
   const handleLogout = () => {
@@ -67,6 +73,29 @@ export function ProfileDropdown() {
               <Settings className="h-4 w-4 text-white/30 group-hover:text-white transition-colors" />
               <span className="text-sm font-semibold text-white/60 group-hover:text-white">Account settings</span>
             </DropdownMenuItem>
+
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="rounded-xl gap-3 py-2.5 px-3 focus:bg-white/[0.06] transition-all cursor-pointer group data-[state=open]:bg-white/[0.06]">
+                <Moon className="h-4 w-4 text-white/30 group-hover:text-white transition-colors" />
+                <span className="text-sm font-semibold text-white/60 group-hover:text-white">Theme</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-40" sideOffset={8}>
+                  <DropdownMenuItem onClick={() => setTheme('light')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-amber-500/10 focus:text-amber-500 transition-colors">
+                    <Sun className="h-4 w-4" />
+                    <span>Light</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-indigo-500/10 focus:text-indigo-500 transition-colors">
+                    <Moon className="h-4 w-4" />
+                    <span>Dark</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-primary/10 transition-colors">
+                    <Monitor className="h-4 w-4" />
+                    <span>System</span>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
           </div>
           
           <DropdownMenuSeparator className="mx-2 opacity-5" />
