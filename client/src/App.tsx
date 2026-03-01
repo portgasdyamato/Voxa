@@ -15,40 +15,6 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Stats from "@/pages/stats";
 
-function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const [location] = useLocation();
-  const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
-  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Update active tab based on current location
-  useEffect(() => {
-    if (location === '/home' || location === '/' || location.startsWith('/home?')) {
-      setActiveTab('home');
-    } else if (location === '/stats' || location.startsWith('/stats?')) {
-      setActiveTab('stats');
-    }
-  }, [location]);
-
-  if (isLoading) {
-    return (
-       <div className="min-h-screen flex items-center justify-center bg-[#050505] selection:bg-primary/20">
-         <motion.div 
-           animate={{ 
-             scale: [1, 1.1, 1],
-             rotate: [0, 5, -5, 0],
-             opacity: [0.3, 1, 0.3]
-           }}
-           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-           className="w-24 h-24 rounded-[3rem] bg-primary flex items-center justify-center shadow-3xl inner-glow"
-         >
-           <Zap className="w-10 h-10 text-white fill-white shadow-2xl" />
-         </motion.div>
-       </div>
-    );
-  }
-
 function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
   return (
     <div className="min-h-screen bg-[#020202] text-white selection:bg-primary/30 overflow-x-hidden">
@@ -89,6 +55,42 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
     </div>
   );
 }
+
+function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
+  const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Update active tab based on current location
+  useEffect(() => {
+    if (location === '/home' || location === '/' || location.startsWith('/home?')) {
+      setActiveTab('home');
+    } else if (location === '/stats' || location.startsWith('/stats?')) {
+      setActiveTab('stats');
+    }
+  }, [location]);
+
+  if (isLoading) {
+    return (
+       <div className="min-h-screen flex items-center justify-center bg-[#050505] selection:bg-primary/20">
+         <motion.div 
+           animate={{ 
+             scale: [1, 1.1, 1],
+             rotate: [0, 5, -5, 0],
+             opacity: [0.3, 1, 0.3]
+           }}
+           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+           className="w-24 h-24 rounded-[3rem] bg-primary flex items-center justify-center shadow-3xl inner-glow"
+         >
+           <Zap className="w-10 h-10 text-white fill-white shadow-2xl" />
+         </motion.div>
+       </div>
+    );
+  }
+
+
 
   return (
     <Switch>
