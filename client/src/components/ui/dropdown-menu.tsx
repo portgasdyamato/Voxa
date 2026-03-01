@@ -45,7 +45,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      "z-[200] min-w-[8rem] overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl p-1 text-popover-foreground shadow-[0_16px_60px_rgba(0,0,0,0.7)] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-50 data-[state=open]:zoom-in-90 data-[side=bottom]:slide-in-from-top-6 data-[side=left]:slide-in-from-right-6 data-[side=right]:slide-in-from-left-6 data-[side=top]:slide-in-from-bottom-6 origin-[--radix-dropdown-menu-content-transform-origin] will-change-[transform,opacity]",
+      "z-[200] min-w-[8rem] overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl p-1 text-popover-foreground shadow-[0_16px_60px_rgba(0,0,0,0.7)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]",
       className
     )}
     {...props}
@@ -63,7 +63,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-[200] max-h-[calc(100vh-160px)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.08] bg-[#0d1117] p-1.5 text-popover-foreground shadow-[0_30px_100px_rgba(0,0,0,0.8)] backdrop-blur-xl duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-50 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-6 data-[side=left]:slide-in-from-right-6 data-[side=right]:slide-in-from-left-6 data-[side=top]:slide-in-from-bottom-6 origin-[--radix-dropdown-menu-content-transform-origin] will-change-[transform,opacity]",
+        "z-[200] max-h-[calc(100vh-160px)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.08] bg-[#0d1117] p-1.5 text-popover-foreground shadow-[0_30px_100px_rgba(0,0,0,0.8)] backdrop-blur-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]",
         className
       )}
       {...props}
