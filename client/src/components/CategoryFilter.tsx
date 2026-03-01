@@ -1,7 +1,7 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Layers, Box, Globe, Shield, Target } from "lucide-react";
 
 interface CategoryFilterProps {
   selectedCategory: number | null;
@@ -20,37 +20,61 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
   }
   
   return (
-    <div className="flex flex-col gap-1">
-      <button
+    <div className="flex flex-col gap-3 py-2">
+      <motion.button
+        whileHover={{ x: 4 }}
+        whileTap={{ scale: 0.98 }}
         onClick={() => onCategoryChange(null)}
         className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all text-left",
+          "flex items-center gap-4 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all text-left italic relative overflow-hidden group",
           selectedCategory === null 
-            ? "bg-primary/10 text-primary" 
-            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+            ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
+            : "text-muted-foreground/40 hover:text-white hover:bg-white/5 border border-transparent"
         )}
       >
-        <div className="w-2 h-2 rounded-full bg-muted-foreground/30 shrink-0" />
-        All Contexts
-      </button>
+        <div className={cn(
+          "w-5 h-5 flex items-center justify-center transition-all duration-500",
+          selectedCategory === null ? "text-primary scale-110" : "text-muted-foreground/30 group-hover:text-white/60"
+        )}>
+          <Globe className="w-4 h-4" />
+        </div>
+        <span className="relative z-10">All Sectors</span>
+        {selectedCategory === null && (
+          <motion.div 
+            layoutId="activeFilter"
+            className="absolute left-0 w-1 h-6 bg-primary rounded-full"
+          />
+        )}
+      </motion.button>
       
       {categories.map((category) => (
-        <button
+        <motion.button
           key={category.id}
+          whileHover={{ x: 4 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => onCategoryChange(category.id)}
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all text-left",
+            "flex items-center gap-4 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all text-left italic relative overflow-hidden group",
             selectedCategory === category.id 
-              ? "bg-primary/10 text-primary font-semibold" 
-              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              ? "bg-white/5 text-white border border-white/10 shadow-xl" 
+              : "text-muted-foreground/40 hover:text-white hover:bg-white/5 border border-transparent"
           )}
         >
           <div
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: category.color }}
+            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-125"
+            style={{ 
+              backgroundColor: category.color,
+              filter: selectedCategory === category.id ? `drop-shadow(0 0 5px ${category.color})` : 'none'
+            }}
           />
-          {category.name}
-        </button>
+          <span className="relative z-10 truncate">{category.name}</span>
+          {selectedCategory === category.id && (
+            <motion.div 
+              layoutId="activeFilter"
+              className="absolute left-0 w-1 h-6 bg-white rounded-full shadow-[0_0_10px_white]"
+            />
+          )}
+        </motion.button>
       ))}
     </div>
   );
@@ -65,14 +89,17 @@ export function CategoryBadge({ category, size = "default" }: CategoryBadgeProps
   if (!category) return null;
   
   return (
-    <div className="flex items-center gap-1.5">
+    <div className={cn(
+      "flex items-center gap-2 px-2 py-1 rounded-full border border-white/5 bg-white/[0.03] backdrop-blur-sm",
+      size === 'sm' ? 'px-1.5 gap-1.5' : 'px-2.5 gap-2'
+    )}>
       <div 
-        className={cn("rounded-full", size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2')} 
+        className={cn("rounded-full shadow-[0_0_5px_rgba(0,0,0,0.5)]", size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2')} 
         style={{ backgroundColor: category.color }}
       />
       <span className={cn(
-        "font-medium text-muted-foreground",
-        size === 'sm' ? 'text-[10px]' : 'text-xs'
+        "font-black uppercase tracking-widest text-muted-foreground/80 italic",
+        size === 'sm' ? 'text-[8px]' : 'text-[10px]'
       )}>
         {category.name}
       </span>

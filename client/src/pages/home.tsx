@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import { TaskCard } from '@/components/TaskCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -7,22 +7,28 @@ import { CategoryManager } from '@/components/CategoryManager';
 import { useDeadlineNotifications } from '@/hooks/useDeadlineNotifications';
 import { Button } from '@/components/ui/button';
 import { 
-  Plus, Search, Layers, Activity, Zap, Calendar, History
+  Plus, Search, Layers, Activity, Zap, History, Command, SlidersHorizontal, LayoutGrid, ListTodo
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDeadline, setSelectedDeadline] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   
   const { data: tasks, isLoading: tasksLoading } = useTasks();
   
   useDeadlineNotifications(tasks || []);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const filteredTasks = useMemo(() => {
     if (!tasks) return [];
@@ -32,27 +38,25 @@ export default function Home() {
       
       if (selectedDeadline !== 'all') {
         const now = new Date();
-        const isHighPriority = task.priority === 'high';
-        
-        let isOverdue = false;
-        let diffDays = -999;
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfTomorrow = new Date(startOfToday);
+        startOfTomorrow.setDate(startOfToday.getDate() + 1);
+        const startOfDayAfterTomorrow = new Date(startOfTomorrow);
+        startOfDayAfterTomorrow.setDate(startOfTomorrow.getDate() + 1);
 
-        if (task.dueDate) {
-          const dueDate = new Date(task.dueDate);
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-          const diffTime = taskDate.getTime() - today.getTime();
-          diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-          isOverdue = !task.completed && dueDate < now;
-        }
+        if (!task.dueDate) return false;
+        
+        const dueDate = new Date(task.dueDate);
+        const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
 
         if (selectedDeadline === 'today') {
-          if (!task.dueDate || diffDays !== 0) return false;
+          if (taskDate.getTime() !== startOfToday.getTime()) return false;
         } else if (selectedDeadline === 'tomorrow') {
-          if (!task.dueDate || diffDays !== 1) return false;
+          if (taskDate.getTime() !== startOfTomorrow.getTime()) return false;
         } else if (selectedDeadline === 'overdue') {
-          // Show if it's high priority OR overdue (and not completed)
           if (task.completed) return false;
+          const isOverdue = dueDate < now;
+          const isHighPriority = task.priority === 'high';
           if (!isHighPriority && !isOverdue) return false;
         }
       }
@@ -77,150 +81,213 @@ export default function Home() {
 
   if (tasksLoading) {
     return (
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="animate-pulse space-y-8">
-           <div className="h-10 bg-muted rounded-lg w-48" />
-           <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-10">
-              <div className="h-96 bg-muted rounded-xl" />
-              <div className="space-y-4">
-                 {[1,2,3].map(i => <div key={i} className="h-24 bg-muted rounded-xl" />)}
-              </div>
-           </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-10 py-20 flex items-center justify-center min-h-[60vh]">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full shadow-2xl shadow-primary/20"
+        />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 pb-32 relative">
-      {/* Page Background Pattern */}
-      <div className="fixed inset-0 pointer-events-none -z-10 opacity-[0.03] dark:opacity-[0.05]" />
+    <div className="min-h-screen relative overflow-x-hidden">
+      {/* Dynamic Background */}
+      <div className="mesh-gradient opacity-40 dark:opacity-20" />
+      <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
       
-      <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-16 items-start">
-        {/* Sidebar */}
-        <aside className="w-full lg:sticky lg:top-32 space-y-10">
-          <div className="space-y-6">
-            <div className="space-y-2">
-               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary px-1">Actions</p>
-               <Button 
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 py-10 lg:py-20 relative z-10">
+        <div className="flex flex-col lg:grid lg:grid-cols-[320px_1fr] gap-12 lg:gap-20 items-start">
+          
+          {/* Floating Protocol Side Panel */}
+          <aside className="w-full lg:sticky lg:top-10 space-y-12">
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="glass rounded-[3rem] p-10 border-white/5 shadow-2xl space-y-12"
+            >
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60 px-2 italic">Operation</p>
+                <Button 
                   onClick={() => setIsModalOpen(true)}
-                  className="w-full h-14 rounded-2xl gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 active:translate-y-0 transition-all font-black uppercase tracking-widest text-sm"
-               >
-                 <Plus className="w-5 h-5 mr-3" /> New Task
-               </Button>
-            </div>
-
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground/30 group-focus-within:text-primary transition-colors" />
-              <Input 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search all tasks..."
-                className="h-12 rounded-2xl border-border/10 bg-muted/20 pl-12 focus-visible:ring-primary/20 focus-visible:border-primary/30 font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-10">
-            <div className="space-y-4">
-               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Schedule Index</Label>
-               <div className="space-y-1">
-                 {[
-                   { id: 'all', label: 'All Activities', icon: Layers },
-                   { id: 'today', label: "Today's Focus", icon: Activity },
-                   { id: 'overdue', label: 'Critical / Overdue', icon: Zap },
-                 ].map((d) => (
-                   <button
-                    key={d.id}
-                    onClick={() => setSelectedDeadline(d.id)}
-                    className={cn(
-                      "w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all group",
-                      selectedDeadline === d.id 
-                        ? "bg-primary/10 text-primary border border-primary/20 shadow-sm shadow-primary/5" 
-                        : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/30"
-                    )}
-                   >
-                    <div className="flex items-center gap-3">
-                       <d.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", selectedDeadline === d.id ? "text-primary" : "text-muted-foreground/30")} />
-                       <span className="italic">{d.label}</span>
-                    </div>
-                    {selectedDeadline === d.id && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
-                   </button>
-                 ))}
-               </div>
-            </div>
-
-            <div className="space-y-4">
-               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Task Categories</Label>
-               <CategoryFilter 
-                 selectedCategory={selectedCategory} 
-                 onCategoryChange={setSelectedCategory} 
-               />
-            </div>
-
-            <div className="pt-8 border-t border-border/10">
-               <CategoryManager />
-            </div>
-          </div>
-        </aside>
-
-        {/* Content */}
-        <main className="w-full space-y-12">
-          <section className="space-y-8">
-            <div className="flex items-end justify-between border-b border-border/10 pb-4">
-              <div className="space-y-1">
-                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Priority Queue</p>
-                 <h2 className="text-3xl font-black tracking-tighter italic">Current Stack</h2>
+                  className="w-full h-16 rounded-[1.5rem] gradient-primary text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all duration-500 italic"
+                >
+                  <Plus className="w-5 h-5 mr-3" /> Initiate Mission
+                </Button>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/30 border border-border/10">
-                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{activeTasks.length} TASKS ACTIVE</span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <AnimatePresence mode="popLayout">
-                {activeTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {activeTasks.length === 0 && !tasksLoading && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="py-32 flex flex-col items-center justify-center text-center space-y-8 glass rounded-[3rem] border-dashed border-2 border-border/20"
-              >
-                <div className="w-20 h-20 rounded-full bg-primary/5 flex items-center justify-center">
-                   <Zap className="w-10 h-10 text-primary/20" />
-                </div>
-                <div className="space-y-2">
-                   <h3 className="text-xl font-black tracking-tight italic">All Clear</h3>
-                   <p className="text-muted-foreground/60 text-sm font-medium">No active tasks found in your current view.</p>
-                </div>
-                <Button variant="outline" className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-xs border-2" onClick={() => setIsModalOpen(true)}>Create Task</Button>
-              </motion.div>
-            )}
-          </section>
-
-          {completedTasks.length > 0 && (
-            <section className="space-y-8 pt-12 border-t border-border/20">
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-muted-foreground/40">
-                    <History className="w-5 h-5" />
-                    <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.2em] italic">Completed</h2>
+              <div className="space-y-10">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Global Search</p>
+                    <Command className="w-3 h-3 text-muted-foreground/20" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20">Recent History</span>
-               </div>
-               <div className="grid grid-cols-1 gap-4 opacity-70 hover:opacity-100 transition-opacity duration-500">
-                  {completedTasks.slice(0, 5).map((task) => (
+                  <div className="relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-all duration-500" />
+                    <Input 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="SCANNING OBJECTS..."
+                      className="h-14 rounded-2xl border-white/5 bg-white/5 pl-14 focus-visible:ring-primary/40 border-2 font-black uppercase tracking-widest text-[10px] italic placeholder:text-muted-foreground/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Temporal Filters</p>
+                    <SlidersHorizontal className="w-3 h-3 text-muted-foreground/20" />
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'all', label: 'ALL SECTORS', icon: Layers },
+                      { id: 'today', label: "TODAY'S ORBIT", icon: Activity },
+                      { id: 'overdue', label: 'CRITICAL OPS', icon: Zap },
+                    ].map((d) => (
+                      <motion.button
+                        key={d.id}
+                        whileHover={{ x: 5 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedDeadline(d.id)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 group relative overflow-hidden",
+                          selectedDeadline === d.id 
+                            ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                            : "text-muted-foreground/60 hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/5"
+                        )}
+                      >
+                        <div className="flex items-center gap-4 relative z-10">
+                          <d.icon className={cn("w-4 h-4 transition-all duration-500", selectedDeadline === d.id ? "scale-110" : "opacity-30 group-hover:opacity-100")} />
+                          <span className="italic">{d.label}</span>
+                        </div>
+                        {selectedDeadline === d.id && (
+                          <motion.div 
+                            layoutId="activeFilter"
+                            className="absolute inset-0 bg-primary/20 blur-xl"
+                          />
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 italic">Node Categories</p>
+                    <LayoutGrid className="w-3 h-3 text-muted-foreground/20" />
+                  </div>
+                  <CategoryFilter 
+                    selectedCategory={selectedCategory} 
+                    onCategoryChange={setSelectedCategory} 
+                  />
+                  <div className="pt-6 border-t border-white/5">
+                    <CategoryManager />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </aside>
+
+          {/* Main Intelligence Display */}
+          <main className="w-full space-y-16">
+            <motion.section 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-10"
+            >
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-10">
+                <div className="space-y-2">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: 40 }}
+                    className="h-1 bg-primary rounded-full"
+                  />
+                  <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40 italic">Primary Registry</p>
+                  <h2 className="text-5xl font-black tracking-tighter italic uppercase text-gradient">Status Stack</h2>
+                </div>
+                <div className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-white/5 border border-white/5 group transition-all hover:bg-white/10">
+                  <div className="relative">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping absolute" />
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 relative" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 transition-colors group-hover:text-emerald-500">
+                    {activeTasks.length} SYSTEMS ONLINE
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {activeTasks.length > 0 ? (
+                    activeTasks.map((task, idx) => (
+                      <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                      >
+                        <TaskCard task={task} />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="py-40 flex flex-col items-center justify-center text-center space-y-10 glass rounded-[4rem] border-dashed border-2 border-white/10 relative overflow-hidden group shadow-inner"
+                    >
+                      <div className="mesh-gradient opacity-5 scale-150 absolute pointer-events-none" />
+                      <motion.div 
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="w-28 h-28 rounded-[2.5rem] bg-primary/5 flex items-center justify-center border border-primary/20 shadow-[0_0_50px_rgba(var(--primary),0.05)]"
+                      >
+                        <ListTodo className="w-12 h-12 text-primary/40 group-hover:text-primary transition-colors duration-500" />
+                      </motion.div>
+                      <div className="space-y-4 max-w-sm relative z-10">
+                        <h3 className="text-3xl font-black tracking-tighter italic uppercase">Registry Empty</h3>
+                        <p className="text-muted-foreground/40 text-xs font-black uppercase tracking-widest leading-relaxed">
+                          Synchronizing with your intent... <br/> initiate your first mission protocol.
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="h-14 px-10 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] italic border-2 border-primary/20 hover:bg-primary hover:text-white transition-all duration-500 bg-transparent text-primary" 
+                      >
+                        Start Deployment
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.section>
+
+            {completedTasks.length > 0 && (
+              <motion.section 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="space-y-10 pt-10"
+              >
+                <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                  <div className="flex items-center gap-4 text-muted-foreground/20">
+                    <History className="w-6 h-6" />
+                    <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.4em] italic">Archive Log</h2>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/10 italic">Last 10 Records</span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 opacity-40 hover:opacity-100 transition-all duration-1000 grayscale hover:grayscale-0">
+                  {completedTasks.slice(0, 10).map((task) => (
                     <TaskCard key={task.id} task={task} />
                   ))}
-               </div>
-            </section>
-          )}
-        </main>
+                </div>
+              </motion.section>
+            )}
+          </main>
+        </div>
       </div>
 
       <ManualTaskModal

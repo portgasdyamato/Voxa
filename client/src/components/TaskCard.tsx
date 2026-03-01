@@ -3,10 +3,8 @@ import { Task } from '@/types/task';
 import { useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Trash2, Edit2, Check, MoreVertical, Clock, Zap } from 'lucide-react';
+import { Trash2, Edit2, Check, MoreVertical, Clock, Zap, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ManualTaskModal } from './ManualTaskModal';
@@ -17,7 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CategoryBadge } from '@/components/CategoryFilter';
 
 interface TaskCardProps {
   task: Task;
@@ -29,6 +26,7 @@ export function TaskCard({ task }: TaskCardProps) {
   const { data: categories } = useCategories();
   const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const category = categories?.find(c => c.id === task.categoryId);
 
@@ -44,110 +42,148 @@ export function TaskCard({ task }: TaskCardProps) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -2 }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      whileHover={{ scale: 1.01, transition: { duration: 0.4 } }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
       className="group"
     >
       <div
         className={cn(
-          "premium-card relative overflow-hidden transition-all duration-500",
-          task.completed && "opacity-40 grayscale-[0.5]"
+          "premium-card relative p-8 pl-10 transition-all duration-700 overflow-hidden",
+          task.completed ? "opacity-40" : "opacity-100"
         )}
       >
-        {/* Priority Accent Line */}
-        <div className={cn(
-          "absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-500",
-          task.priority === 'high' ? "bg-rose-500 shadow-[2px_0_10px_rgba(244,63,94,0.3)]" :
-          task.priority === 'medium' ? "bg-amber-500/50" :
-          "bg-emerald-500/30"
-        )} />
+        {/* Animated Shine Effect */}
+        <motion.div 
+          className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent pointer-events-none"
+          animate={{ x: isHovered ? ['-100%', '200%'] : '-100%' }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        />
 
-        <div className="flex items-center gap-6 p-6 pl-8">
-          <button 
+        {/* Priority Indicator - Vertical Line */}
+        <motion.div 
+          className={cn(
+            "absolute left-0 top-0 bottom-0 w-2 z-10",
+            task.priority === 'high' ? "bg-rose-500 shadow-[2px_0_20px_rgba(244,63,94,0.4)]" :
+            task.priority === 'medium' ? "bg-amber-500/60" :
+            "bg-emerald-500/40"
+          )}
+          animate={{ width: isHovered ? 4 : 2 }}
+        />
+
+        <div className="flex items-start gap-8 relative z-10">
+          <motion.button 
             onClick={handleToggleComplete}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className={cn(
-              "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-500 shrink-0",
+              "w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-all duration-500 shrink-0 mt-1",
               task.completed 
-                ? "bg-primary border-primary shadow-lg shadow-primary/20" 
-                : "border-border/30 hover:border-primary/50 bg-muted/20"
+                ? "bg-primary border-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]" 
+                : "border-white/10 hover:border-primary/50 bg-white/5"
             )}
           >
-            <AnimatePresence>
-              {task.completed && (
+            <AnimatePresence mode="wait">
+              {task.completed ? (
                 <motion.div
-                  initial={{ scale: 0, rotate: -45 }}
+                  key="check"
+                  initial={{ scale: 0, rotate: -90 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0, rotate: 45 }}
+                  exit={{ scale: 0, rotate: 90 }}
                 >
-                  <Check className="w-4 h-4 text-primary-foreground stroke-[3.5px]" />
+                  <Check className="w-5 h-5 text-white stroke-[4px]" />
                 </motion.div>
+              ) : (
+                <motion.div
+                  key="dot"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-primary transition-colors"
+                />
               )}
             </AnimatePresence>
-          </button>
+          </motion.button>
 
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="flex items-center justify-between gap-4">
-              <h3 className={cn(
-                "text-base font-black tracking-tight truncate transition-all duration-500 italic",
-                task.completed && "line-through text-muted-foreground"
-              )}>
-                {task.title}
-              </h3>
+          <div className="flex-1 min-w-0 space-y-4">
+            <div className="flex items-start justify-between gap-6">
+              <div className="space-y-1">
+                <h3 className={cn(
+                  "text-xl font-black tracking-tight transition-all duration-700 flex items-center gap-3",
+                  task.completed && "line-through text-muted-foreground/50 opacity-50"
+                )}>
+                  <span className="truncate">{task.title}</span>
+                  {!task.completed && isHovered && (
+                     <motion.div
+                       initial={{ opacity: 0, x: -10 }}
+                       animate={{ opacity: 1, x: 0 }}
+                     >
+                       <Target className="w-4 h-4 text-primary animate-pulse" />
+                     </motion.div>
+                  )}
+                </h3>
+                {task.description && (
+                   <p className="text-xs font-medium text-muted-foreground/60 line-clamp-1 italic">
+                     {task.description}
+                   </p>
+                )}
+              </div>
 
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-muted/50 transition-all">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10 hover:scale-110 active:scale-95">
                       <MoreVertical className="w-5 h-5 text-muted-foreground/60" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40 p-2 glass rounded-2xl border-white/5">
+                  <DropdownMenuContent align="end" className="w-48 p-2 glass rounded-[2rem] border-white/5 shadow-2xl">
                     <DropdownMenuItem 
                       onClick={() => setIsEditModalOpen(true)}
-                      className="rounded-xl font-bold uppercase tracking-widest text-[10px] gap-2 py-2.5 focus:bg-primary/10"
+                      className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-3 py-3 focus:bg-primary/10 transition-colors"
                     >
-                      <Edit2 className="w-3.5 h-3.5" /> Refine
+                      <Edit2 className="w-4 h-4" /> Refine Node
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => deleteTask.mutate(task.id)}
-                      className="rounded-xl font-bold uppercase tracking-widest text-[10px] gap-2 py-2.5 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10"
+                      className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-3 py-3 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Remove
+                      <Trash2 className="w-4 h-4" /> Purge Asset
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-6">
               {category && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/30 border border-border/10">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20">
                    <div 
-                      className="w-1.5 h-1.5 rounded-full" 
-                      style={{ backgroundColor: category.color }} 
+                      className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]" 
+                      style={{ backgroundColor: category.color, color: category.color }} 
                    />
-                   <span className="text-[10px] font-black uppercase tracking-widest opacity-60 italic">{category.name}</span>
+                   <span className="text-[10px] font-black uppercase tracking-widest italic text-primary/80">{category.name}</span>
                 </div>
               )}
               
               <div className={cn(
-                  "text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md border",
-                  task.priority === 'high' ? "text-rose-500 border-rose-500/20 bg-rose-500/5 shadow-sm shadow-rose-500/10" :
-                  task.priority === 'medium' ? "text-amber-500 border-amber-500/20 bg-amber-500/5" :
-                  "text-emerald-500 border-emerald-500/20 bg-emerald-500/5"
+                  "text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1.5 rounded-xl border shadow-sm",
+                  task.priority === 'high' ? "text-rose-500 border-rose-500/30 bg-rose-500/10" :
+                  task.priority === 'medium' ? "text-amber-500 border-amber-500/30 bg-amber-500/10" :
+                  "text-emerald-500 border-emerald-500/30 bg-emerald-500/10"
                 )}
               >
-                {task.priority === 'medium' ? 'MID' : task.priority.toUpperCase()} PRIORITY
+                {task.priority.toUpperCase()} PROTOCOL
               </div>
 
               {task.dueDate && (
                 <div className={cn(
-                  "flex items-center gap-2 px-2.5 py-1 rounded-lg bg-muted/20 border border-border/10 text-[10px] font-black uppercase tracking-widest",
-                  isOverdue ? "text-rose-500 border-rose-500/10" : "text-muted-foreground/60"
+                  "flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white/10",
+                  isOverdue ? "text-rose-500 border-rose-500/20 bg-rose-500/5 animate-pulse" : "text-muted-foreground/60"
                 )}>
-                  {isOverdue ? <Zap className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                  {isOverdue ? <Zap className="w-4 h-4" /> : <Clock className="w-4 h-4 shadow-sm" />}
                   {format(new Date(task.dueDate), 'MMM d, p')}
                 </div>
               )}

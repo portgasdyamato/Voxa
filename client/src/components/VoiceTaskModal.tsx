@@ -12,8 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ReminderSettings } from '@/components/ReminderSettings';
-import { Mic, X, Tag, Calendar, Clock, Sparkles, Activity, RefreshCw, CheckCircle2, Trash2, Edit3 } from 'lucide-react';
+import { Mic, Zap, Clock, Activity, RefreshCw, Sparkles, Target, Database, Cpu, Radio, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +38,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const [reminderTime, setReminderTime] = useState<string>('');
   
   const { toast } = useToast();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: categories } = useCategories();
   const { data: tasks } = useTasks();
   
   const {
@@ -74,11 +73,9 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     if (transcript && !isListening) {
       setShowTranscription(true);
       
-      // Parse the voice command
       const command = parseVoiceCommand(transcript);
       setCommandType(command.type);
       
-      // Set command description for UI
       const descriptions: Record<string, string> = {
         add: 'Creating mission...',
         delete: 'Removing task...',
@@ -91,7 +88,6 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       };
       setCommandDescription(descriptions[command.type] || 'Processing');
       
-      // Handle different command types
       let finalCategoryId = '';
       let finalDeadline: Date | null = null;
       let finalTaskName = '';
@@ -99,7 +95,6 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       if (command.type === 'add') {
         let textToParse = transcript;
         
-        // Auto-detect Category & Clean Transcript
         if (categories) {
           const { categoryId, cleanedText } = parseCategoryFromText(transcript, categories);
           if (categoryId) {
@@ -109,20 +104,17 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           }
         }
 
-        // Parse task details from speech (using cleaned text)
         const { taskName, deadline, priority } = parseTaskFromSpeech(textToParse);
         finalTaskName = taskName;
         setParsedTaskName(taskName);
         setDetectedPriority(priority);
 
-        // Detect date and time (using cleaned text)
         const dateTimeResult = detectDateTimeFromText(textToParse);
         if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
           finalDeadline = dateTimeResult.detectedDate;
           setDetectedDate(finalDeadline);
           setSelectedDeadline(finalDeadline);
           
-          // Format for datetime-local input (YYYY-MM-DDTHH:MM)
           const date = dateTimeResult.detectedDate;
           const year = date.getFullYear();
           const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -138,26 +130,15 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         setParsedTaskName(finalTaskName);
       }
       
-      // AUTO-EXECUTE: Execute command immediately after parsing
       const executionCategory = finalCategoryId || selectedCategory;
       const executionDeadline = finalDeadline !== null ? finalDeadline : selectedDeadline;
       const executionTaskName = finalTaskName || parsedTaskName;
 
       setTimeout(() => {
         handleExecuteCommand(executionCategory, executionDeadline, executionTaskName);
-      }, 500); // Small delay to show the parsed result
+      }, 500);
     }
   }, [transcript, isListening]);
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Voice System Error",
-        description: error,
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
 
   const handleStartRecording = () => {
     resetTranscript();
@@ -168,10 +149,17 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     setDeadlineInputValue('');
     setParsedTaskName('');
     setDetectedPriority('medium');
-    setReminderEnabled(true);
-    setReminderType('default');
-    setReminderTime('');
     startListening();
+  };
+
+  const handleDeadlineChange = (value: string) => {
+    setDeadlineInputValue(value);
+    if (value) {
+      const date = new Date(value);
+      setSelectedDeadline(isNaN(date.getTime()) ? null : date);
+    } else {
+      setSelectedDeadline(null);
+    }
   };
 
   const handleExecuteCommand = async (
@@ -180,7 +168,6 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     overrideTaskName?: string
   ) => {
     const { executeVoiceCommand } = await import('@/lib/voiceCommandExecutor');
-    
     await executeVoiceCommand(
       transcript,
       tasks || [],
@@ -197,19 +184,9 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         onOpenChange(false);
         resetTranscript();
       },
-      overrideTaskName !== undefined ? overrideTaskName : parsedTaskName
+      overrideTaskName !== undefined ? overrideTaskName : parsedTaskName,
+      categories || []
     );
-  };
-
-  const handleDeadlineChange = (value: string) => {
-    setDeadlineInputValue(value);
-    if (value) {
-      // Parse the datetime-local value directly
-      const date = new Date(value);
-      setSelectedDeadline(date);
-    } else {
-      setSelectedDeadline(null);
-    }
   };
 
   const formatTime = (seconds: number) => {
@@ -220,135 +197,156 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl max-h-[85vh] flex flex-col">
-        <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-primary/5 flex-shrink-0">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-          <div className="flex items-center gap-6 relative z-10">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-primary flex items-center justify-center text-white shadow-2xl shadow-primary/30 ring-4 ring-primary/10">
-              <Mic className="w-8 h-8" />
-            </div>
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[3.5rem] border-2 border-white/5 bg-slate-950/80 backdrop-blur-[50px] shadow-[0_0_100px_rgba(0,0,0,0.5)] max-h-[90vh] flex flex-col noise-surface">
+        <DialogHeader className="p-12 pb-8 relative overflow-hidden bg-white/[0.02] flex-shrink-0">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
+          <div className="flex items-center gap-8 relative z-10">
+            <motion.div 
+              animate={{ rotate: isListening ? 360 : 0 }}
+              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+              className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-[0_0_40px_rgba(var(--primary),0.3)] ring-4 ring-white/5"
+            >
+              <Mic className="w-10 h-10" />
+            </motion.div>
             <div>
-              <DialogTitle className="text-3xl font-black tracking-tighter">Voice Commands</DialogTitle>
-              <DialogDescription className="text-xs font-semibold text-muted-foreground/60 mt-1 italic tracking-widest uppercase">
-                Your voice, your command.
+              <DialogTitle className="text-4xl font-black tracking-tighter uppercase italic text-gradient">VOICE PROTOCOL</DialogTitle>
+              <DialogDescription className="text-[10px] font-black tracking-[0.4em] text-primary/40 mt-1 uppercase italic">
+                Aural Intelligence System v.2.0
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-10 py-8 space-y-8 overflow-y-auto flex-1">
+        <div className="px-12 py-10 space-y-12 overflow-y-auto flex-1 custom-scrollbar">
           {!showTranscription ? (
-            <div className="flex flex-col items-center py-10 gap-12">
-              <div className="relative">
+            <div className="flex flex-col items-center py-12 gap-16 relative">
+              {/* Scientific Waveform UI */}
+              <div className="relative flex items-center justify-center w-full h-40">
+                <AnimatePresence>
+                  {isListening && (
+                    <div className="absolute inset-0 flex items-center justify-center gap-1">
+                      {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i => (
+                        <motion.div 
+                          key={i}
+                          animate={{ 
+                            height: [20, Math.random() * 80 + 20, 20],
+                            opacity: [0.3, 0.8, 0.3],
+                          }}
+                          transition={{ 
+                            duration: 0.3 + Math.random() * 0.4, 
+                            repeat: Infinity, 
+                            ease: "easeInOut" 
+                          }}
+                          className="w-1.5 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)]" 
+                        />
+                      ))}
+                    </div>
+                  )}
+                </AnimatePresence>
                 <motion.div 
+                  className={cn(
+                    "w-32 h-32 rounded-[3.5rem] flex items-center justify-center border-4 transition-all duration-700 relative z-20",
+                    isListening ? "border-rose-500 bg-rose-500/10 shadow-[0_0_60px_rgba(244,63,94,0.3)]" : "border-white/10 bg-white/5 shadow-2xl"
+                  )}
                   animate={{ 
-                    scale: isListening ? [1, 1.05, 1] : 1,
+                    scale: isListening ? [1, 1.1, 1] : 1,
                     rotate: isListening ? [0, 5, -5, 0] : 0
                   }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className={cn(
-                    "w-40 h-40 rounded-[4rem] flex items-center justify-center transition-all duration-700 relative",
-                    isListening ? "bg-rose-500 shadow-[0_0_80px_rgba(244,63,94,0.3)]" : "bg-primary shadow-3xl"
-                  )}
                 >
-                  {isListening ? (
-                    <div className="flex items-center justify-center gap-1.5 h-12">
-                       {[1,2,3,4,5,6,7,8].map(i => (
-                         <motion.div 
-                           key={i}
-                           animate={{ 
-                             height: [10, Math.random() * 40 + 20, 10],
-                             opacity: [0.5, 1, 0.5]
-                           }}
-                           transition={{ 
-                             duration: 0.5 + Math.random() * 0.5, 
-                             repeat: Infinity, 
-                             ease: "easeInOut" 
-                           }}
-                           className="w-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
-                         />
-                       ))}
-                    </div>
-                  ) : (
-                    <Mic className="w-16 h-16 text-white" />
+                  <Mic className={cn("w-12 h-12 transition-all duration-700", isListening ? "text-rose-500" : "text-white/40")} />
+                  {isListening && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute -bottom-16 flex flex-col items-center gap-2"
+                    >
+                      <span className="text-rose-500 font-black tracking-[0.3em] text-[10px] animate-pulse">STREAMING...</span>
+                      <span className="text-white/40 font-black tracking-widest text-[9px]">{formatTime(recordingTime)}</span>
+                    </motion.div>
                   )}
-                  
-                  {/* Outer Rings */}
-                  <AnimatePresence>
-                    {isListening && [1,2,3].map(i => (
-                      <motion.div 
-                        key={i}
-                        initial={{ scale: 1, opacity: 0.5 }}
-                        animate={{ scale: 2, opacity: 0 }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.4 }}
-                        className="absolute inset-0 rounded-[4rem] border-2 border-rose-500/50 pointer-events-none" 
-                      />
-                    ))}
-                  </AnimatePresence>
                 </motion.div>
-
-                {isListening && (
+                
+                {/* Orbiting Elements */}
+                {isListening && [1,2,3].map(i => (
                   <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-2xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center gap-2"
+                    key={i}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4 + i * 2, repeat: Infinity, ease: "linear" }}
+                    className="absolute w-64 h-64 border border-white/[0.03] rounded-full pointer-events-none"
                   >
-                    <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                    {formatTime(recordingTime)}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary/40 blur-[2px]" />
                   </motion.div>
-                )}
+                ))}
               </div>
               
-              <div className="text-center space-y-2">
-                <h4 className="text-xl font-bold tracking-tight italic uppercase tracking-widest">
-                  {isListening ? 'LISTENING...' : 'READY'}
+              <div className="text-center space-y-4 max-w-sm">
+                <h4 className="text-2xl font-black tracking-tighter italic uppercase">
+                  {isListening ? 'Scanning Frequency' : 'Idle Protocol'}
                 </h4>
-                <p className="text-sm font-medium text-muted-foreground/40 max-w-xs mx-auto italic">
-                  {isListening ? 'Speak your command clearly' : 'Activate to begin audio processing'}
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 leading-relaxed italic">
+                  {isListening ? 'Speak clearly into the primary input receptor for optimal data capture' : 'Activate the neural link to begin audio data ingestion'}
                 </p>
               </div>
 
               <Button
                 onClick={isListening ? stopListening : handleStartRecording}
                 className={cn(
-                  "h-16 w-full rounded-2xl font-bold text-sm transition-all",
-                  isListening ? "bg-rose-500 text-white hover:bg-rose-600" : "bg-foreground text-background"
+                  "h-20 w-full rounded-3xl font-black uppercase tracking-[0.3em] text-xs transition-all duration-500 border-2 italic",
+                  isListening ? "bg-rose-500 border-rose-600 text-white shadow-xl shadow-rose-900/20" : "bg-white text-black hover:scale-105 active:scale-95"
                 )}
               >
-                {isListening ? 'Stop Recording' : 'Start Recording'}
+                {isListening ? 'Cease Scanning' : 'Initialize Scan'}
               </Button>
             </div>
           ) : (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-8"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-10"
             >
-              <div className="bg-muted/30 rounded-[2rem] p-8 border-2 border-border/40 relative group overflow-hidden shadow-inner">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Sparkles className="w-12 h-12" />
+              {/* Scanned Data Stream Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="col-span-1 md:col-span-2 glass rounded-[2.5rem] p-10 border-white/5 space-y-8 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-30 transition-all duration-700">
+                    <Radio className="w-16 h-16 text-primary" />
+                  </div>
+                  
+                  <div className="space-y-6 relative z-10">
+                    <div className="space-y-2">
+                       <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/40 flex items-center gap-3 italic">
+                         <Activity className="w-3 h-3" /> Audio Registry
+                       </h4>
+                       <p className="text-sm text-neutral-400 font-bold italic">"{transcript}"</p>
+                    </div>
+
+                    <div className="flex gap-12">
+                      <div className="space-y-2">
+                         <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-blue-500/40 flex items-center gap-3 italic">
+                           <Cpu className="w-3 h-3" /> Core Intent
+                         </h4>
+                         <p className="text-xl font-black tracking-tighter text-blue-500 uppercase italic">{commandDescription}</p>
+                      </div>
+                      <div className="space-y-2">
+                         <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-emerald-500/40 flex items-center gap-3 italic">
+                           <Database className="w-3 h-3" /> Identified Subject
+                         </h4>
+                         <p className="text-xl font-black tracking-tighter text-emerald-500 uppercase italic truncate max-w-[200px]">{parsedTaskName || 'UNIDENTIFIED'}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary/40 mb-2">Audio Transcript</h4>
-                <p className="text-sm text-neutral-400 font-medium mb-4 italic">"{transcript}"</p>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500/40 mb-2">Operation Mode</h4>
-                <p className="text-lg font-black tracking-tighter italic mb-4 text-blue-500">{commandDescription}</p>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500/40 mb-2">
-                  {commandType === 'add' ? 'Target Intent' : commandType === 'delete' ? 'Remove Target' : commandType === 'complete' ? 'Complete Target' : commandType === 'update' ? 'Refine Target' : 'Identified Subject'}
-                </h4>
-                <p className="text-xl font-bold leading-relaxed">{parsedTaskName || 'Processing...'}</p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1">Category</Label>
+
+                <div className="space-y-4">
+                  <Label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-2 italic">Sector Assignment</Label>
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="h-14 rounded-2xl border-2 bg-muted/30 font-bold px-6">
-                      <SelectValue placeholder="General" />
+                    <SelectTrigger className="h-16 rounded-2xl border-white/5 bg-white/5 font-black uppercase tracking-[0.2em] text-[10px] px-8 italic hover:bg-white/10 transition-colors">
+                      <SelectValue placeholder="Neutral Zone" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-2 shadow-2xl p-1 bg-popover/95">
-                      <SelectItem value="none" className="rounded-xl font-bold py-3">Uncategorized</SelectItem>
+                    <SelectContent className="rounded-[2rem] border-white/5 glass p-2">
+                      <SelectItem value="none" className="rounded-xl font-black uppercase tracking-[0.2em] text-[9px] py-4 italic">Unassigned</SelectItem>
                       {categories?.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl font-bold py-3">
+                        <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl font-black uppercase tracking-[0.2em] text-[9px] py-4 italic">
                           {cat.name}
                         </SelectItem>
                       ))}
@@ -356,69 +354,65 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1">Priority</Label>
+                <div className="space-y-4">
+                  <Label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-2 italic">Priority Protocol</Label>
                   <div className={cn(
-                    "h-14 rounded-2xl border-2 flex items-center px-6 gap-3 font-bold text-xs uppercase tracking-wide",
-                    detectedPriority === 'high' ? "bg-rose-500/5 border-rose-500/20 text-rose-500" :
-                    detectedPriority === 'medium' ? "bg-amber-500/5 border-amber-500/20 text-amber-500" :
-                    "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
+                    "h-16 rounded-2xl border-2 flex items-center px-8 gap-4 font-black uppercase tracking-[0.2em] text-[10px] italic shadow-inner",
+                    detectedPriority === 'high' ? "bg-rose-500/10 border-rose-500/30 text-rose-500" :
+                    detectedPriority === 'medium' ? "bg-amber-500/10 border-amber-500/30 text-amber-500" :
+                    "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
                   )}>
-                    <div className="w-2 h-2 rounded-full bg-current" />
-                    {detectedPriority} priority
+                    <Target className="w-4 h-4" />
+                    {detectedPriority.toUpperCase()} LEVEL
+                  </div>
+                </div>
+
+                <div className="col-span-1 md:col-span-2 space-y-4">
+                  <Label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-2 italic flex items-center gap-3">
+                    <Clock className="w-3 h-3" /> Temporal Target
+                  </Label>
+                  <div className="relative group">
+                    <Input
+                      type="datetime-local"
+                      value={deadlineInputValue}
+                      onChange={(e) => handleDeadlineChange(e.target.value)}
+                      className="h-16 rounded-2xl border-2 border-white/5 bg-white/5 font-black uppercase tracking-[0.2em] text-[11px] px-8 italic focus:border-primary/40 transition-all text-neutral-300"
+                    />
+                    <Hash className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-primary/40 transition-colors" />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1 flex items-center gap-2">
-                  <Calendar className="w-3 h-3" /> Deadline
-                </Label>
-                <div className="relative group">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-primary opacity-50">
-                    <Clock className="w-4 h-4" />
+              <div className="flex flex-col gap-6 pt-10 border-t border-white/5">
+                <div className="flex items-center justify-between px-10 py-6 rounded-3xl bg-primary/5 border border-primary/20 relative overflow-hidden group">
+                  <motion.div 
+                    animate={{ x: [-100, 400] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-transparent via-primary/10 to-transparent skew-x-12"
+                  />
+                  <div className="flex items-center gap-4 relative z-10">
+                    <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">
+                       Finalizing Operations...
+                    </span>
                   </div>
-                  <Input
-                    type="datetime-local"
-                    value={deadlineInputValue}
-                    onChange={(e) => handleDeadlineChange(e.target.value)}
-                    className="h-14 rounded-2xl border-2 bg-muted/30 font-bold text-sm px-12 focus-visible:border-primary transition-all"
-                  />
-                  {detectedDate && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wide border border-primary/20">
-                      Auto-detected
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 pt-6">
-                {/* Auto-execution status */}
-                <div className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-primary/10 border-2 border-primary/20">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full"
-                  />
-                  <span className="text-sm font-bold text-primary">
-                    {(createTask.isPending || updateTask.isPending || deleteTask.isPending) ? 'Executing command...' : 'Command will execute automatically'}
-                  </span>
+                  <div className="flex items-center gap-2 relative z-10">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                    <span className="text-[9px] font-black text-primary/60 italic uppercase tracking-widest">Execute in 2.0s</span>
+                  </div>
                 </div>
                 
-                {/* Re-record button */}
                 <Button
                   onClick={handleStartRecording}
-                  variant="outline"
-                  className="h-14 rounded-2xl font-bold text-sm border-2 border-border/50"
+                  variant="ghost"
+                  className="h-16 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] italic text-muted-foreground/40 hover:text-white hover:bg-white/5 transition-all"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" /> Record New Command
+                  <RefreshCw className="w-4 h-4 mr-3" /> Recalibrate Signal
                 </Button>
               </div>
             </motion.div>
           )}
         </div>
-        
-
       </DialogContent>
     </Dialog>
   );

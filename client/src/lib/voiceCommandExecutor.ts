@@ -3,6 +3,7 @@
 
 import { parseVoiceCommand, findTaskByIdentifier } from '@/lib/voiceCommands';
 import { parseTaskFromSpeech } from '@/lib/dateDetection';
+import { parseCategoryFromText } from '@/lib/categoryDetection';
 
 export async function executeVoiceCommand(
   transcript: string,
@@ -17,7 +18,8 @@ export async function executeVoiceCommand(
   deleteTask: any,
   toast: any,
   onSuccess: () => void,
-  overriddenTitle?: string
+  overriddenTitle?: string,
+  categories?: any[]
 ) {
   if (!transcript.trim()) {
     toast({ title: "No Voice Input", description: "Please speak a command.", variant: "destructive" });
@@ -30,7 +32,7 @@ export async function executeVoiceCommand(
     switch (command.type) {
       case 'add': {
         const { taskName: parsedName, deadline, priority } = parseTaskFromSpeech(transcript);
-        const taskName = (overriddenTitle || parsedName || '').trim();
+        let taskName = (overriddenTitle || parsedName || '').trim();
         const finalDeadline = selectedDeadline || deadline;
         
         let finalCategoryId: number | undefined = undefined;
@@ -38,6 +40,15 @@ export async function executeVoiceCommand(
           const parsed = parseInt(selectedCategory);
           if (!isNaN(parsed)) {
             finalCategoryId = parsed;
+          }
+        }
+
+        // Auto-detect category if not explicitly selected
+        if (finalCategoryId === undefined && categories) {
+          const { categoryId: detectedId, cleanedText: finalCleanedName } = parseCategoryFromText(taskName, categories);
+          if (detectedId) {
+            finalCategoryId = detectedId;
+            taskName = finalCleanedName;
           }
         }
         
