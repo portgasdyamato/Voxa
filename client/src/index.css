@@ -28,9 +28,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border selection:bg-primary/20 selection:text-primary transition-all duration-300;
-  }
   body {
     @apply bg-[#030305] text-white antialiased font-sans;
   }
