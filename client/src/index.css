@@ -72,34 +72,14 @@
 
 /* Unique Task Card Aesthetics */
 .task-node {
-  @apply relative rounded-[1.25rem] bg-white/[0.02] border border-white/[0.04] backdrop-blur-[24px] transition-all duration-500 overflow-hidden;
-  box-shadow: 
-    0 10px 30px -10px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* Pristine internal glass wash */
-.task-node::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 0% 0%, var(--glow-color, rgba(255,255,255,0.05)), transparent 70%);
-  opacity: 0.08;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-  z-index: 0;
+  @apply relative rounded-2xl bg-[#09090b] border border-white/[0.06] transition-all duration-300;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .task-node:hover {
-  @apply bg-white/[0.04] border-white/[0.12] translate-y-[-2px];
-  box-shadow: 
-    0 20px 40px -8px rgba(0, 0, 0, 0.8), 
-    0 0 30px -5px rgba(255, 255, 255, 0.02),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15);
-}
-
-.task-node:hover::before {
-  opacity: 0.25;
+  @apply bg-[#121215] border-white/[0.12];
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02);
+  transform: translateY(-1px);
 }
 
 .task-node-inner {

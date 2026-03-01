@@ -57,26 +57,24 @@ export function TaskCard({ task }: TaskCardProps) {
       style={{ '--glow-color': task.completed ? '#3b82f6' : (category?.color || '#3b82f6') } as React.CSSProperties}
     >
       <div className={cn(
-        "task-node-inner transition-all duration-300",
-        task.completed ? "opacity-40 grayscale blur-[0.5px]" : "opacity-100"
+        "task-node-inner transition-all duration-200",
+        task.completed ? "opacity-50" : "opacity-100"
       )}>
         {/* Status Indicator */}
         <button 
           onClick={(e) => { e.stopPropagation(); handleToggleComplete(); }}
           className={cn(
-            "w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0 group/btn backdrop-blur-md border",
+            "w-5 h-5 rounded-[6px] border flex items-center justify-center transition-all duration-200 shrink-0",
             task.completed 
-              ? "bg-primary/20 border-primary/50 shadow-[0_0_20px_rgba(59,130,246,0.5)]" 
-              : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.2] hover:shadow-[0_0_20px_var(--glow-color)] shadow-2xl"
+              ? "bg-primary border-primary text-white" 
+              : "border-white/20 bg-transparent hover:border-white/50"
           )}
         >
           <AnimatePresence mode="wait">
-            {task.completed ? (
-              <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                <Check className="w-5 h-5 text-primary stroke-[4px] drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+            {task.completed && (
+              <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.15 }}>
+                <Check className="w-3.5 h-3.5 stroke-[3px]" />
               </motion.div>
-            ) : (
-              <div className="w-1.5 h-1.5 rounded-full bg-white/30 group-hover/btn:bg-white group-hover/btn:shadow-[0_0_12px_white] transition-all duration-300 group-hover/btn:scale-[1.5]" />
             )}
           </AnimatePresence>
         </button>
@@ -85,48 +83,48 @@ export function TaskCard({ task }: TaskCardProps) {
           <div className="space-y-1.5 min-w-0 flex-1">
             <div className="flex items-center gap-3">
               <h3 className={cn(
-                "text-[15px] sm:text-[17px] font-bold tracking-tight truncate",
-                task.completed ? "text-white/20" : "text-white"
+                "text-[14px] font-medium tracking-tight",
+                task.completed ? "text-white/40 line-through" : "text-white"
               )}>
                 {task.title}
               </h3>
               {category && (
                 <div 
-                  className="px-2.5 py-1 rounded-full border border-white/[0.03] bg-white/[0.03] flex items-center gap-1.5"
+                  className="flex items-center gap-1.5"
                   style={{ color: category.color }}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">{category.name}</span>
+                  <div className="w-2 h-2 rounded-[3px] bg-current opacity-80" />
+                  <span className="text-[12px] font-medium text-white/50">{category.name}</span>
                 </div>
               )}
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">
+            <div className="flex items-center gap-4 text-[12px] font-medium text-white/40">
               <div className={cn("flex items-center gap-1.5", pm.color)}>
                 <pm.icon className="w-3.5 h-3.5" />
-                <span>{task.priority}</span>
+                <span className="capitalize">{task.priority}</span>
               </div>
               
               {task.dueDate && (
-                <div className={cn("flex items-center gap-1.5", isOverdue && !task.completed ? "text-rose-500 animate-pulse" : "")}>
-                  <Calendar className="w-3.5 h-3.5 opacity-50" />
+                <div className={cn("flex items-center gap-1.5", isOverdue && !task.completed ? "text-rose-500" : "")}>
+                  <Calendar className="w-3.5 h-3.5 opacity-70" />
                   <span>{format(new Date(task.dueDate), 'MMM d, h:mm a')}</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white/10 shadow-none text-white/50 hover:text-white transition-colors">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px] hover:bg-white/10 shadow-none text-white/50 hover:text-white transition-colors">
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40 shadow-2xl border border-white/[0.08] bg-[#111114] rounded-2xl p-1.5">
+              <DropdownMenuContent align="end" className="w-40 shadow-2xl border border-white/[0.08] bg-[#111114] rounded-xl p-1.5">
                 <DropdownMenuItem 
                   onClick={(e) => { e.stopPropagation(); deleteTask.mutate(task.id); }}
-                  className="rounded-xl font-bold text-[11px] uppercase tracking-[0.1em] gap-2.5 py-2.5 text-rose-500 focus:text-rose-400 focus:bg-rose-500/10 cursor-pointer shadow-none"
+                  className="rounded-lg font-medium text-[12px] gap-2.5 py-2 text-rose-500 focus:text-rose-400 focus:bg-rose-500/10 cursor-pointer shadow-none"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> Delete
                 </DropdownMenuItem>
