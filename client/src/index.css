@@ -80,17 +80,18 @@
   }
 
   body {
-    @apply antialiased selection:bg-primary/20 selection:text-foreground;
+    @apply antialiased selection:bg-primary/30 selection:text-foreground;
     font-family: 'Inter', sans-serif;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     min-height: 100vh;
     overflow-x: hidden;
+    letter-spacing: -0.01em;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', sans-serif;
-    @apply tracking-tight font-semibold text-foreground;
+    @apply tracking-tight font-bold text-foreground;
   }
 
   code, kbd, samp, pre {
@@ -100,23 +101,23 @@
 
 @layer components {
   .glass {
-    @apply bg-background/40 backdrop-blur-md border border-border/50 shadow-sm;
+    @apply bg-background/60 backdrop-blur-3xl border border-white/[0.08] shadow-2xl;
   }
 
   .premium-card {
-    @apply relative overflow-hidden rounded-[2rem] border border-border bg-card/50 backdrop-blur-xl transition-all duration-500 hover:bg-card/80 hover:shadow-xl hover:-translate-y-1;
+    @apply relative overflow-hidden rounded-[2.5rem] border border-white/[0.05] bg-card/40 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-card/60 hover:border-primary/30 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] hover:-translate-y-2;
   }
 
   .nav-blur {
-    @apply sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl;
+    @apply sticky top-0 z-50 w-full border-b border-white/[0.05] bg-background/70 backdrop-blur-3xl;
   }
 
   .gradient-primary {
-    @apply bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/10;
+    @apply bg-gradient-to-br from-primary via-primary to-indigo-600 text-white shadow-2xl shadow-primary/20;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/50;
   }
 
   .mesh-gradient {
@@ -124,13 +125,20 @@
     inset: 0;
     z-index: -1;
     background: 
-      radial-gradient(at 0% 0%, hsla(221,83%,53%,0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(221,83%,53%,0.03) 0px, transparent 50%);
-    filter: blur(80px);
+      radial-gradient(at 0% 0%, hsla(221,83%,53%,0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(280,91%,60%,0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(221,83%,53%,0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(280,91%,60%,0.05) 0px, transparent 50%);
+    filter: blur(140px);
+    opacity: 0.6;
   }
 
   .btn-premium {
-    @apply relative overflow-hidden h-12 rounded-2xl font-semibold tracking-tight text-sm transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply relative overflow-hidden h-14 rounded-2xl font-bold tracking-tight text-sm transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .inner-glow {
+    @apply relative after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] after:pointer-events-none;
   }
 }
 

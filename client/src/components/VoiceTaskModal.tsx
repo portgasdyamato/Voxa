@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { 
   Plus, Search, SlidersHorizontal, Layers, Activity, Zap, 
-  ListTodo, History, LayoutGrid, Mic, Command, X, Calendar, Tag, AlertCircle, Quote
+  ListTodo, History, LayoutGrid, Mic, Command, X, Calendar, Tag, AlertCircle, Quote, Radio, AudioLines
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -101,7 +101,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
       setTimeout(() => {
         handleExecuteCommand(executionCategory, executionDeadline, executionTaskName);
-      }, 800);
+      }, 1500);
     }
   }, [transcript, isListening]);
 
@@ -115,16 +115,6 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     setParsedTaskName('');
     setDetectedPriority('medium');
     startListening();
-  };
-
-  const handleDeadlineChange = (value: string) => {
-    setDeadlineInputValue(value);
-    if (value) {
-      const date = new Date(value);
-      setSelectedDeadline(isNaN(date.getTime()) ? null : date);
-    } else {
-      setSelectedDeadline(null);
-    }
   };
 
   const handleExecuteCommand = async (overrideCategory?: string, overrideDeadline?: Date | null, overrideTaskName?: string) => {
@@ -153,10 +143,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   if (!isSupported) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="rounded-3xl border-border bg-background p-10">
-          <DialogTitle>Speech Recognition Unsupported</DialogTitle>
-          <DialogDescription>
-            Your browser doesn't support speech recognition. Please try a modern browser like Chrome or Edge.
+        <DialogContent className="rounded-3xl border-white/[0.05] bg-[#050505] p-16">
+          <DialogTitle className="text-white">Speech Interface Offline</DialogTitle>
+          <DialogDescription className="text-white/20">
+            Aural detection requires a Chromium-based telemetry core.
           </DialogDescription>
         </DialogContent>
       </Dialog>
@@ -165,80 +155,98 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-[2.5rem] border border-border bg-background shadow-2xl max-h-[90vh] flex flex-col">
-        <DialogHeader className="p-10 pb-6 border-b border-border/50 bg-muted/20 flex-shrink-0">
-          <div className="flex items-center gap-6 relative z-10">
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-[3rem] border border-white/[0.05] bg-[#050505] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
+        <DialogHeader className="p-16 pb-8 border-b border-white/[0.03] bg-[#0a0a0a] flex-shrink-0 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-16 opacity-[0.02] pointer-events-none">
+            <Radio className="w-64 h-64 text-primary animate-pulse" />
+          </div>
+          <div className="flex items-center gap-8 relative z-10">
             <motion.div 
-               animate={{ scale: isListening ? [1, 1.1, 1] : 1 }}
-               transition={{ duration: 1, repeat: Infinity }}
+               animate={{ 
+                 scale: isListening ? [1, 1.2, 1] : 1,
+                 opacity: isListening ? [0.6, 1, 0.6] : 1
+               }}
+               transition={{ duration: 1.5, repeat: Infinity }}
                className={cn(
-                 "w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20",
-                 isListening ? "bg-primary" : "bg-muted text-muted-foreground"
+                 "w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-2xl inner-glow transition-all duration-700",
+                 isListening ? "bg-primary shadow-primary/30" : "bg-white/5 border border-white/10 text-white/20"
                )}
             >
-              <Mic className="w-6 h-6" />
+              <Mic className="w-8 h-8" />
             </motion.div>
             <div>
-              <DialogTitle className="text-2xl font-bold tracking-tight">
-                {isListening ? 'Listening...' : 'Thinking...'}
+              <DialogTitle className="text-3xl font-black tracking-[-0.05em] text-white">
+                {isListening ? 'Aural Decoding...' : 'Processing...'}
               </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground font-medium mt-0.5">
-                {isListening ? "Speak naturally to add or manage tasks." : "Understanding your request..."}
+              <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 mt-1 italic">
+                {isListening ? "Capturing intentional acoustic waves." : "Synthesizing aural commands."}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-10 py-10 space-y-10 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="px-16 py-16 space-y-12 overflow-y-auto flex-1 custom-scrollbar">
           {!showTranscription ? (
-            <div className="flex flex-col items-center py-12 gap-10">
-              <div className="relative flex items-center justify-center w-full h-24">
+            <div className="flex flex-col items-center py-16 gap-12">
+              <div className="relative flex items-center justify-center w-full h-32">
                 <AnimatePresence>
                   {isListening && (
-                    <div className="flex items-center gap-1.5 h-full">
-                      {[1,2,3,4,5,6,7,8].map(i => (
+                    <div className="flex items-center gap-3 h-full">
+                      {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
                         <motion.div 
                           key={i}
-                          animate={{ height: [10, 40 + (Math.random() * 40), 10] }}
-                          transition={{ duration: 0.4 + (Math.random() * 0.2), repeat: Infinity }}
-                          className="w-1.5 bg-primary/40 rounded-full" 
+                          animate={{ 
+                            height: [20, 80 + (Math.random() * 80), 20],
+                            opacity: [0.2, 0.8, 0.2]
+                          }}
+                          transition={{ 
+                            duration: 0.3 + (Math.random() * 0.4), 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="w-2 bg-primary/40 rounded-full shadow-[0_0_20px_rgba(var(--primary),0.2)]" 
                         />
                       ))}
                     </div>
                   )}
                 </AnimatePresence>
               </div>
-              <p className="text-muted-foreground/60 text-sm font-medium animate-pulse">
-                "Remind me to call John tomorrow morning"
+              <p className="text-white/20 text-sm font-bold tracking-widest animate-pulse italic uppercase">
+                Synchronizing with vocal frequency...
               </p>
             </div>
           ) : (
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-12"
             >
               <div className="space-y-4">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50">I Heard</Label>
-                <div className="p-6 rounded-2xl bg-muted/30 border border-border italic text-xl font-medium leading-relaxed">
+                <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 px-2 italic">Recovered Signal</Label>
+                <div className="p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 italic text-2xl font-black tracking-tight leading-relaxed text-white">
                    "{transcript}"
                 </div>
               </div>
 
               {parsedTaskName && (
-                <div className="p-6 rounded-2xl border border-primary/10 bg-primary/5 space-y-4">
-                  <div className="flex items-center gap-3 text-primary">
-                    <Zap className="w-5 h-5 fill-current" />
-                    <span className="text-xs font-bold uppercase tracking-widest">Recommended Action</span>
+                <div className="p-10 rounded-[3rem] border border-primary/10 bg-primary/5 space-y-6 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+                    <Zap className="w-32 h-32 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Add new task:</p>
-                    <h3 className="text-2xl font-bold tracking-tight">"{parsedTaskName}"</h3>
+                  <div className="flex items-center gap-4 text-primary">
+                    <AudioLines className="w-6 h-6 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">Synthesized Action</span>
+                  </div>
+                  <div className="space-y-3 relative z-10">
+                    <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Proposed Node:</p>
+                    <h3 className="text-4xl font-black tracking-tight text-white leading-none">"{parsedTaskName}"</h3>
                   </div>
                   {detectedDate && (
-                    <div className="flex items-center gap-3 pt-4 border-t border-primary/10">
-                       <Calendar className="w-4 h-4 text-primary" />
-                       <span className="text-xs font-bold text-foreground">Due: {detectedDate}</span>
+                    <div className="flex items-center gap-4 pt-8 border-t border-primary/10">
+                       <div className="p-2 rounded-lg bg-primary/20">
+                          <Clock className="w-4 h-4 text-primary" />
+                       </div>
+                       <span className="text-xs font-black uppercase tracking-widest text-white/60">Target: {detectedDate}</span>
                     </div>
                   )}
                 </div>
@@ -247,13 +255,13 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           )}
         </div>
 
-        <div className="p-10 border-t border-border bg-muted/20 flex gap-4 shrink-0">
+        <div className="p-16 border-t border-white/[0.03] bg-[#0a0a0a] flex gap-6 shrink-0">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-14 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-rose-500/10 hover:text-rose-600 transition-all border border-border/50"
+            className="flex-1 h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic hover:bg-rose-500/10 hover:text-rose-500 transition-all border border-white/[0.05]"
           >
-            Cancel
+            Purge Signal
           </Button>
           <Button
             onClick={() => {
@@ -261,9 +269,13 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                else handleExecuteCommand();
             }}
             disabled={!transcript && !isListening}
-            className="flex-[2] h-14 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
+            className="flex-[2] h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic bg-primary text-white shadow-2xl shadow-primary/30 group relative overflow-hidden"
           >
-            {isListening ? 'Finish Speaking' : 'Confirm Task'}
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            <span className="relative z-10 flex items-center gap-4">
+               {isListening ? 'End Recording' : 'Commit Action'}
+               {!isListening && <Plus className="w-4 h-4" />}
+            </span>
           </Button>
         </div>
       </DialogContent>
