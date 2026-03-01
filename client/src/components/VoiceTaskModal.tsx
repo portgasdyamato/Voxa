@@ -3,6 +3,7 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useCreateTask, useTasks, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
+import { detectCategory } from '@/lib/categoryDetection';
 import { detectDateTimeFromText, formatRelativeDate, parseTaskFromSpeech } from '@/lib/dateDetection';
 import { parseVoiceCommand, findTaskByIdentifier } from '@/lib/voiceCommands';
 import { useToast } from '@/hooks/use-toast';
@@ -97,6 +98,14 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         setParsedTaskName(taskName);
         setDetectedPriority(priority);
         
+        // Auto-detect Category
+        if (categories) {
+          const categoryId = detectCategory(transcript, categories);
+          if (categoryId) {
+            setSelectedCategory(categoryId.toString());
+          }
+        }
+
         // Detect date and time
         const dateTimeResult = detectDateTimeFromText(transcript);
         if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
