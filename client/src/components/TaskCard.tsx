@@ -128,7 +128,7 @@ export function TaskCard({ task }: TaskCardProps) {
                   <MoreHorizontal className="w-3.5 h-3.5 text-white/40" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl bg-[#0c0c0e] border border-white/[0.08]">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem 
                   onClick={() => deleteTask.mutate(task.id)}
                   className="rounded-xl font-bold text-[10px] uppercase tracking-widest gap-3 py-3 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer"

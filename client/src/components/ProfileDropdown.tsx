@@ -43,7 +43,7 @@ export function ProfileDropdown() {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 rounded-2xl border border-white/[0.08] bg-[#0d1117] p-1.5 shadow-[0_16px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl" align="end">
+        <DropdownMenuContent className="w-64" align="end">
           <DropdownMenuLabel className="font-normal px-3 py-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-white/[0.1] flex-shrink-0">
