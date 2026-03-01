@@ -3,7 +3,7 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useCreateTask, useTasks, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
-import { detectCategory } from '@/lib/categoryDetection';
+import { detectCategory, parseCategoryFromText } from '@/lib/categoryDetection';
 import { detectDateTimeFromText, formatRelativeDate, parseTaskFromSpeech } from '@/lib/dateDetection';
 import { parseVoiceCommand, findTaskByIdentifier } from '@/lib/voiceCommands';
 import { useToast } from '@/hooks/use-toast';
@@ -93,21 +93,24 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       
       // Handle different command types
       if (command.type === 'add') {
-        // Parse task details from speech
-        const { taskName, deadline, priority } = parseTaskFromSpeech(transcript);
-        setParsedTaskName(taskName);
-        setDetectedPriority(priority);
+        let textToParse = transcript;
         
-        // Auto-detect Category
+        // Auto-detect Category & Clean Transcript
         if (categories) {
-          const categoryId = detectCategory(transcript, categories);
+          const { categoryId, cleanedText } = parseCategoryFromText(transcript, categories);
           if (categoryId) {
             setSelectedCategory(categoryId.toString());
+            textToParse = cleanedText;
           }
         }
 
-        // Detect date and time
-        const dateTimeResult = detectDateTimeFromText(transcript);
+        // Parse task details from speech (using cleaned text)
+        const { taskName, deadline, priority } = parseTaskFromSpeech(textToParse);
+        setParsedTaskName(taskName);
+        setDetectedPriority(priority);
+
+        // Detect date and time (using cleaned text)
+        const dateTimeResult = detectDateTimeFromText(textToParse);
         if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
           setDetectedDate(dateTimeResult.detectedDate);
           setSelectedDeadline(dateTimeResult.detectedDate);
@@ -179,7 +182,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       () => {
         onOpenChange(false);
         resetTranscript();
-      }
+      },
+      parsedTaskName
     );
   };
 

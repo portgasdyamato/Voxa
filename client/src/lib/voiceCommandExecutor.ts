@@ -16,7 +16,8 @@ export async function executeVoiceCommand(
   updateTask: any,
   deleteTask: any,
   toast: any,
-  onSuccess: () => void
+  onSuccess: () => void,
+  overriddenTitle?: string
 ) {
   if (!transcript.trim()) {
     toast({ title: "No Voice Input", description: "Please speak a command.", variant: "destructive" });
@@ -28,7 +29,8 @@ export async function executeVoiceCommand(
   try {
     switch (command.type) {
       case 'add': {
-        const { taskName, deadline, priority } = parseTaskFromSpeech(transcript);
+        const { taskName: parsedName, deadline, priority } = parseTaskFromSpeech(transcript);
+        const taskName = overriddenTitle || parsedName;
         const finalDeadline = selectedDeadline || deadline;
         
         if (!taskName || taskName.length < 2) {

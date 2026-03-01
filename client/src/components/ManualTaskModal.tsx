@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCreateTask, useUpdateTask } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { detectPriority } from '@/lib/priorityDetection';
-import { detectCategory } from '@/lib/categoryDetection';
+import { detectCategory, parseCategoryFromText } from '@/lib/categoryDetection';
 import { detectDateFromText, formatRelativeDate } from '@/lib/dateDetection';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
@@ -80,12 +80,22 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
   };
 
   const handleTaskTitleChange = (value: string) => {
-    setTaskTitle(value);
+    let currentTitle = value;
     
-    if (value.trim() && !isEditing) {
-      // 1. Auto-detect Date
-      if (!selectedDeadline) {
-        const dateResult = detectDateFromText(value);
+    if (value.trim()) {
+      // 1. Auto-detect Category & Clean Title
+      // We do this if no category is selected, OR if the title has a clear category hint while editing
+      if ((selectedCategory === 'none' || !selectedCategory) && categories) {
+        const { categoryId, cleanedText } = parseCategoryFromText(value, categories);
+        if (categoryId) {
+          setSelectedCategory(categoryId.toString());
+          currentTitle = cleanedText;
+        }
+      }
+
+      // 2. Auto-detect Date (only for new tasks to avoid accidental rescheduling)
+      if (!isEditing && !selectedDeadline) {
+        const dateResult = detectDateFromText(currentTitle);
         if (dateResult.detectedDate && dateResult.confidence === 'high') {
           const date = dateResult.detectedDate;
           setSelectedDeadline(date);
@@ -95,17 +105,14 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           const hours = String(date.getHours()).padStart(2, '0');
           const minutes = String(date.getMinutes()).padStart(2, '0');
           setDeadlineInputValue(`${year}-${month}-${day}T${hours}:${minutes}`);
-        }
-      }
-
-      // 2. Auto-detect Category
-      if (selectedCategory === 'none' && categories) {
-        const categoryId = detectCategory(value, categories);
-        if (categoryId) {
-          setSelectedCategory(categoryId.toString());
+          
+          // Also clean the date text from the title
+          currentTitle = dateResult.cleanedText;
         }
       }
     }
+    
+    setTaskTitle(currentTitle);
   };
 
   const handleSaveTask = async () => {
