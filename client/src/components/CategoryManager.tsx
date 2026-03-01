@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, X, Tag, Settings, Save, Trash2, Palette, Check, LayoutGrid, Terminal } from 'lucide-react';
+import { Plus, X, Tag, Settings, Save, Trash2, Palette, Check, LayoutGrid } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -29,121 +29,129 @@ export function CategoryManager() {
     try {
       await createCategory.mutateAsync({ name: newCatName.trim(), color: newCatColor });
       setNewCatName('');
-      toast({ title: "Sector Integrated" });
+      toast({ title: "Category added" });
     } catch (e) {
-      toast({ title: "Integration Failed", variant: "destructive" });
+      toast({ title: "Failed to add category", variant: "destructive" });
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
       await deleteCategory.mutateAsync(id);
-      toast({ title: "Sector Purged" });
+      toast({ title: "Category deleted" });
     } catch (e) {
-      toast({ title: "Security Halt", description: "Failed to purge sector registry.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to delete category.", variant: "destructive" });
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="w-full h-14 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-primary hover:bg-primary/5 gap-4 border border-white/[0.05] group transition-all duration-700">
-          <LayoutGrid className="w-4 h-4 group-hover:rotate-90 transition-transform duration-700" />
-          Modify Registry
+        <Button variant="ghost" className="w-full h-11 rounded-xl text-xs font-bold text-white/40 hover:text-white hover:bg-white/[0.06] gap-3 border border-white/[0.06] transition-all">
+          <LayoutGrid className="w-4 h-4" />
+          Manage Categories
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-[3rem] border border-white/[0.05] bg-[#050505] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh]">
-        <DialogHeader className="p-16 pb-8 border-b border-white/[0.03] bg-[#0a0a0a] relative">
-          <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
-            <Terminal className="w-48 h-48 text-primary animate-pulse" />
-          </div>
-          <div className="flex items-center gap-8 relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-2xl inner-glow">
-               <Palette className="w-8 h-8 text-primary" />
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 flex-shrink-0">
+               <Palette className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-3xl font-black tracking-[-0.05em] text-white">Sector Registry</DialogTitle>
-              <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mt-1 italic">
-                Defining intentional workspace nodes.
+              <DialogTitle className="text-xl font-black text-white tracking-tight">Categories</DialogTitle>
+              <DialogDescription className="text-[11px] text-white/30 font-medium mt-0.5">
+                Create and manage your task categories
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-16 space-y-12 overflow-y-auto custom-scrollbar flex-1 pb-32">
-          <div className="space-y-6">
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 px-2 italic">New Node Core</p>
-             <div className="flex gap-4">
+        <div className="px-6 py-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+          {/* New Category */}
+          <div className="space-y-4">
+             <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">New Category</Label>
+             <div className="flex gap-3">
                <Input 
                  value={newCatName}
                  onChange={(e) => setNewCatName(e.target.value)}
-                 placeholder="ID key..."
-                 className="h-16 rounded-2xl bg-white/[0.03] border-white/[0.05] px-8 text-sm font-bold placeholder:text-white/5 focus:bg-white/[0.06] transition-all"
+                 placeholder="Category name"
+                 className="h-11 rounded-xl bg-white/[0.04] border-white/[0.08] text-sm font-semibold placeholder:text-white/20 focus-visible:ring-primary/40"
                />
-               <Button onClick={handleCreate} disabled={!newCatName.trim()} className="h-16 w-16 rounded-2xl bg-primary shadow-2xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                 <Plus className="w-6 h-6 stroke-[3px]" />
+               <Button onClick={handleCreate} disabled={!newCatName.trim() || createCategory.isPending} className="h-11 w-11 p-0 rounded-xl bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 flex-shrink-0">
+                 <Plus className="w-5 h-5" />
                </Button>
              </div>
              
-             <div className="flex flex-wrap gap-3 pt-6 px-2 justify-center">
+             <div className="flex gap-2 pt-2">
                 {colors.map(color => (
                   <button
                     key={color}
                     onClick={() => setNewCatColor(color)}
                     className={cn(
-                      "w-10 h-10 rounded-xl transition-all duration-500 border-2 overflow-hidden relative",
-                      newCatColor === color ? "border-primary scale-125 shadow-2xl shadow-primary/40 rotate-12" : "border-white/[0.05] opacity-20 hover:opacity-100 hover:rotate-6"
+                      "w-7 h-7 rounded-full transition-transform border-2",
+                      newCatColor === color ? "border-white scale-110 shadow-md" : "border-transparent opacity-50 hover:opacity-100 hover:scale-110"
                     )}
                     style={{ backgroundColor: color }}
-                  >
-                    {newCatColor === color && <div className="absolute inset-0 bg-white/20" />}
-                  </button>
+                  />
                 ))}
              </div>
           </div>
 
-          <div className="space-y-6 pt-10 border-t border-white/[0.03]">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 px-2 italic">Active Protocols</p>
-            <div className="space-y-3">
+          {/* Category List */}
+          <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Existing Categories</Label>
+            <div className="space-y-2">
               <AnimatePresence mode="popLayout">
                 {categories?.map((cat) => (
                   <motion.div
                     key={cat.id}
                     layout
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                    className="flex items-center justify-between p-6 rounded-[2rem] border border-white/[0.03] bg-white/[0.02] group hover:bg-white/[0.05] hover:border-white/[0.1] transition-all duration-700"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex items-center justify-between p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] group"
                   >
-                    <div className="flex items-center gap-6">
-                      <div className="w-3.5 h-3.5 rounded-full shadow-[0_0_15px_currentColor]" style={{ backgroundColor: cat.color }} />
-                      <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60 group-hover:text-white italic">{cat.name}</span>
+                    <div className="flex items-center gap-3 pl-1">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <span className="text-sm font-semibold text-white/80">{cat.name}</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(cat.id)}
-                      className="h-10 w-10 rounded-xl opacity-0 group-hover:opacity-100 text-rose-500 hover:bg-rose-500/10 transition-all duration-500"
+                      className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </motion.div>
                 ))}
               </AnimatePresence>
+              {(!categories || categories.length === 0) && (
+                <div className="text-center py-6 text-sm text-white/30 font-medium border border-dashed border-white/[0.08] rounded-xl">
+                  No categories yet.
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="p-16 border-t border-white/[0.03] bg-[#0a0a0a] text-center shrink-0">
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-white/[0.06] bg-[#0a0c10] shrink-0">
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] italic border border-white/[0.05] text-white/20 hover:text-white"
+            className="w-full h-11 rounded-xl font-bold text-sm border border-white/[0.08] text-white hover:bg-white/[0.06]"
           >
-            Finalize Array
+            Done
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
+}
+
+function Label({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <label className={cn("block", className)}>{children}</label>;
 }

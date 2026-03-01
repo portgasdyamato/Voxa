@@ -318,131 +318,93 @@ export function VoiceCommandsHelp() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-          <HelpCircle className="w-3 h-3 mr-1" />
+        <Button variant="ghost" size="sm" className="text-xs text-white/50 hover:text-white hover:bg-white/[0.06] transition-all rounded-xl">
+          <HelpCircle className="w-3.5 h-3.5 mr-1.5" />
           Voice Commands Help
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-[3rem] border-2 border-border/40 bg-card/95 backdrop-blur-3xl shadow-3xl p-0">
-        <DialogHeader className="p-10 pb-6 relative overflow-hidden bg-primary/5">
+      
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] bg-[#0a0a0a] flex-shrink-0 relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-          <DialogTitle className="flex items-center space-x-3 text-3xl font-black tracking-tighter italic relative z-10 uppercase">
-            <Mic className="w-8 h-8 text-primary shadow-lg shadow-primary/20" />
-            <span>Command Protocol</span>
+          <DialogTitle className="flex items-center space-x-3 text-xl font-black tracking-tight text-white relative z-10">
+            <Mic className="w-5 h-5 text-primary" />
+            <span>Voice Command Guide</span>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="p-10 pt-4 space-y-10">
-          <div className="bg-primary/5 rounded-[2rem] p-8 border border-primary/10 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-6 opacity-5">
-               <Activity className="w-20 h-20" />
+        {/* Scrollable body */}
+        <div className="px-6 py-6 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
+          
+          <div className="bg-primary/10 rounded-2xl p-6 border border-primary/20 relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+               <Activity className="w-16 h-16" />
              </div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-4">Command Execution Flow</h4>
-            <ol className="text-sm text-foreground/70 space-y-3 font-medium">
-              <li className="flex gap-4"><span className="text-primary font-black">01</span> Activate the microphone to start audio scanning</li>
-              <li className="flex gap-4"><span className="text-primary font-black">02</span> Speak clearly for natural language processing</li>
-              <li className="flex gap-4"><span className="text-primary font-black">03</span> Verify the identified intent in the transcription bay</li>
-              <li className="flex gap-4"><span className="text-primary font-black">04</span> Operations execute instantly upon voice confirmation</li>
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-primary mb-3 relative z-10">How it works</h4>
+            <ol className="text-sm text-white/70 space-y-2.5 font-medium relative z-10">
+              <li className="flex gap-3"><span className="text-primary font-black opacity-50">01</span> Activate the microphone or press Ctrl+K</li>
+              <li className="flex gap-3"><span className="text-primary font-black opacity-50">02</span> Speak clearly in natural language</li>
+              <li className="flex gap-3"><span className="text-primary font-black opacity-50">03</span> Confirm or wait out the auto-save</li>
             </ol>
           </div>
 
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-            <h4 className="font-medium text-green-900 dark:text-green-300 mb-2">Smart Priority Detection</h4>
-            <p className="text-sm text-green-800 dark:text-green-200 mb-2">
-              When creating tasks, the system can automatically detect priority based on keywords:
-            </p>
-            <ul className="text-sm text-green-800 dark:text-green-200 space-y-1 list-disc list-inside">
-              <li><strong>High Priority:</strong> urgent, important, ASAP, immediately, critical</li>
-              <li><strong>Low Priority:</strong> later, when I have time, eventually, sometime</li>
-              <li><strong>Example:</strong> "Add urgent task submit report" → Creates high priority task</li>
-            </ul>
-          </div>
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">🎯 Natural Language Date & Time Detection</h4>
-            <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-              The system automatically detects dates and times from natural speech:
-            </p>
-            <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
-              <div>
-                <strong>📅 Date Detection:</strong>
-                <ul className="list-disc list-inside ml-4 mt-1">
-                  <li>today, tomorrow, next Friday, this weekend</li>
-                  <li>in 3 days, next week, in two weeks</li>
-                  <li>Monday, Tuesday, etc. (defaults to next occurrence)</li>
-                </ul>
-              </div>
-              <div>
-                <strong>🕒 Time Detection:</strong>
-                <ul className="list-disc list-inside ml-4 mt-1">
-                  <li>5 PM, 2:30 PM, 9 AM, 11:30</li>
-                  <li>noon, midnight, morning, afternoon, evening</li>
-                  <li>lunch time, dinner time, bedtime</li>
-                </ul>
-              </div>
-              <div>
-                <strong>✨ Smart Examples:</strong>
-                <ul className="list-disc list-inside ml-4 mt-1">
-                  <li>"Call John tomorrow at 5 PM" → Task: "Call John", Due: Tomorrow 5:00 PM</li>
-                  <li>"Meeting Friday at 2:30" → Task: "Meeting", Due: Friday 2:30 PM</li>
-                  <li>"Submit report by Monday noon" → Task: "Submit report", Due: Monday 12:00 PM</li>
-                  <li>"Doctor appointment next week at 3" → Task: "Doctor appointment", Due: Next week 3:00 PM</li>
-                </ul>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
+              <h4 className="font-bold text-white mb-2 text-sm">Smart Priority</h4>
+              <p className="text-xs text-white/50 mb-3">Auto-detects from tone markers:</p>
+              <ul className="text-xs text-white/70 space-y-1.5 list-disc list-inside">
+                <li><strong className="text-rose-400">High:</strong> urgent, ASAP, critical</li>
+                <li><strong className="text-emerald-400">Low:</strong> later, eventually</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
+              <h4 className="font-bold text-white mb-2 text-sm">Natural Dates</h4>
+              <p className="text-xs text-white/50 mb-3">Say time normally:</p>
+              <ul className="text-xs text-white/70 space-y-1.5 list-disc list-inside">
+                <li><strong className="text-white">Dates:</strong> tomorrow, next Friday</li>
+                <li><strong className="text-white">Times:</strong> noon, 5 PM, tonight</li>
+              </ul>
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">Keyboard Shortcuts</h4>
-            <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <div className="flex items-center space-x-2">
-                <kbd className="bg-blue-200 dark:bg-blue-700 px-2 py-1 rounded text-xs font-mono">Ctrl + K</kbd>
-                <span>Activate voice commands</span>
-              </div>
-              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                Press Ctrl+K anywhere in the app to start listening for voice commands
-              </p>
-            </div>
-          </div>
-
-          {commandCategories.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <category.icon className={`w-5 h-5 ${category.color} dark:${category.color.replace('600', '400')}`} />
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{category.title}</h3>
-              </div>
-              
-              <div className="grid gap-3">
-                {category.commands.map((cmd, cmdIndex) => (
-                  <div key={cmdIndex} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                    <div className="flex items-start justify-between mb-2">
-                      <code className="text-sm font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
-                        {cmd.command}
-                      </code>
-                      <Badge variant="outline" className="text-xs">
-                        Voice
-                      </Badge>
+          <div className="space-y-6 pt-2">
+            {commandCategories.map((category, categoryIndex) => (
+              <div key={categoryIndex} className="space-y-3">
+                <div className="flex items-center space-x-2.5 pt-4">
+                  <category.icon className="w-4 h-4 text-white/50" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">{category.title}</h3>
+                </div>
+                
+                <div className="grid gap-2">
+                  {category.commands.map((cmd, cmdIndex) => (
+                    <div key={cmdIndex} className="border border-white/[0.06] rounded-xl p-3 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-3 group hover:bg-white/[0.05] transition-colors">
+                      <div className="space-y-1 flex-1">
+                        <code className="text-sm font-semibold text-primary/90 flex items-center gap-2">
+                          {cmd.command}
+                        </code>
+                        <p className="text-xs text-white/40">{cmd.description}</p>
+                      </div>
+                      <div className="text-[11px] font-medium text-white/30 truncate max-w-[200px] shrink-0">
+                         e.g. "{cmd.example}"
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{cmd.description}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      <span className="font-medium">Example:</span> "{cmd.example}"
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 dark:text-yellow-300 mb-2">Tips for Better Recognition</h4>
-            <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1 list-disc list-inside">
-              <li>Speak clearly and at a normal pace</li>
-              <li>Use the exact task name or close variations</li>
-              <li>Ensure you're in a quiet environment</li>
-              <li>If a command fails, try rephrasing it</li>
-              <li>Task names are matched using fuzzy search</li>
+          <div className="bg-amber-500/10 rounded-2xl p-5 border border-amber-500/20">
+            <h4 className="font-bold text-amber-500 mb-2 text-sm">Pro Tips</h4>
+            <ul className="text-xs text-amber-500/70 space-y-1.5 list-disc list-inside">
+              <li>Speak at a normal pace</li>
+              <li>Names match using fuzzy search (close variations work)</li>
+              <li>Wait for the beep before giving a command</li>
             </ul>
           </div>
+          
         </div>
       </DialogContent>
     </Dialog>
