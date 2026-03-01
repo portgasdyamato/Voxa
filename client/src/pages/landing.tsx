@@ -94,9 +94,9 @@ export default function Landing() {
               className="text-center max-w-5xl mx-auto mb-8"
             >
               <h1 className="text-[64px] md:text-[80px] lg:text-[96px] font-black tracking-[-0.04em] leading-[0.92]">
-                <span className="text-white">Speak it</span>{' '}
+                <span className="text-white">Speak it</span>
+                <br />
                 <span
-                  className="inline-block"
                   style={{
                     background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)',
                     WebkitBackgroundClip: 'text',
@@ -104,9 +104,7 @@ export default function Landing() {
                     backgroundClip: 'text',
                   }}
                 >
-                  into
-                  <br />
-                  existence.
+                  into existence.
                 </span>
               </h1>
             </motion.div>
