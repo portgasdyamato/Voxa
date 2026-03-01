@@ -6,14 +6,18 @@ interface SpeechRecognitionOptions {
   language?: string;
 }
 
-export function useSpeechRecognition(options: SpeechRecognitionOptions = {}) {
+export default function useSpeechRecognition(options: SpeechRecognitionOptions = {}) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
 
+  const isSupported = typeof window !== 'undefined' && (
+    'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
+  );
+
   const startListening = useCallback(() => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    if (!isSupported) {
       setError('Speech recognition not supported in this browser');
       return;
     }
@@ -53,7 +57,7 @@ export function useSpeechRecognition(options: SpeechRecognitionOptions = {}) {
     };
 
     recognitionRef.current.start();
-  }, [options.continuous, options.interimResults, options.language]);
+  }, [isSupported, options.continuous, options.interimResults, options.language]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -73,5 +77,6 @@ export function useSpeechRecognition(options: SpeechRecognitionOptions = {}) {
     startListening,
     stopListening,
     resetTranscript,
+    isSupported,
   };
 }
