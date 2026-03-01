@@ -44,6 +44,12 @@ export function TaskCard({ task }: TaskCardProps) {
     low: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
   };
 
+  const priorityIcons = {
+    high: <Zap className="w-3.5 h-3.5" />,
+    medium: <Clock className="w-3.5 h-3.5" />,
+    low: <CalendarDays className="w-3.5 h-3.5" />
+  };
+
   return (
     <motion.div
       layout
@@ -54,31 +60,38 @@ export function TaskCard({ task }: TaskCardProps) {
     >
       <div
         className={cn(
-          "premium-card p-6 pl-10 border-l-4 transition-all duration-700 relative",
-          task.completed ? "opacity-30 blur-[0.5px] pointer-events-none scale-[0.98]" : "opacity-100",
-          task.priority === 'high' ? "border-l-rose-500" :
-          task.priority === 'medium' ? "border-l-amber-500" :
-          "border-l-emerald-500"
+          "premium-card p-6 pl-12 transition-all duration-700 relative hover:bg-white/[0.08] hover:border-white/[0.2]",
+          task.completed ? "opacity-30 blur-[0.5px] pointer-events-none grayscale" : "opacity-100"
         )}
       >
+        {/* Modern Accent Bar */}
+        <div 
+          className={cn(
+            "absolute left-2 top-4 bottom-4 w-1.5 rounded-full shadow-2xl transition-all duration-700",
+            task.priority === 'high' ? "bg-rose-500 shadow-[2px_0_20px_rgba(244,63,94,0.4)]" :
+            task.priority === 'medium' ? "bg-amber-500 shadow-[2px_0_20px_rgba(245,158,11,0.2)]" :
+            "bg-emerald-500 shadow-[2px_0_20px_rgba(16,185,129,0.2)]"
+          )}
+        />
+
         <div className="flex items-center gap-8">
-          {/* Custom Interaction Node: Checkbox */}
+          {/* Interaction Switch */}
           <button 
             onClick={handleToggleComplete}
             className={cn(
-              "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 shrink-0 relative overflow-hidden",
+              "w-9 h-9 rounded-2xl border-2 flex items-center justify-center transition-all duration-700 shrink-0",
               task.completed 
-                ? "bg-primary border-primary shadow-lg shadow-primary/30 rotate-12 scale-110" 
-                : "border-white/10 hover:border-primary/40 bg-white/[0.02] hover:scale-105 active:scale-90"
+                ? "bg-primary border-primary shadow-2xl shadow-primary/40 rotate-12" 
+                : "border-white/10 hover:border-primary/40 bg-black/40 hover:scale-105 active:scale-90"
             )}
           >
             <AnimatePresence mode="wait">
               {task.completed ? (
-                <motion.div key="check" initial={{ scale: 0, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}>
-                  <Check className="w-4 h-4 text-white stroke-[4px]" />
+                <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                  <Check className="w-5 h-5 text-white stroke-[4px]" />
                 </motion.div>
               ) : (
-                <motion.div key="circle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-primary transition-colors" />
+                <div className="w-2 h-2 rounded-full bg-white/20 group-hover:bg-primary transition-colors" />
               )}
             </AnimatePresence>
           </button>
@@ -87,62 +100,56 @@ export function TaskCard({ task }: TaskCardProps) {
             <div className="space-y-2 flex-1 min-w-0">
                <div className="flex items-center flex-wrap gap-4">
                   <h3 className={cn(
-                    "text-xl font-bold tracking-tight transition-all duration-500 truncate",
-                    task.completed ? "line-through text-white/10 italic" : "text-white"
+                    "text-xl font-black tracking-tight transition-all duration-700 truncate italic",
+                    task.completed ? "line-through text-white/10" : "text-white group-hover:text-primary"
                   )}>
                     {task.title}
                   </h3>
                   {category && (
-                    <div className="px-3 py-1 rounded-full bg-black/40 border border-white/[0.05] flex items-center gap-2 shrink-0">
-                       <span 
-                         className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]" 
+                    <div className="px-3 py-1 rounded-xl bg-black/60 border border-white/[0.1] flex items-center gap-2 group-hover:border-primary/20 transition-all">
+                       <div 
+                         className="w-1.5 h-1.5 rounded-full shadow-[0_0_10px_currentColor]" 
                          style={{ backgroundColor: category.color, color: category.color }} 
                        />
-                       <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 italic">{category.name}</span>
+                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 italic">{category.name}</span>
                     </div>
                   )}
                </div>
                
-               <div className="flex items-center flex-wrap gap-6 text-[10px] uppercase font-black tracking-widest text-white/20 italic">
-                  <span className={cn("px-2 py-0.5 rounded border transition-all duration-500", priorityColors[task.priority as keyof typeof priorityColors])}>
-                    {task.priority} Priority
-                  </span>
+               <div className="flex items-center flex-wrap gap-8 text-[11px] uppercase font-black tracking-widest text-white/20 italic">
+                  <div className={cn("flex items-center gap-2 px-3 py-1 rounded-lg border transition-all duration-700", priorityColors[task.priority as keyof typeof priorityColors])}>
+                    {priorityIcons[task.priority as keyof typeof priorityIcons]}
+                    <span>{task.priority}</span>
+                  </div>
                   
                   {task.dueDate && (
-                    <div className={cn("flex items-center gap-2", isOverdue ? "text-rose-500" : "")}>
-                       <CalendarDays className="w-3.5 h-3.5" />
+                    <div className={cn("flex items-center gap-2 transition-colors duration-700", isOverdue ? "text-rose-500 animate-pulse" : "group-hover:text-white/40")}>
+                       <CalendarDays className="w-4 h-4" />
                        {format(new Date(task.dueDate), 'MMM d, h:mm a')}
-                    </div>
-                  )}
-
-                  {task.reminder && (
-                    <div className="flex items-center gap-2 text-primary/40">
-                       <Clock className="w-3.5 h-3.5" />
-                       Reminder Active
                     </div>
                   )}
                </div>
             </div>
 
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+            <div className="flex items-center gap-3">
               <Button 
                 onClick={() => setIsEditModalOpen(true)}
                 variant="ghost" 
                 size="icon" 
-                className="h-11 w-11 rounded-2xl bg-white/[0.03] hover:bg-white/10 hover:border-white/10 border border-transparent transition-all"
+                className="h-11 w-11 rounded-xl bg-white/[0.03] hover:bg-white/10 hover:border-white/10 border border-transparent transition-all opacity-0 group-hover:opacity-100"
               >
                 <Edit2 className="w-4 h-4 text-white/20 group-hover:text-white" />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl bg-white/[0.03] hover:bg-white/10 hover:border-white/10 border border-transparent transition-all">
+                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl bg-white/[0.03] hover:bg-white/10 hover:border-white/10 border border-transparent transition-all opacity-0 group-hover:opacity-100">
                     <MoreHorizontal className="w-4 h-4 text-white/20" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-[1.5rem] bg-[#080808]/90 backdrop-blur-3xl border-white/[0.05] shadow-3xl">
+                <DropdownMenuContent align="end" className="w-52 p-2 rounded-[1.5rem] bg-[#0c0c0e]/95 backdrop-blur-3xl border-white/[0.1] shadow-3xl">
                   <DropdownMenuItem 
                     onClick={() => deleteTask.mutate(task.id)}
-                    className="rounded-xl font-bold text-[10px] uppercase tracking-widest gap-4 py-3 text-rose-500/80 focus:text-rose-500 focus:bg-rose-500/5 cursor-pointer italic px-4"
+                    className="rounded-xl font-bold text-[10px] uppercase tracking-widest gap-4 py-3.5 text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 cursor-pointer italic px-4"
                   >
                     <Trash2 className="w-4 h-4" /> Delete Task
                   </DropdownMenuItem>
