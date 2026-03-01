@@ -22,26 +22,26 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border/40">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex justify-between items-center h-16">
+      <nav className="nav-blur">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
             <div 
-              className="flex items-center gap-2 cursor-pointer group"
+              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => handleNavigation('/home', 'home')}
             >
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
                 <Zap className="w-5 h-5 text-primary-foreground fill-primary-foreground" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight">VoXa</h1>
+              <h1 className="text-xl font-black tracking-tighter text-gradient">VoXa</h1>
             </div>
             
             <div className="flex items-center gap-8">
-              <div className="hidden md:flex items-center gap-1">
+              <div className="hidden md:flex items-center gap-2 p-1 bg-muted/30 rounded-xl border border-border/50">
                 <NavButton 
                   isActive={activeTab === 'home'} 
                   onClick={() => handleNavigation('/home', 'home')}
                   icon={<LayoutGrid className="w-4 h-4" />}
-                  label="Tasks"
+                  label="Mission Control"
                 />
                 <NavButton 
                   isActive={activeTab === 'stats'} 
@@ -51,12 +51,13 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
                 />
               </div>
 
-              <div className="flex items-center gap-3 pl-4 border-l border-border">
+              <div className="flex items-center gap-4 pl-6 border-l border-border/30">
                 <ThemeToggle />
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg relative">
-                  <Bell className="w-4.5 h-4.5 text-muted-foreground" />
-                  <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative hover:bg-primary/5">
+                  <Bell className="w-5 h-5 text-muted-foreground" />
+                  <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-background" />
                 </Button>
+                <div className="h-10 w-[1px] bg-border/30" />
                 <ProfileDropdown />
               </div>
             </div>
@@ -68,9 +69,9 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm"
+          className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm"
         >
-          <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl p-1.5 shadow-xl flex items-center justify-around">
+          <div className="bg-background/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-2 shadow-2xl flex items-center justify-around">
             <MobileNavButton 
                isActive={activeTab === 'home'} 
                onClick={() => handleNavigation('/home', 'home')}
@@ -95,14 +96,23 @@ function NavButton({ isActive, onClick, icon, label }: { isActive: boolean; onCl
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+        "relative flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
         isActive 
-          ? "bg-primary/10 text-primary" 
-          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          ? "text-primary" 
+          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
       )}
     >
-      {icon}
-      {label}
+      {isActive && (
+        <motion.div 
+          layoutId="nav-pill"
+          className="absolute inset-0 bg-background shadow-sm border border-border/50 rounded-[inherit] z-0"
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+        />
+      )}
+      <span className="relative z-10 flex items-center gap-2 italic">
+        {icon}
+        {label}
+      </span>
     </button>
   );
 }
@@ -112,12 +122,19 @@ function MobileNavButton({ isActive, onClick, icon, label }: { isActive: boolean
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-1 py-2 px-6 rounded-xl transition-all",
-        isActive ? "text-primary bg-primary/5" : "text-muted-foreground"
+        "relative flex flex-col items-center gap-1.5 py-3 px-8 rounded-2xl transition-all",
+        isActive ? "text-primary" : "text-muted-foreground/40"
       )}
     >
-      {icon}
-      <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+      {isActive && (
+        <motion.div 
+          layoutId="mobile-nav-pill"
+          className="absolute inset-0 bg-primary/10 rounded-[inherit] z-0"
+        />
+      )}
+      <div className="relative z-10">{icon}</div>
+      <span className="relative z-10 text-[9px] font-black uppercase tracking-[0.2em]">{label}</span>
     </button>
   );
 }
+

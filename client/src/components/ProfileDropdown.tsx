@@ -34,55 +34,61 @@ export function ProfileDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 transition-all hover:bg-muted">
-            <Avatar className="h-8 w-8 border border-border/10">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-xl p-0 transition-all hover:bg-muted/40 border-border/10">
+            <Avatar className="h-9 w-9 border-2 border-primary/20 shadow-lg shadow-primary/5">
               <AvatarImage src={(user as any)?.profileImageUrl || ''} className="object-cover" />
-              <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
+              <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-black">
                 {userInitials}
               </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 rounded-xl border border-border/40 p-1.5 shadow-xl bg-popover/95" align="end">
-          <DropdownMenuLabel className="font-normal p-4">
-            <div className="flex flex-col space-y-3">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border border-border/10">
+        <DropdownMenuContent className="w-72 rounded-[2rem] glass border-white/5 p-2 shadow-3xl bg-popover/80" align="end">
+          <DropdownMenuLabel className="font-normal p-6">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12 border-2 border-primary/20">
                    <AvatarImage src={(user as any)?.profileImageUrl || ''} className="object-cover" />
-                   <AvatarFallback className="bg-primary text-primary-foreground font-bold">{userInitials}</AvatarFallback>
+                   <AvatarFallback className="bg-primary text-primary-foreground font-black">{userInitials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0">
-                  <p className="text-sm font-bold truncate">{displayName}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{(user as any)?.email || 'Personal Account'}</p>
+                  <p className="text-base font-black tracking-tight truncate italic">{displayName}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 truncate">{(user as any)?.email || 'Personal Account'}</p>
                 </div>
               </div>
-              <div className="flex gap-2 px-2.5 py-1.5 rounded-lg bg-primary/5 border border-primary/10 items-center">
-                 <Zap className="w-3 h-3 text-primary" />
-                 <span className="text-[9px] font-bold uppercase tracking-wider text-primary">Pro Account</span>
+              <div className="flex gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 items-center justify-center">
+                 <Crown className="w-3.5 h-3.5 text-primary" />
+                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Strategic Access</span>
               </div>
             </div>
           </DropdownMenuLabel>
           
-          <DropdownMenuSeparator className="mx-1" />
+          <DropdownMenuSeparator className="mx-2 opacity-5" />
           
-          <div className="p-1">
-            <DropdownMenuItem onClick={() => setShowEditProfile(true)} className="rounded-lg gap-3 py-2 px-3 focus:bg-primary/5 focus:text-primary transition-all cursor-pointer">
-              <Settings className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Settings</span>
+          <div className="p-2 space-y-1">
+            <DropdownMenuItem 
+              onClick={() => setShowEditProfile(true)} 
+              className="rounded-xl gap-3 py-3 px-4 focus:bg-primary/10 transition-all cursor-pointer group"
+            >
+              <Settings className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+              <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:text-primary">Configuration</span>
             </DropdownMenuItem>
             
-            <DropdownMenuItem className="rounded-lg gap-3 py-2 px-3 opacity-50 cursor-not-allowed">
-               <Shield className="h-4 w-4 text-muted-foreground" />
-               <span className="text-sm font-medium">Security</span>
+            <DropdownMenuItem className="rounded-xl gap-3 py-3 px-4 opacity-30 cursor-not-allowed">
+               <Shield className="h-4 w-4 text-muted-foreground/40" />
+               <span className="text-[10px] font-black uppercase tracking-widest italic">Encrypted Vault</span>
             </DropdownMenuItem>
           </div>
           
-          <DropdownMenuSeparator className="mx-1" />
+          <DropdownMenuSeparator className="mx-2 opacity-5" />
           
-          <div className="p-1">
-            <DropdownMenuItem onClick={handleLogout} className="rounded-lg gap-3 py-2 px-3 text-rose-500 focus:bg-rose-500/5 focus:text-rose-500 transition-all cursor-pointer">
-              <LogOut className="h-4 w-4" />
-              <span className="text-sm font-medium">Sign out</span>
+          <div className="p-2">
+            <DropdownMenuItem 
+              onClick={handleLogout} 
+              className="rounded-xl gap-3 py-3 px-4 text-rose-500 focus:bg-rose-500/10 focus:text-rose-500 transition-all cursor-pointer group"
+            >
+              <LogOut className="h-4 w-4 text-rose-500/40 group-hover:text-rose-500 transition-colors" />
+              <span className="text-[10px] font-black uppercase tracking-widest italic">Terminate Session</span>
             </DropdownMenuItem>
           </div>
         </DropdownMenuContent>

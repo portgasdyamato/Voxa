@@ -76,78 +76,93 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 pb-32">
-      <div className="flex flex-col md:grid md:grid-cols-[260px_1fr] gap-12 items-start">
+    <div className="max-w-7xl mx-auto px-6 py-10 pb-32 relative">
+      {/* Page Background Pattern */}
+      <div className="fixed inset-0 pointer-events-none -z-10 opacity-[0.03] dark:opacity-[0.05]" />
+      
+      <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-16 items-start">
         {/* Sidebar */}
-        <aside className="w-full md:sticky md:top-28 space-y-8">
-          <div className="space-y-4">
-            <Button 
-               onClick={() => setIsModalOpen(true)}
-               className="w-full h-11 rounded-xl bg-primary shadow-sm hover:shadow-md transition-all font-semibold"
-            >
-              <Plus className="w-4 h-4 mr-2" /> New Task
-            </Button>
+        <aside className="w-full lg:sticky lg:top-32 space-y-10">
+          <div className="space-y-6">
+            <div className="space-y-2">
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary px-1">Execute</p>
+               <Button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full h-14 rounded-2xl gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 active:translate-y-0 transition-all font-black uppercase tracking-widest text-sm"
+               >
+                 <Plus className="w-5 h-5 mr-3" /> New Objective
+               </Button>
+            </div>
 
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground/30 group-focus-within:text-primary transition-colors" />
               <Input 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="h-10 rounded-xl border-border/50 bg-muted/20 pl-10 focus-visible:ring-primary/20"
+                placeholder="Search indices..."
+                className="h-12 rounded-2xl border-border/10 bg-muted/20 pl-12 focus-visible:ring-primary/20 focus-visible:border-primary/30 font-medium"
               />
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="space-y-3">
-               <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1">Timeline</Label>
+          <div className="space-y-10">
+            <div className="space-y-4">
+               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Timeline Index</Label>
                <div className="space-y-1">
                  {[
-                   { id: 'all', label: 'All Tasks', icon: Layers },
-                   { id: 'today', label: 'Today', icon: Activity },
-                   { id: 'overdue', label: 'Overdue', icon: Zap },
+                   { id: 'all', label: 'All Operations', icon: Layers },
+                   { id: 'today', label: 'Active Today', icon: Activity },
+                   { id: 'overdue', label: 'Priority / Overdue', icon: Zap },
                  ].map((d) => (
                    <button
                     key={d.id}
                     onClick={() => setSelectedDeadline(d.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                      "w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all group",
                       selectedDeadline === d.id 
-                        ? "bg-primary/10 text-primary" 
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        ? "bg-primary/10 text-primary border border-primary/20 shadow-sm shadow-primary/5" 
+                        : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/30"
                     )}
                    >
-                    <d.icon className="w-4 h-4" />
-                    {d.label}
+                    <div className="flex items-center gap-3">
+                       <d.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", selectedDeadline === d.id ? "text-primary" : "text-muted-foreground/30")} />
+                       <span className="italic">{d.label}</span>
+                    </div>
+                    {selectedDeadline === d.id && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
                    </button>
                  ))}
                </div>
             </div>
 
-            <div className="space-y-3">
-               <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-1">Contexts</Label>
+            <div className="space-y-4">
+               <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Operational Contexts</Label>
                <CategoryFilter 
                  selectedCategory={selectedCategory} 
                  onCategoryChange={setSelectedCategory} 
                />
             </div>
 
-            <div className="pt-4 border-t border-border/40">
+            <div className="pt-8 border-t border-border/10">
                <CategoryManager />
             </div>
           </div>
         </aside>
 
         {/* Content */}
-        <main className="w-full space-y-10">
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">Focus</h2>
-              <span className="text-xs font-medium text-muted-foreground">{activeTasks.length} active</span>
+        <main className="w-full space-y-12">
+          <section className="space-y-8">
+            <div className="flex items-end justify-between border-b border-border/10 pb-4">
+              <div className="space-y-1">
+                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">Active Queue</p>
+                 <h2 className="text-3xl font-black tracking-tighter italic">Dynamic Focus</h2>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/30 border border-border/10">
+                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{activeTasks.length} NODES ACTIVE</span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-4">
               <AnimatePresence mode="popLayout">
                 {activeTasks.map((task) => (
                   <TaskCard key={task.id} task={task} />
@@ -156,20 +171,33 @@ export default function Home() {
             </div>
 
             {activeTasks.length === 0 && !tasksLoading && (
-              <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/5 rounded-2xl border border-dashed border-border/40">
-                <p className="text-muted-foreground text-sm">Clear skies. No active tasks.</p>
-                <Button variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>Create Objective</Button>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-32 flex flex-col items-center justify-center text-center space-y-8 glass rounded-[3rem] border-dashed border-2 border-border/20"
+              >
+                <div className="w-20 h-20 rounded-full bg-primary/5 flex items-center justify-center">
+                   <Zap className="w-10 h-10 text-primary/20" />
+                </div>
+                <div className="space-y-2">
+                   <h3 className="text-xl font-black tracking-tight italic">Clear Horizon Detected</h3>
+                   <p className="text-muted-foreground/60 text-sm font-medium">No active objectives in the current operational index.</p>
+                </div>
+                <Button variant="outline" className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-xs border-2" onClick={() => setIsModalOpen(true)}>Create Objective</Button>
+              </motion.div>
             )}
           </section>
 
           {completedTasks.length > 0 && (
-            <section className="space-y-6 pt-10 border-t border-border/20">
-               <div className="flex items-center gap-2 text-muted-foreground/60">
-                 <History className="w-4 h-4" />
-                 <h2 className="text-lg font-semibold">Recently Completed</h2>
+            <section className="space-y-8 pt-12 border-t border-border/20">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-muted-foreground/40">
+                    <History className="w-5 h-5" />
+                    <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.2em] italic">Archive</h2>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20">Last 5 Operations</span>
                </div>
-               <div className="grid grid-cols-1 gap-3">
+               <div className="grid grid-cols-1 gap-4 opacity-70 hover:opacity-100 transition-opacity duration-500">
                   {completedTasks.slice(0, 5).map((task) => (
                     <TaskCard key={task.id} task={task} />
                   ))}

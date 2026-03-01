@@ -86,39 +86,44 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border-border/40 shadow-2xl">
-        <DialogHeader className="p-8 pb-4 border-b border-border/10">
-          <DialogTitle className="text-xl font-bold">Edit Profile</DialogTitle>
-          <DialogDescription className="text-sm">Manage your account information and avatar.</DialogDescription>
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden glass border-white/5 shadow-3xl rounded-[2.5rem]">
+        <DialogHeader className="p-10 pb-6 border-b border-white/5 relative bg-muted/20">
+          <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+             <User className="w-24 h-24" />
+          </div>
+          <DialogTitle className="text-3xl font-black tracking-tighter text-gradient italic">IDENTITY CONFIG</DialogTitle>
+          <DialogDescription className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">
+            Subject profile and archival parameters
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit}>
-          <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
-            <div className="flex flex-col items-center gap-6">
+          <div className="p-10 space-y-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="flex flex-col items-center gap-8">
               <div className="relative group">
-                <Avatar className="h-24 w-24 rounded-full border-2 border-background shadow-md">
+                <Avatar className="h-32 w-32 rounded-[2.5rem] border-4 border-white/5 shadow-2xl">
                   <AvatarImage src={profileImageUrl || (user as any)?.profileImageUrl || ''} className="object-cover" />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-black italic">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 <button
                   type="button"
-                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-foreground text-background shadow-lg border-2 border-background flex items-center justify-center transition-colors hover:bg-primary hover:text-white"
+                  className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-2xl border-2 border-background flex items-center justify-center transition-all hover:scale-110 active:scale-95"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Camera className="h-4 w-4" />
+                  <Camera className="h-5 w-5" />
                 </button>
               </div>
               
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
               
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-wider">
-                  Upload Image
+              <div className="flex gap-4">
+                <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest border border-white/5 bg-muted/20 hover:bg-white/5">
+                  <Upload className="w-3.5 h-3.5 mr-2" /> UPLOAD RAW
                 </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setShowUrlInput(!showUrlInput)} className="rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-wider">
-                  Photo URL
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowUrlInput(!showUrlInput)} className="rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest border border-white/5 bg-muted/20 hover:bg-white/5">
+                  <Link className="w-3.5 h-3.5 mr-2" /> EXTERNAL URI
                 </Button>
               </div>
               
@@ -126,49 +131,49 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
                 {showUrlInput && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full">
                     <Input
-                      placeholder="https://example.com/photo.jpg"
+                      placeholder="https://identity.nexus/raw_buffer_01.jpg"
                       value={profileImageUrl}
                       onChange={(e) => setProfileImageUrl(e.target.value)}
-                      className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium"
+                      className="h-12 rounded-xl border-white/5 bg-muted/30 text-sm font-medium italic"
                     />
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">First Name</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 italic">Identity Index (First Name)</Label>
                 <Input
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium"
+                  className="h-14 rounded-xl border-white/5 bg-muted/30 text-base font-black italic tracking-tight"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Last Name</Label>
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 italic">Identity Index (Last Name)</Label>
                 <Input
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium"
+                  className="h-14 rounded-xl border-white/5 bg-muted/30 text-base font-black italic tracking-tight"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Email</Label>
-              <Input value={(user as any)?.email || ''} disabled className="h-10 rounded-xl border-border/50 bg-muted/10 text-muted-foreground/60 text-sm font-medium" />
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 italic">Point of Contact (Email)</Label>
+              <Input value={(user as any)?.email || ''} disabled className="h-14 rounded-xl border-white/5 bg-muted-foreground/5 text-muted-foreground/40 text-sm font-black italic tracking-tight" />
             </div>
           </div>
 
-          <div className="p-6 bg-muted/30 border-t border-border/40 flex gap-3">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="flex-1 rounded-xl h-10 font-bold">
-              Cancel
+          <div className="p-8 bg-muted/20 border-t border-white/5 flex gap-4">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/5 hover:bg-white/5">
+              Abort
             </Button>
-            <Button type="submit" disabled={updateProfile.isPending} className="flex-1 rounded-xl h-10 font-bold">
-              {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
+            <Button type="submit" disabled={updateProfile.isPending} className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all">
+              {updateProfile.isPending ? 'SYNCHRONIZING...' : 'COMMIT CHANGES'}
             </Button>
           </div>
         </form>

@@ -211,36 +211,64 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
         <div className="px-10 py-8 space-y-8 overflow-y-auto flex-1">
           {!showTranscription ? (
-            <div className="flex flex-col items-center py-10 gap-10">
+            <div className="flex flex-col items-center py-10 gap-12">
               <div className="relative">
                 <motion.div 
-                  animate={{ scale: isListening ? [1, 1.2, 1] : 1 }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  animate={{ 
+                    scale: isListening ? [1, 1.05, 1] : 1,
+                    rotate: isListening ? [0, 5, -5, 0] : 0
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
                   className={cn(
-                    "w-32 h-32 rounded-[3.5rem] flex items-center justify-center transition-all duration-500",
-                    isListening ? "bg-rose-500 shadow-[0_0_50px_rgba(244,63,94,0.4)]" : "bg-primary shadow-3xl"
+                    "w-40 h-40 rounded-[4rem] flex items-center justify-center transition-all duration-700 relative",
+                    isListening ? "bg-rose-500 shadow-[0_0_80px_rgba(244,63,94,0.3)]" : "bg-primary shadow-3xl"
                   )}
                 >
                   {isListening ? (
-                    <div className="relative flex items-center justify-center">
-                       {[1,2,3].map(i => (
+                    <div className="flex items-center justify-center gap-1.5 h-12">
+                       {[1,2,3,4,5,6,7,8].map(i => (
                          <motion.div 
                            key={i}
-                           animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-                           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.5 }}
-                           className="absolute w-full h-full rounded-[3.5rem] border-2 border-white/50" 
+                           animate={{ 
+                             height: [10, Math.random() * 40 + 20, 10],
+                             opacity: [0.5, 1, 0.5]
+                           }}
+                           transition={{ 
+                             duration: 0.5 + Math.random() * 0.5, 
+                             repeat: Infinity, 
+                             ease: "easeInOut" 
+                           }}
+                           className="w-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
                          />
                        ))}
-                       <Activity className="w-12 h-12 text-white" />
                     </div>
                   ) : (
-                    <Mic className="w-12 h-12 text-white" />
+                    <Mic className="w-16 h-16 text-white" />
                   )}
+                  
+                  {/* Outer Rings */}
+                  <AnimatePresence>
+                    {isListening && [1,2,3].map(i => (
+                      <motion.div 
+                        key={i}
+                        initial={{ scale: 1, opacity: 0.5 }}
+                        animate={{ scale: 2, opacity: 0 }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.4 }}
+                        className="absolute inset-0 rounded-[4rem] border-2 border-rose-500/50 pointer-events-none" 
+                      />
+                    ))}
+                  </AnimatePresence>
                 </motion.div>
+
                 {isListening && (
-                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-2xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center gap-2"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                     {formatTime(recordingTime)}
-                  </div>
+                  </motion.div>
                 )}
               </div>
               

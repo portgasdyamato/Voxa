@@ -47,35 +47,34 @@ export default function Stats() {
   const todayProgress = stats?.chartData?.slice(-1)[0]?.completed || 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 pb-32">
-      {/* Background Glow */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[100px]" />
-      </div>
+    <div className="max-w-7xl mx-auto px-6 py-12 pb-32 relative">
+      {/* Background Glow & Pattern */}
+      <div className="mesh-gradient opacity-30 dark:opacity-20 pointer-events-none" />
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-grid-white opacity-[0.03] dark:opacity-[0.05]" />
 
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row items-end justify-between gap-8 mb-16"
+        className="flex flex-col lg:flex-row items-end justify-between gap-10 mb-20"
       >
-        <div className="space-y-4 text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
-            <Activity className="w-3.5 h-3.5" />
-            Performance Insights
+        <div className="space-y-6 text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.3em]">
+            <Activity className="w-4 h-4" />
+            Heuristic Insights
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight leading-none">
-            Analytics <span className="text-primary font-normal text-muted-foreground/40">Studio</span>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-none text-gradient">
+            Analytics <span className="text-primary italic opacity-40">Studio.</span>
           </h1>
-          <p className="text-muted-foreground/60 font-medium text-lg max-w-xl">
+          <p className="text-muted-foreground/60 font-medium text-xl max-w-xl">
             Heuristic analysis of your productivity flow and execution velocity.
           </p>
         </div>
 
-        <div className="bg-muted/30 backdrop-blur-md p-1 rounded-xl border border-border/50 flex items-center gap-1 shadow-sm">
+        <div className="bg-muted/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-border/20 flex items-center gap-1.5 shadow-xl glass">
           {[
-            { value: 'week', label: 'Week' },
-            { value: 'month', label: 'Month' },
-            { value: '3months', label: 'Quarter' }
+            { value: 'week', label: '7-Day Cycle' },
+            { value: 'month', label: 'Monthly Archive' },
+            { value: '3months', label: 'Strategic Quarter' }
           ].map((period) => (
             <Button
               key={period.value}
@@ -83,10 +82,10 @@ export default function Stats() {
               size="sm"
               onClick={() => setSelectedPeriod(period.value)}
               className={cn(
-                "h-9 rounded-lg font-bold text-[11px] uppercase tracking-widest px-6 transition-all",
+                "h-10 rounded-xl font-black text-[10px] uppercase tracking-widest px-8 transition-all duration-300",
                 selectedPeriod === period.value 
-                  ? "bg-background text-primary shadow-sm border border-border/50" 
-                  : "text-muted-foreground/60 hover:text-foreground"
+                  ? "bg-background text-primary shadow-lg border border-border/50 translate-y-[-1px]" 
+                  : "text-muted-foreground/40 hover:text-foreground hover:bg-white/5"
               )}
             >
               {period.label}
@@ -95,36 +94,36 @@ export default function Stats() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
         <StatCard 
-          title="Total Objectives" 
-          value={stats.totalTasks} 
-          icon={<BarChart4 className="w-5 h-5" />} 
-          footer={`${avgDaily} items / day`}
+          title="Total Payload" 
+          value={stats?.totalTasks || 0} 
+          icon={<BarChart4 className="w-6 h-6" />} 
+          footer={`${avgDaily} units / cycle`}
           color="primary"
           delay={0.1}
         />
         <StatCard 
-          title="Sync Rate" 
-          value={stats.completedTasks} 
-          icon={<Zap className="w-5 h-5" />} 
-          footer={`${stats.completionRate}% Efficiency`}
+          title="Throughput Rate" 
+          value={stats?.completedTasks || 0} 
+          icon={<Zap className="w-6 h-6" />} 
+          footer={`${stats?.completionRate || 0}% Efficiency`}
           color="indigo"
           delay={0.2}
         />
         <StatCard 
-          title="Active Backlog" 
-          value={stats.pendingTasks} 
-          icon={<Clock className="w-5 h-5" />} 
-          footer={`${stats.overdueTasks} Overdue`}
+          title="Pending Nodes" 
+          value={stats?.pendingTasks || 0} 
+          icon={<Clock className="w-6 h-6" />} 
+          footer={`${stats?.overdueTasks || 0} Critical`}
           color="rose"
-          isUrgent={stats.overdueTasks > 0}
+          isUrgent={(stats?.overdueTasks || 0) > 0}
           delay={0.3}
         />
         <StatCard 
-          title="Current Cycle" 
+          title="Current Velocity" 
           value={todayProgress} 
-          icon={<Trophy className="w-5 h-5" />} 
+          icon={<Trophy className="w-6 h-6" />} 
           footer="Items today"
           color="amber"
           delay={0.4}
@@ -132,19 +131,23 @@ export default function Stats() {
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="p-8 md:p-12 rounded-3xl bg-card/60 backdrop-blur-2xl border border-border/40 shadow-xl relative overflow-hidden"
+        transition={{ delay: 0.5, duration: 0.8 }}
+        className="p-10 md:p-16 rounded-[3rem] glass border-white/5 shadow-3xl relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
-          <Layers className="w-64 h-64" />
+        <div className="absolute top-0 right-0 p-16 opacity-[0.02] pointer-events-none">
+          <Layers className="w-80 h-80" />
         </div>
-        <StatsCharts 
-          data={stats} 
-          period={selectedPeriod}
-          categories={categories || []}
-        />
+        <div className="relative z-10">
+          {stats && (
+            <StatsCharts 
+              data={stats} 
+              period={selectedPeriod}
+              categories={categories || []}
+            />
+          )}
+        </div>
       </motion.div>
     </div>
   );

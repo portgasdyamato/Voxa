@@ -35,8 +35,8 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
   
   const { toast } = useToast();
   const { data: categories } = useCategories();
-  const createTask = useCreateTask();
-  const updateTask = useUpdateTask();
+  const { mutateAsync: createTask, isPending: isCreating } = useCreateTask();
+  const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask();
 
   useEffect(() => {
     if (task && open) {
@@ -117,10 +117,10 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
     try {
       if (isEditing) {
-        await updateTask.mutateAsync({ id: task.id, updates: payload });
+        await updateTask({ id: task.id, updates: payload });
         toast({ title: "Task updated" });
       } else {
-        await createTask.mutateAsync(payload);
+        await createTask(payload);
         toast({ title: "Task created" });
       }
       onOpenChange(false);
@@ -142,67 +142,70 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl border-border/40 shadow-2xl">
-        <DialogHeader className="p-8 pb-4 border-b border-border/10">
-          <DialogTitle className="text-xl font-bold tracking-tight">
-            {isEditing ? 'Edit Task' : 'New Task'}
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden glass border-white/5 shadow-3xl rounded-[2.5rem]">
+        <DialogHeader className="p-10 pb-6 border-b border-white/5 relative bg-muted/20">
+          <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+             <Sparkles className="w-24 h-24" />
+          </div>
+          <DialogTitle className="text-3xl font-black tracking-tighter text-gradient italic">
+            {isEditing ? 'RECONFIGURE' : 'INITIATE'} OBJECTIVE
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Set the details for your objective.
+          <DialogDescription className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-2">
+            Mission-critical node configuration
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
-          <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Title</Label>
+        <div className="p-10 space-y-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <div className="space-y-4">
+            <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary px-1">Objective Vector (Title)</Label>
             <Input
               value={taskTitle}
               onChange={(e) => handleTaskTitleChange(e.target.value)}
-              placeholder="What needs to be done?"
-              className="h-11 rounded-xl border-border/50 bg-muted/20 focus-visible:ring-primary/20 text-base font-medium"
+              placeholder="e.g., Finalize orbital logistics"
+              className="h-16 rounded-2xl border-white/5 bg-muted/30 focus-visible:ring-primary/20 text-lg font-black tracking-tight italic placeholder:not-italic placeholder:font-medium placeholder:opacity-30"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5">Description</Label>
+          <div className="space-y-4">
+            <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 italic">Contextual Metadata (Description)</Label>
             <textarea
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
-              placeholder="Add more details..."
-              className="w-full min-h-[100px] rounded-xl border border-border/50 bg-muted/20 p-4 focus:outline-none focus:border-primary/30 text-sm font-medium transition-all resize-none"
+              placeholder="Append relevant operational data..."
+              className="w-full min-h-[120px] rounded-2xl border border-white/5 bg-muted/30 p-5 focus:outline-none focus:border-primary/30 text-sm font-medium transition-all resize-none placeholder:opacity-30"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5 flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3" /> Priority
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 flex items-center gap-1.5 italic">
+                <Sparkles className="w-3.5 h-3.5 text-primary" /> Priority Index
               </Label>
               <Select value={manualPriority} onValueChange={setManualPriority}>
-                <SelectTrigger className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium">
+                <SelectTrigger className="h-14 rounded-2xl border-white/5 bg-muted/30 text-xs font-black uppercase tracking-widest pl-5">
                   <SelectValue placeholder="Auto" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="none">Auto-detect</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                <SelectContent className="rounded-2xl glass border-white/5">
+                  <SelectItem value="none" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3">AUTO-DETECT</SelectItem>
+                  <SelectItem value="low" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-emerald-500">LOW PRIORITY</SelectItem>
+                  <SelectItem value="medium" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-amber-500">MID PRIORITY</SelectItem>
+                  <SelectItem value="high" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-rose-500">HIGH PRIORITY</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5 flex items-center gap-1.5">
-                <Tag className="w-3 h-3" /> Category
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 flex items-center gap-1.5 italic">
+                <Tag className="w-3.5 h-3.5 text-primary" /> Context Group
               </Label>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium">
+                <SelectTrigger className="h-14 rounded-2xl border-white/5 bg-muted/30 text-xs font-black uppercase tracking-widest pl-5">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl max-h-[240px]">
-                  <SelectItem value="none">None</SelectItem>
+                <SelectContent className="rounded-2xl glass border-white/5 max-h-[240px]">
+                  <SelectItem value="none" className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3">UNCATEGORIZED</SelectItem>
                   {categories?.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                    <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
                         {cat.name}
@@ -214,28 +217,35 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 px-0.5 flex items-center gap-1.5">
-              <Calendar className="w-3 h-3" /> Due Date
-            </Label>
-            <div className="relative group">
-              <Input
-                type="datetime-local"
-                value={deadlineInputValue}
-                onChange={(e) => handleDeadlineChange(e.target.value)}
-                className="h-10 rounded-xl border-border/50 bg-muted/20 text-sm font-medium transition-all focus:bg-background"
-              />
+          <div className="space-y-6">
+            <div className="space-y-4">
+               <Label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 px-1 flex items-center gap-1.5 italic">
+                 <Calendar className="w-3.5 h-3.5 text-primary" /> Temporal Deadline
+               </Label>
+               <div className="relative group">
+                 <Input
+                   type="datetime-local"
+                   value={deadlineInputValue}
+                   onChange={(e) => handleDeadlineChange(e.target.value)}
+                   className="h-14 rounded-2xl border-white/5 bg-muted-foreground/5 text-sm font-black tracking-tight transition-all focus:bg-background/40 pl-5"
+                 />
+               </div>
             </div>
+            
             {selectedDeadline && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 text-[11px] font-semibold text-primary">
-                <Clock className="w-3 h-3" />
-                Due {formatRelativeDate(selectedDeadline)}
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-primary/5 text-[10px] font-black uppercase tracking-widest text-primary border border-primary/10"
+              >
+                <Clock className="w-4 h-4" />
+                DUE IN: {formatRelativeDate(selectedDeadline)}
+              </motion.div>
             )}
           </div>
 
           {selectedDeadline && (
-            <div className="pt-4 border-t border-border/20">
+            <div className="pt-8 border-t border-white/5">
               <ReminderSettings
                 reminderEnabled={reminderEnabled}
                 reminderType={reminderType}
@@ -248,23 +258,24 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           )}
         </div>
 
-        <div className="p-6 bg-muted/30 border-t border-border/40 flex gap-3">
+        <div className="p-8 bg-muted/20 border-t border-white/5 flex gap-4">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="flex-1 rounded-xl h-10 font-bold"
+            className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/5 hover:bg-white/5"
           >
-            Cancel
+            Abort
           </Button>
           <Button
             onClick={handleSaveTask}
-            disabled={createTask.isPending || updateTask.isPending}
-            className="flex-1 rounded-xl h-10 font-bold"
+            disabled={isCreating || isUpdating}
+            className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] gradient-primary shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all"
           >
-            {(createTask.isPending || updateTask.isPending) ? 'Saving...' : 'Save Task'}
+            {(isCreating || isUpdating) ? 'EXECUTING...' : `CONFIRM ${isEditing ? 'UPDATE' : 'INITIATION'}`}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
