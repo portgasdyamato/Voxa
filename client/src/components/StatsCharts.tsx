@@ -30,24 +30,24 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
     const lowCount = data.lowPriority || 0;
     
     return [
-      { name: 'High', value: highCount, color: '#f43f5e' },
-      { name: 'Medium', value: mediumCount, color: '#3b82f6' },
-      { name: 'Low', value: lowCount, color: '#e2e8f0' },
+      { name: 'Critical', value: highCount, color: '#f43f5e' },
+      { name: 'Standard', value: mediumCount, color: '#3b82f6' },
+      { name: 'Minor', value: lowCount, color: '#10b981' },
     ];
   }, [data]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background/90 backdrop-blur-xl border border-border p-4 rounded-xl shadow-2xl animate-in fade-in zoom-in duration-300">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 pb-1.5 border-b border-border/50">
-             {label || payload[0].name}
+        <div className="bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/[0.05] p-6 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-500">
+          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4 pb-4 border-b border-white/[0.03] italic">
+             {label || payload[0].name} Cycle
           </p>
-          <div className="flex items-baseline gap-2">
-            <p className="text-xl font-bold text-foreground tracking-tight">
+          <div className="flex items-baseline gap-3">
+            <p className="text-3xl font-black text-white tracking-tighter">
               {payload[0].value}
             </p>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Tasks</span>
+            <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em] italic">Segments</span>
           </div>
         </div>
       );
@@ -56,64 +56,64 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
-      <div className="space-y-8 relative">
-        <div className="flex flex-col gap-1 px-1">
-          <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest leading-none">Activity Analysis</p>
-          <h3 className="text-xl font-bold tracking-tight text-foreground">Daily Activity</h3>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-32">
+      <div className="space-y-12 relative">
+        <div className="flex flex-col gap-2 px-2">
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic leading-none">Activity Vector</p>
+          <h3 className="text-2xl font-black tracking-tight text-white">Daily Output Synthesis</h3>
         </div>
-        <div className="h-[320px] w-full relative">
+        <div className="h-[400px] w-full relative">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={completionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+              <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="rgba(255,255,255,0.03)" />
               <XAxis 
                 dataKey="day" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'hsl(var(--muted-foreground) / 0.6)', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em' }} 
-                dy={15}
+                tick={{ fill: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: 900, letterSpacing: '0.2em' }} 
+                dy={20}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'hsl(var(--muted-foreground) / 0.6)', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: 900 }}
               />
               <Tooltip 
                 content={<CustomTooltip />} 
-                cursor={{ stroke: 'rgba(59, 130, 246, 0.1)', strokeWidth: 2 }}
+                cursor={{ stroke: 'rgba(59, 130, 246, 0.2)', strokeWidth: 1 }}
               />
               <Area 
                 type="monotone" 
                 dataKey="completed" 
                 stroke="#3b82f6" 
-                strokeWidth={3}
+                strokeWidth={4}
                 fillOpacity={1} 
                 fill="url(#colorCompleted)" 
-                animationDuration={1500}
-                animationEasing="ease-in-out"
+                animationDuration={2000}
+                animationEasing="cubic-bezier(0.23, 1, 0.32, 1)"
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="space-y-8">
-        <div className="flex flex-col gap-1 px-1">
-          <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest leading-none">Priority Split</p>
-          <h3 className="text-xl font-bold tracking-tight text-foreground">Priority Breakdown</h3>
+      <div className="space-y-12">
+        <div className="flex flex-col gap-2 px-2">
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic leading-none">Priority Mapping</p>
+          <h3 className="text-2xl font-black tracking-tight text-white">Registry Weight Distribution</h3>
         </div>
-        <div className="h-[320px] flex flex-col items-center justify-center relative">
+        <div className="h-[400px] flex flex-col items-center justify-center relative">
           <div className="h-full w-full relative">
              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="text-center">
-                   <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-1 italic">Total Tasks</p>
-                   <p className="text-4xl font-bold text-foreground tracking-tight">
+                   <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.4em] mb-2 italic">Total Array</p>
+                   <p className="text-5xl font-black text-white tracking-[-0.05em]">
                       {data.totalTasks || 0}
                    </p>
                 </div>
@@ -124,18 +124,19 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                   data={priorityData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={80}
-                  outerRadius={110}
-                  paddingAngle={8}
+                  innerRadius={100}
+                  outerRadius={140}
+                  paddingAngle={12}
                   dataKey="value"
                   stroke="none"
-                  animationDuration={1500}
+                  animationDuration={2000}
+                  animationEasing="cubic-bezier(0.23, 1, 0.32, 1)"
                 >
                   {priorityData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={entry.color} 
-                      className="hover:opacity-80 transition-all duration-300 cursor-pointer outline-none"
+                      className="hover:opacity-80 transition-all duration-700 cursor-pointer outline-none"
                     />
                   ))}
                 </Pie>
@@ -143,16 +144,16 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-8 flex flex-wrap justify-center gap-8">
+          <div className="mt-12 flex flex-wrap justify-center gap-12">
             {priorityData.map((entry) => (
-              <div key={entry.name} className="flex items-center gap-3 group">
+              <div key={entry.name} className="flex flex-col items-center gap-3 group">
                 <div
-                  className="w-2.5 h-2.5 rounded-full shadow-sm group-hover:scale-125 transition-all"
-                  style={{ backgroundColor: entry.color }}
+                  className="w-3 h-3 rounded-full shadow-[0_0_15px_currentColor] group-hover:scale-150 transition-all duration-700"
+                  style={{ backgroundColor: entry.color, color: entry.color }}
                 />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none">{entry.name} Priority</span>
-                  <span className="text-sm font-bold text-foreground tracking-tight mt-1">{entry.value} tasks</span>
+                <div className="text-center">
+                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 leading-none group-hover:text-white/40 transition-colors italic">{entry.name}</span>
+                  <p className="text-lg font-black text-white tracking-tighter mt-1">{entry.value}</p>
                 </div>
               </div>
             ))}
