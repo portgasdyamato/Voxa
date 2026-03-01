@@ -50,32 +50,34 @@ export function TaskCard({ task }: TaskCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => setIsEditModalOpen(true)}
       className="task-node group cursor-pointer"
+      style={{ '--glow-color': task.completed ? '#3b82f6' : (category?.color || '#3b82f6') } as React.CSSProperties}
     >
+      <div className="task-node-glow" />
       <div className={cn(
         "task-node-inner transition-all duration-500",
-        task.completed ? "opacity-30 grayscale blur-[0.3px]" : "opacity-100"
+        task.completed ? "opacity-40 grayscale blur-[0.5px]" : "opacity-100"
       )}>
         {/* Status Indicator */}
         <button 
           onClick={(e) => { e.stopPropagation(); handleToggleComplete(); }}
           className={cn(
-            "w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-300 relative overflow-hidden shrink-0 group/btn",
+            "w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0 group/btn backdrop-blur-md border",
             task.completed 
-              ? "bg-primary border-primary shadow-none" 
-              : "border-white/10 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.06] shadow-none"
+              ? "bg-primary/20 border-primary/50 shadow-[0_0_20px_rgba(59,130,246,0.5)]" 
+              : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.2] hover:shadow-[0_0_20px_var(--glow-color)] shadow-2xl"
           )}
         >
           <AnimatePresence mode="wait">
             {task.completed ? (
               <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                <Check className="w-5 h-5 text-white stroke-[3px]" />
+                <Check className="w-5 h-5 text-primary stroke-[4px] drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
               </motion.div>
             ) : (
-              <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover/btn:bg-white/80 transition-all duration-300 group-hover/btn:scale-[2]" />
+              <div className="w-1.5 h-1.5 rounded-full bg-white/30 group-hover/btn:bg-white group-hover/btn:shadow-[0_0_12px_white] transition-all duration-500 group-hover/btn:scale-[2.5]" />
             )}
           </AnimatePresence>
         </button>
