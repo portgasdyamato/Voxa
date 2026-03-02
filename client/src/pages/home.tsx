@@ -71,7 +71,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="max-w-[1700px] mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-64 overflow-hidden md:overflow-visible">
+    <div className="max-w-[1700px] mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-64">
       <div className="grid lg:grid-cols-[240px_1fr_300px] gap-8 lg:gap-20 items-start">
         
         {/* Workspace Sidebar */}

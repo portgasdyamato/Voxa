@@ -173,7 +173,7 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
         <motion.div 
           initial={{ y: 50, opacity: 0, x: "-50%" }}
           animate={{ y: 0, opacity: 1, x: "-50%" }}
-          className="fixed bottom-8 left-1/2 z-[100] p-1 rounded-full bg-black/80 backdrop-blur-3xl border border-white/[0.08] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-auto"
+          className="fixed bottom-8 left-1/2 z-[100] p-1 rounded-full bg-black/80 backdrop-blur-3xl border border-white/[0.08] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] overflow-hidden w-[calc(100%-1.5rem)] xs:w-[calc(100%-2rem)] max-w-sm md:w-auto"
         >
           <div className="flex items-center gap-1 w-full md:min-w-[320px]">
             <TabButton 
@@ -200,7 +200,7 @@ function TabButton({ isActive, onClick, icon, label }: { isActive: boolean; onCl
     <button
       onClick={onClick}
       className={cn(
-        "relative flex items-center justify-center gap-3 px-8 h-12 rounded-full transition-all duration-500 min-w-0 flex-1 whitespace-nowrap",
+        "relative flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 h-12 rounded-full transition-all duration-500 min-w-0 flex-1 whitespace-nowrap",
         isActive ? "text-white" : "text-white/20 hover:text-white/40 hover:bg-white/[0.03]"
       )}
     >

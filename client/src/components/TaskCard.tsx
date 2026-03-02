@@ -100,16 +100,16 @@ export function TaskCard({ task }: TaskCardProps) {
               )}
             </div>
             
-            <div className="flex items-center gap-4 text-[12px] font-medium text-white/40">
-              <div className={cn("flex items-center gap-1.5", pm.color)}>
-                <pm.icon className="w-3.5 h-3.5" />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] sm:text-[12px] font-bold sm:font-medium text-white/40">
+              <div className={cn("flex items-center gap-1", pm.color)}>
+                <pm.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span className="capitalize">{task.priority}</span>
               </div>
               
               {task.dueDate && (
-                <div className={cn("flex items-center gap-1.5", isOverdue && !task.completed ? "text-rose-500" : "")}>
-                  <Calendar className="w-3.5 h-3.5 opacity-70" />
-                  <span>{format(new Date(task.dueDate), 'MMM d, h:mm a')}</span>
+                <div className={cn("flex items-center gap-1", isOverdue && !task.completed ? "text-rose-500" : "")}>
+                  <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 opacity-70" />
+                  <span className="whitespace-nowrap">{format(new Date(task.dueDate), 'MMM d, h:mm a')}</span>
                 </div>
               )}
             </div>
