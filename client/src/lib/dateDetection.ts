@@ -199,7 +199,29 @@ export function detectDateFromText(text: string): DateDetectionResult {
     { pattern: /\b(in (\d+) days?)\b/i, extractDays: true, confidence: 'high' as const },
     { pattern: /\b(in a week)\b/i, days: 7, confidence: 'medium' as const },
     { pattern: /\b(in two weeks?)\b/i, days: 14, confidence: 'medium' as const },
+    
+    // Specific month/day patterns (e.g., "March 10th", "10th of March")
+    { 
+      pattern: /\b(?:on\s+)?(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|oct|november|nov|december|dec)\b/i, 
+      extractSpecificDate: true, 
+      dayGroup: 1, 
+      monthGroup: 2, 
+      confidence: 'high' as const 
+    },
+    { 
+      pattern: /\b(?:on\s+)?(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|oct|november|nov|december|dec)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i, 
+      extractSpecificDate: true, 
+      monthGroup: 1, 
+      dayGroup: 2, 
+      confidence: 'high' as const 
+    },
   ];
+
+  const monthMap: { [key: string]: number } = {
+    jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
+    may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7, sep: 8, september: 8,
+    oct: 9, october: 9, nov: 10, november: 10, dec: 11, december: 11
+  };
 
   let bestMatch: DateDetectionResult = {
     detectedDate: null,
@@ -210,7 +232,7 @@ export function detectDateFromText(text: string): DateDetectionResult {
     cleanedText: text
   };
 
-  for (const patternConfig of patterns) {
+  for (const patternConfig of patterns as any[]) {
     const match = lowerText.match(patternConfig.pattern);
     if (match) {
       let targetDate = new Date(now);
@@ -240,6 +262,20 @@ export function detectDateFromText(text: string): DateDetectionResult {
         const currentDay = now.getDay();
         const daysUntilSaturday = 6 - currentDay;
         targetDate.setDate(now.getDate() + daysUntilSaturday + (patternConfig.nextWeek ? 7 : 0));
+      } else if (patternConfig.extractSpecificDate) {
+        const day = parseInt(match[patternConfig.dayGroup]);
+        const monthName = match[patternConfig.monthGroup].toLowerCase();
+        const month = monthMap[monthName];
+        
+        if (day >= 1 && day <= 31 && month !== undefined) {
+          targetDate.setMonth(month);
+          targetDate.setDate(day);
+          
+          // If the date has already passed this year, it's likely for next year
+          if (targetDate < now) {
+            targetDate.setFullYear(now.getFullYear() + 1);
+          }
+        }
       }
       
       // Set time to end of day for deadlines
