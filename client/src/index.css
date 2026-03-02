@@ -28,16 +28,22 @@
 }
 
 @layer base {
-  body {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html, body {
     @apply bg-[#030305] text-white antialiased font-sans;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
     position: relative;
-    width: 100%;
+    width: 100% !important;
+    margin: 0;
+    padding: 0;
   }
   
   #root {
-    overflow-x: hidden;
-    width: 100%;
+    overflow-x: hidden !important;
+    width: 100% !important;
   }
 }
 
@@ -144,7 +150,7 @@
 }
 
 .task-node-inner {
-  @apply p-4 sm:p-5 flex items-center gap-4 sm:gap-5 relative z-10 transition-all duration-500;
+  @apply p-3.5 sm:p-5 flex items-center gap-2.5 sm:gap-5 relative z-10 transition-all duration-500;
 }
 
 .chart-glow {

@@ -122,9 +122,9 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         {/* Dashboard Core */}
         <main className="space-y-16">
           <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-12 border-b border-white/[0.03] pb-10 md:pb-12">
-            <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
-              <p className="text-white/40 font-black text-[10px] md:text-sm uppercase tracking-[0.4em] italic mt-2">
+            <div className="space-y-3 max-w-full overflow-hidden">
+              <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white leading-tight break-all">Workspace</h1>
+              <p className="text-white/40 font-black text-[8px] md:text-sm uppercase tracking-[0.1em] md:tracking-[0.4em] italic mt-1 break-words">
                 Optimizing {activeTasks.length} active tasks
               </p>
             </div>
@@ -180,11 +180,10 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsModalOpen(true)}
-              className="h-14 lg:h-16 px-8 lg:px-10 rounded-2xl bg-primary text-white flex items-center justify-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all w-fit self-start lg:self-end"
+              className="h-10 md:h-16 px-4 md:px-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center gap-2 shadow-lg shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all w-fit self-start shrink-0"
             >
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus className="w-5 h-5 lg:w-6 lg:h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />
-              <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] relative z-10 italic">New Task</span>
+              <Plus className="w-3.5 h-3.5 md:w-6 md:h-6 relative z-10" />
+              <span className="text-[8px] md:text-[11px] font-black uppercase tracking-[0.1em] relative z-10 italic">New Task</span>
             </motion.button>
           </header>
 
