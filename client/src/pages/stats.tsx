@@ -55,14 +55,14 @@ export default function Stats() {
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-16 pt-24 md:pt-28 pb-44">
+    <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-16 pt-12 sm:pt-24 md:pt-28 pb-44">
       
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12"
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:gap-8 mb-8 lg:mb-12"
       >
         <div className="space-y-2">
           <div className="flex items-center gap-3 mb-1">
