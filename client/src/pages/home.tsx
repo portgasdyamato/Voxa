@@ -121,10 +121,10 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dashboard Core */}
         <main className="space-y-16">
-          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 md:gap-12 border-b border-white/[0.03] pb-12">
+          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-12 border-b border-white/[0.03] pb-12">
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
-              <p className="text-white/20 font-black text-[11px] md:text-sm uppercase tracking-[0.4em] italic mt-2">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
+              <p className="text-white/20 font-black text-[10px] md:text-sm uppercase tracking-[0.4em] italic mt-2">
                 Optimizing {activeTasks.length} active tasks
               </p>
             </div>

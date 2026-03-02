@@ -51,7 +51,7 @@
 }
 
 .bento-card {
-  @apply bg-[#0a0a0c] border border-white/[0.05] rounded-[2rem] p-8 transition-all duration-500 hover:border-white/10 hover:bg-[#0c0c0e];
+  @apply bg-[#0a0a0c] border border-white/[0.05] rounded-[2rem] p-5 md:p-8 transition-all duration-500 hover:border-white/10 hover:bg-[#0c0c0e];
 }
 
 .glass-shadow {

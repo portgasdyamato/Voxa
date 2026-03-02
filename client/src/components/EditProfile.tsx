@@ -144,7 +144,7 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
             </div>
 
             {/* Name fields */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">First name</Label>
                 <Input

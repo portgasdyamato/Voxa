@@ -121,7 +121,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
   return (
     <div className="space-y-0 w-full">
       {/* Primary Trend Chart — Stacked Areas */}
-      <div className="h-[360px] w-full relative">
+      <div className="h-[280px] md:h-[360px] w-full relative">
         {!hasData ? (
           <div className="h-full flex flex-col items-center justify-center gap-4 opacity-30">
             <div className="w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center">
@@ -198,13 +198,13 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
         
         {/* Legend */}
         {hasData && (
-          <div className="absolute top-0 right-0 flex items-center gap-6">
+          <div className="md:absolute md:top-0 md:right-0 flex flex-wrap items-center gap-4 md:gap-6 pt-6 md:pt-0">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-[2px] bg-[#8b5cf6]/60 rounded-full"/>
+              <div className="w-5 md:w-6 h-[2px] bg-[#8b5cf6]/60 rounded-full"/>
               <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Created</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-[3px] bg-[#3b82f6] rounded-full" style={{ boxShadow: '0 0 8px #3b82f6' }}/>
+              <div className="w-5 md:w-6 h-[3px] bg-[#3b82f6] rounded-full" style={{ boxShadow: '0 0 8px #3b82f6' }}/>
               <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Done</span>
             </div>
           </div>
@@ -212,7 +212,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
       </div>
 
       {/* Bottom section — Category Bar + Donut */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/[0.04] mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8 pt-8 border-t border-white/[0.04] mt-8">
         {/* Bar Chart — Category Breakdown */}
         <div className="space-y-5">
           <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">By Category</h4>
@@ -252,8 +252,8 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
         {/* Donut Chart with Legend */}
         <div className="space-y-5">
           <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Task Split</h4>
-          <div className="flex items-center gap-6">
-            <div className="h-[200px] w-[200px] flex-shrink-0 relative">
+          <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-6">
+            <div className="h-[180px] w-[180px] md:h-[200px] md:w-[200px] flex-shrink-0 relative">
               {!hasData ? (
                 <div className="h-full flex items-center justify-center opacity-20">
                   <div className="w-28 h-28 rounded-full border-4 border-dashed border-white/20"/>

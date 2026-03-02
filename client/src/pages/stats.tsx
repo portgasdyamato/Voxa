@@ -55,7 +55,7 @@ export default function Stats() {
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 pt-28 pb-44">
+    <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-16 pt-24 md:pt-28 pb-44">
       
       {/* Header */}
       <motion.div
@@ -71,8 +71,8 @@ export default function Stats() {
             </div>
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Analytics</span>
           </div>
-          <h1 className="text-5xl lg:text-6xl font-black tracking-[-0.04em] text-white leading-none">Performance</h1>
-          <p className="text-white/25 text-sm font-medium mt-1">
+          <h1 className="text-4xl md:text-6xl font-black tracking-[-0.04em] text-white leading-none">Performance</h1>
+          <p className="text-white/25 text-xs md:text-sm font-medium mt-1">
             Your productivity at a glance
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function Stats() {
       </motion.div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
         <KpiCard
           delay={0.05}
           label="Completed"
@@ -141,7 +141,7 @@ export default function Stats() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.5 }}
-          className="xl:col-span-2 bento-card !p-8 group hover:border-white/[0.08] transition-all duration-700"
+          className="xl:col-span-2 bento-card overflow-hidden group hover:border-white/[0.08] transition-all duration-700"
         >
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
@@ -174,7 +174,7 @@ export default function Stats() {
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="bento-card !p-8 bg-gradient-to-br from-primary/10 via-transparent to-transparent border-primary/10 hover:border-primary/20 transition-all duration-700"
+            className="bento-card bg-gradient-to-br from-primary/10 via-transparent to-transparent border-primary/10 hover:border-primary/20 transition-all duration-700"
           >
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center">
@@ -244,7 +244,7 @@ export default function Stats() {
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="bento-card !p-8 flex-1 hover:border-white/[0.08] transition-all duration-700"
+            className="bento-card flex-1 hover:border-white/[0.08] transition-all duration-700"
           >
             <div className="flex items-center gap-3 mb-6">
               <Sparkles className="w-4 h-4 text-amber-400" />
@@ -305,7 +305,7 @@ function KpiCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.45 }}
       className={cn(
-        'bento-card group relative overflow-hidden !p-6 hover:scale-[1.01] hover:border-white/[0.08] transition-all duration-500',
+        'bento-card group relative overflow-hidden p-4 md:p-6 hover:scale-[1.01] hover:border-white/[0.08] transition-all duration-500',
         highlight && 'border-primary/20 hover:border-primary/30'
       )}
       style={highlight ? { boxShadow: `0 0 30px ${accent}15` } : undefined}
@@ -327,9 +327,9 @@ function KpiCard({
       </div>
 
       <div className="space-y-1">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25">{label}</p>
-        <p className="text-4xl font-black tracking-tight text-white leading-none">{value}</p>
-        {sub && <p className="text-[9px] font-black uppercase tracking-widest text-white/20 pt-1">{sub}</p>}
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25 truncate">{label}</p>
+        <p className="text-3xl md:text-4xl font-black tracking-tight text-white leading-none whitespace-nowrap">{value}</p>
+        {sub && <p className="text-[9px] font-black uppercase tracking-widest text-white/20 pt-1 truncate">{sub}</p>}
       </div>
     </motion.div>
   );
