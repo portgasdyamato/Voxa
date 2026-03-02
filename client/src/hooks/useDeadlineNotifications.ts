@@ -20,9 +20,6 @@ export function useDeadlineNotifications(tasks: any[]) {
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
-      if (Notification.permission === 'default') {
-        Notification.requestPermission().then(setNotificationPermission);
-      }
     }
   }, []);
 
@@ -48,7 +45,7 @@ export function useDeadlineNotifications(tasks: any[]) {
               url: '/'
             },
             renotify: true
-          });
+          } as any);
         }).catch(err => {
           console.warn('SW notification failed:', err);
           // Fallback to legacy notification if SW fails
