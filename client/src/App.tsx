@@ -30,7 +30,7 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
       </main>
       
       {/* Floating Elite Assistant Trigger */}
-      <div className="fixed bottom-24 right-6 md:bottom-12 md:right-12 z-[100]">
+      <div className="fixed bottom-32 right-6 md:bottom-12 md:right-12 z-[100]">
         <motion.button
           whileHover={{ scale: 1.1, rotate: 6 }}
           whileTap={{ scale: 0.9 }}

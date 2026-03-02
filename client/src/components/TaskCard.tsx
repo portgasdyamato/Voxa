@@ -115,7 +115,7 @@ export function TaskCard({ task }: TaskCardProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 md:opacity-0 group-hover:opacity-100 transition-all duration-200" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-200" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px] hover:bg-white/10 shadow-none text-white/50 hover:text-white transition-colors">

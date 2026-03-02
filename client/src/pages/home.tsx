@@ -121,10 +121,10 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dashboard Core */}
         <main className="space-y-16">
-          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-12 border-b border-white/[0.03] pb-12">
+          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-12 border-b border-white/[0.03] pb-10 md:pb-12">
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
-              <p className="text-white/20 font-black text-[10px] md:text-sm uppercase tracking-[0.4em] italic mt-2">
+              <p className="text-white/40 font-black text-[10px] md:text-sm uppercase tracking-[0.4em] italic mt-2">
                 Optimizing {activeTasks.length} active tasks
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsModalOpen(true)}
-              className="h-14 lg:h-16 px-8 lg:px-10 rounded-2xl bg-primary text-white flex items-center justify-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all"
+              className="h-14 lg:h-16 px-8 lg:px-10 rounded-2xl bg-primary text-white flex items-center justify-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all self-start lg:self-end"
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Plus className="w-5 h-5 lg:w-6 lg:h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />
