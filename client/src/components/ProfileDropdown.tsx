@@ -103,7 +103,7 @@ export function ProfileDropdown() {
                 <span className="text-sm font-semibold text-white/60 group-hover:text-white">Theme</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
-                <DropdownMenuSubContent className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-40" sideOffset={8}>
+                <DropdownMenuSubContent side="left" className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-40" sideOffset={8}>
                   <DropdownMenuItem onClick={() => setTheme('light')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-amber-500/10 focus:text-amber-500 transition-colors">
                     <Sun className="h-4 w-4" />
                     <span>Light</span>
@@ -125,7 +125,7 @@ export function ProfileDropdown() {
                 <span className="text-sm font-semibold text-white/60 group-hover:text-white">Notifications</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
-                <DropdownMenuSubContent className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-56" sideOffset={8}>
+                <DropdownMenuSubContent side="left" className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-56" sideOffset={8}>
                   <div className="px-3 py-2 mb-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Status: {notifPermission}</p>
                   </div>
