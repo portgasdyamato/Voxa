@@ -71,8 +71,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="max-w-[1700px] mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-64">
-      <div className="grid lg:grid-cols-[240px_1fr_300px] gap-8 lg:gap-20 items-start">
+    <div className="w-full max-w-[1700px] mx-auto px-3 sm:px-6 md:px-8 lg:px-16 pt-12 sm:pt-16 pb-64 overflow-x-hidden">
+      <div className="grid lg:grid-cols-[240px_1fr_300px] gap-8 lg:gap-20 items-start w-full">
         
         {/* Workspace Sidebar */}
         <aside className="space-y-12 lg:sticky lg:top-28 hidden lg:block">
@@ -119,14 +119,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           </div>
         </aside>
 
-        {/* Dashboard Core */}
-        <main className="space-y-16">
-          <header className="flex flex-col gap-4 border-b border-white/[0.03] pb-6">
-            <div className="flex items-center justify-between w-full gap-4">
-              <div className="space-y-1 min-w-0 flex-1">
-                <h1 className="text-xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-tight truncate">Workspace</h1>
-                <p className="text-white/40 font-black text-[8px] md:text-sm uppercase tracking-[0.1em] md:tracking-[0.4em] italic truncate">
-                   {activeTasks.length} Active Tasks
+        <main className="space-y-12 sm:space-y-16 w-full min-w-0">
+          <header className="flex flex-col gap-6 border-b border-white/[0.03] pb-8 w-full">
+            <div className="flex items-center justify-between gap-4 w-full">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-none truncate">Workspace</h1>
+                <p className="text-white/40 font-black text-[9px] md:text-sm uppercase tracking-[0.2em] italic truncate">
+                   {activeTasks.length} Systems Active
                 </p>
               </div>
 
