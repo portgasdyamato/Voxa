@@ -121,16 +121,28 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dashboard Core */}
         <main className="space-y-16">
-          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-12 border-b border-white/[0.03] pb-10 md:pb-12">
-            <div className="space-y-3 max-w-full overflow-hidden">
-              <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white leading-tight break-all">Workspace</h1>
-              <p className="text-white/40 font-black text-[8px] md:text-sm uppercase tracking-[0.1em] md:tracking-[0.4em] italic mt-1 break-words">
-                Optimizing {activeTasks.length} active tasks
-              </p>
+          <header className="flex flex-col gap-4 border-b border-white/[0.03] pb-6">
+            <div className="flex items-center justify-between w-full gap-4">
+              <div className="space-y-1 min-w-0 flex-1">
+                <h1 className="text-xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-tight truncate">Workspace</h1>
+                <p className="text-white/40 font-black text-[8px] md:text-sm uppercase tracking-[0.1em] md:tracking-[0.4em] italic truncate">
+                   {activeTasks.length} Active Tasks
+                </p>
+              </div>
+
+              <motion.button 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsModalOpen(true)}
+                className="h-9 md:h-16 px-4 md:px-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center gap-2 shadow-lg shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5 md:w-6 md:h-6 relative z-10" />
+                <span className="text-[8px] md:text-[11px] font-black uppercase tracking-[0.1em] relative z-10 italic">New Task</span>
+              </motion.button>
             </div>
 
             {/* Mobile Filter Pill Bar */}
-            <div className="flex lg:hidden overflow-x-auto pb-4 -mx-4 px-4 gap-2 no-scrollbar scroll-smooth">
+            <div className="flex lg:hidden overflow-x-auto pb-4 gap-2 no-scrollbar scroll-smooth w-full">
               {[
                 { id: 'all', label: 'All', icon: Layers },
                 { id: 'today', label: 'Today', icon: Activity },
@@ -176,15 +188,6 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               ))}
             </div>
             
-            <motion.button 
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsModalOpen(true)}
-              className="h-10 md:h-16 px-4 md:px-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center gap-2 shadow-lg shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all w-fit self-start shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5 md:w-6 md:h-6 relative z-10" />
-              <span className="text-[8px] md:text-[11px] font-black uppercase tracking-[0.1em] relative z-10 italic">New Task</span>
-            </motion.button>
           </header>
 
           <div className="grid grid-cols-1 gap-4">
