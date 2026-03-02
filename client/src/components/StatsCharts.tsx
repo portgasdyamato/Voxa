@@ -30,8 +30,8 @@ function formatDate(dateStr: string, period: string) {
 const AreaTooltip = ({ active, payload, label, period }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#0a0a0c]/95 backdrop-blur-3xl border border-white/[0.1] p-4 rounded-2xl shadow-2xl min-w-[140px]">
-        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-white/30 mb-3">
+      <div className="bg-popover/95 backdrop-blur-3xl border border-border p-4 rounded-2xl shadow-2xl min-w-[140px]">
+        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-muted-foreground mb-3">
           {label ? formatDate(label, period) : ''}
         </p>
         <div className="space-y-2">
@@ -41,8 +41,8 @@ const AreaTooltip = ({ active, payload, label, period }: any) => {
                 className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }}
               />
-              <span className="text-xs font-black text-white">{entry.value}</span>
-              <span className="text-[9px] text-white/30 uppercase tracking-widest">
+              <span className="text-xs font-black text-foreground">{entry.value}</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-widest">
                 {entry.name === 'completed' ? 'done' : entry.name}
               </span>
             </div>
@@ -58,9 +58,9 @@ const AreaTooltip = ({ active, payload, label, period }: any) => {
 const BarTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#0a0a0c]/95 backdrop-blur-3xl border border-white/[0.1] p-3 rounded-xl shadow-2xl">
-        <p className="text-[9px] uppercase font-black tracking-widest text-white/40 mb-1">{payload[0].payload.name}</p>
-        <p className="text-xl font-black text-white">{payload[0].value} <span className="text-[9px] text-white/30">tasks</span></p>
+      <div className="bg-popover/95 backdrop-blur-3xl border border-border p-3 rounded-xl shadow-2xl">
+        <p className="text-[9px] uppercase font-black tracking-widest text-muted-foreground mb-1">{payload[0].payload.name}</p>
+        <p className="text-xl font-black text-foreground">{payload[0].value} <span className="text-[9px] text-muted-foreground">tasks</span></p>
       </div>
     );
   }
@@ -70,10 +70,10 @@ const BarTooltip = ({ active, payload }: any) => {
 // Custom Donut Label
 const DonutLabel = ({ cx, cy, total }: { cx: number; cy: number; total: number }) => (
   <>
-    <text x={cx} y={cy - 8} textAnchor="middle" dominantBaseline="central" className="fill-white" style={{ fontSize: 28, fontWeight: 900 }}>
+    <text x={cx} y={cy - 8} textAnchor="middle" dominantBaseline="central" className="fill-foreground" style={{ fontSize: 28, fontWeight: 900 }}>
       {total}
     </text>
-    <text x={cx} y={cy + 18} textAnchor="middle" style={{ fontSize: 9, fontWeight: 900, fill: 'rgba(255,255,255,0.25)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+    <text x={cx} y={cy + 18} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: 9, fontWeight: 900, opacity: 0.5, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
       TOTAL
     </text>
   </>
@@ -152,12 +152,12 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                   </feMerge>
                 </filter>
               </defs>
-              <CartesianGrid strokeDasharray="2 6" stroke="rgba(255,255,255,0.03)" vertical={false}/>
+              <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" strokeOpacity={0.2} vertical={false}/>
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: 900, letterSpacing: '0.1em' }}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 9, fontWeight: 900, letterSpacing: '0.1em' }}
                 tickFormatter={(v) => formatDate(v, period)}
                 interval={period === 'week' ? 0 : 'preserveStartEnd'}
                 dy={12}
@@ -165,7 +165,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: 900 }}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 9, fontWeight: 900 }}
                 allowDecimals={false}
               />
               <Tooltip content={<AreaTooltip period={period}/>}/>
@@ -205,21 +205,21 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-5 md:w-6 h-[3px] bg-[#3b82f6] rounded-full" style={{ boxShadow: '0 0 8px #3b82f6' }}/>
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Done</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Done</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Bottom section — Category Bar + Donut */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8 pt-8 border-t border-white/[0.04] mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8 pt-8 border-t border-border mt-8">
         {/* Bar Chart — Category Breakdown */}
         <div className="space-y-5">
-          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">By Category</h4>
+          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">By Category</h4>
           <div className="h-[200px]">
             {!hasCategoryData ? (
               <div className="h-full flex items-center justify-center">
-                <p className="text-[9px] uppercase tracking-widest font-black text-white/15">No categories yet</p>
+                <p className="text-[9px] uppercase tracking-widest font-black text-muted-foreground/30">No categories yet</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -251,12 +251,12 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
 
         {/* Donut Chart with Legend */}
         <div className="space-y-5">
-          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Task Split</h4>
+          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Task Split</h4>
           <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-6">
             <div className="h-[180px] w-[180px] md:h-[200px] md:w-[200px] flex-shrink-0 relative">
               {!hasData ? (
                 <div className="h-full flex items-center justify-center opacity-20">
-                  <div className="w-28 h-28 rounded-full border-4 border-dashed border-white/20"/>
+                  <div className="w-28 h-28 rounded-full border-4 border-dashed border-border"/>
                 </div>
               ) : (
                 <>
@@ -290,8 +290,8 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                   </ResponsiveContainer>
                   {/* Center label */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-3xl font-black text-white leading-none">{data.totalTasks}</span>
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25 mt-1">tasks</span>
+                    <span className="text-3xl font-black text-foreground leading-none">{data.totalTasks}</span>
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1">tasks</span>
                   </div>
                 </>
               )}
@@ -314,7 +314,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                       <span className="text-[9px] font-black uppercase tracking-widest text-white/30 truncate">{item.label}</span>
                       <span className="text-sm font-black text-white flex-shrink-0">{item.value}</span>
                     </div>
-                    <div className="mt-1.5 h-[2px] w-full bg-white/[0.05] rounded-full overflow-hidden">
+                    <div className="mt-1.5 h-[2px] w-full bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-1000 delay-300"
                         style={{

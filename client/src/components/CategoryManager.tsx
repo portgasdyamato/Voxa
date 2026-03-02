@@ -47,12 +47,12 @@ export function CategoryManager() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="w-full h-11 rounded-xl text-xs font-bold text-white/40 hover:text-white hover:bg-white/[0.06] gap-3 border border-white/[0.06] transition-all">
+        <Button variant="ghost" className="w-full h-11 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted gap-3 border border-border transition-all">
           <LayoutGrid className="w-4 h-4" />
           Manage Categories
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col translate-y-[-50%]">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
           <div className="flex items-center gap-4">
@@ -60,8 +60,8 @@ export function CategoryManager() {
                <Palette className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black text-white tracking-tight">Categories</DialogTitle>
-              <DialogDescription className="text-[11px] text-white/30 font-medium mt-0.5">
+              <DialogTitle className="text-xl font-black text-foreground tracking-tight">Categories</DialogTitle>
+              <DialogDescription className="text-[11px] text-muted-foreground/60 font-medium mt-0.5">
                 Create and manage your task categories
               </DialogDescription>
             </div>
@@ -71,18 +71,18 @@ export function CategoryManager() {
         <div className="px-6 py-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
           {/* New Category */}
           <div className="space-y-4">
-             <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">New Category</Label>
+             <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">New Category</Label>
              <div className="flex gap-3">
-               <Input 
-                 autoFocus
-                 value={newCatName}
-                 onChange={(e) => setNewCatName(e.target.value)}
-                 onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleCreate();
-                 }}
-                 placeholder="Category name"
-                 className="h-11 rounded-xl bg-white/[0.04] border-white/[0.08] text-sm font-semibold placeholder:text-white/20 focus-visible:ring-primary/40"
-               />
+                <Input 
+                  autoFocus
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  onKeyDown={(e) => {
+                     if (e.key === 'Enter') handleCreate();
+                  }}
+                  placeholder="Category name"
+                  className="h-11 rounded-xl bg-muted/50 border-border text-sm font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-primary/40"
+                />
                <Button onClick={handleCreate} disabled={!newCatName.trim() || createCategory.isPending} className="h-11 w-11 p-0 rounded-xl bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 flex-shrink-0">
                  <Plus className="w-5 h-5" />
                </Button>
@@ -104,8 +104,8 @@ export function CategoryManager() {
           </div>
 
           {/* Category List */}
-          <div className="space-y-4 pt-4 border-t border-white/[0.06]">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Existing Categories</Label>
+          <div className="space-y-4 pt-4 border-t border-border">
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">Existing Categories</Label>
             <div className="space-y-2">
               <AnimatePresence mode="popLayout">
                 {categories?.map((cat) => (
@@ -115,11 +115,11 @@ export function CategoryManager() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex items-center justify-between p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] group"
+                    className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20 group"
                   >
                     <div className="flex items-center gap-3 pl-1">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                      <span className="text-sm font-semibold text-white/80">{cat.name}</span>
+                      <span className="text-sm font-semibold text-foreground">{cat.name}</span>
                     </div>
                     <Button
                       variant="ghost"
@@ -133,7 +133,7 @@ export function CategoryManager() {
                 ))}
               </AnimatePresence>
               {(!categories || categories.length === 0) && (
-                <div className="text-center py-6 text-sm text-white/30 font-medium border border-dashed border-white/[0.08] rounded-xl">
+                <div className="text-center py-6 text-sm text-muted-foreground/40 font-medium border border-dashed border-border rounded-xl">
                   No categories yet.
                 </div>
               )}
@@ -142,11 +142,11 @@ export function CategoryManager() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/[0.06] bg-[#0a0c10] shrink-0">
+        <div className="px-6 py-4 border-t border-border bg-muted/10 shrink-0">
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="w-full h-11 rounded-xl font-bold text-sm border border-white/[0.08] text-white hover:bg-white/[0.06]"
+            className="w-full h-11 rounded-xl font-bold text-sm border border-border text-foreground hover:bg-muted"
           >
             Done
           </Button>

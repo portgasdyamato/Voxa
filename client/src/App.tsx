@@ -40,7 +40,7 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
           whileHover={{ scale: 1.1, rotate: 6 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setVoiceModalOpen(true)}
-          className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[3rem] bg-primary text-white flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(var(--primary),0.2)] hover:shadow-[0_40px_80px_-20px_rgba(var(--primary),0.3)] transition-all duration-700 group relative overflow-hidden group/btn"
+          className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[3rem] bg-primary text-primary-foreground flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(var(--primary),0.2)] hover:shadow-[0_40px_80px_-20px_rgba(var(--primary),0.3)] transition-all duration-700 group relative overflow-hidden group/btn"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-700" />
           <div className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-1000 bg-gradient-to-tr from-transparent via-white/5 to-white/10" />
@@ -79,7 +79,7 @@ function Router() {
 
   if (isLoading) {
     return (
-       <div className="min-h-screen flex items-center justify-center bg-[#050505] selection:bg-primary/20">
+       <div className="min-h-screen flex items-center justify-center bg-background selection:bg-primary/20">
          <motion.div 
            animate={{ 
              scale: [1, 1.1, 1],
@@ -89,7 +89,7 @@ function Router() {
            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
            className="w-24 h-24 rounded-[3rem] bg-primary flex items-center justify-center shadow-3xl inner-glow"
          >
-           <Zap className="w-10 h-10 text-white fill-white shadow-2xl" />
+           <Zap className="w-10 h-10 text-primary-foreground fill-current shadow-2xl" />
          </motion.div>
        </div>
     );

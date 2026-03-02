@@ -169,37 +169,37 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           
           {/* Task name */}
           <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Task name *</Label>
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Task name *</Label>
             <Input
               value={taskTitle}
               onChange={(e) => handleTaskTitleChange(e.target.value)}
               placeholder="What do you need to do?"
-              className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] focus-visible:ring-primary/40 text-base font-semibold px-4 placeholder:text-white/15"
+              className="h-12 rounded-xl border-border bg-muted/50 focus-visible:ring-primary/40 text-base font-semibold px-4 placeholder:text-muted-foreground/40"
               autoFocus
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Notes <span className="normal-case tracking-normal text-white/20">(optional)</span></Label>
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Notes <span className="normal-case tracking-normal text-muted-foreground/60">(optional)</span></Label>
             <textarea
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
               placeholder="Add any additional details..."
               rows={3}
-              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all resize-none placeholder:text-white/15 text-white"
+              className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all resize-none placeholder:text-muted-foreground/40 text-foreground"
             />
           </div>
 
           {/* Priority + Category row */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Priority</Label>
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Priority</Label>
               <Select value={manualPriority} onValueChange={setManualPriority}>
-                <SelectTrigger className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold px-4">
+                <SelectTrigger className="h-11 rounded-xl border-border bg-muted/50 text-sm font-semibold px-4">
                   <SelectValue placeholder="Auto-detect" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-white/[0.08] bg-[#0d1117] p-1.5">
+                <SelectContent className="rounded-xl border-border bg-popover p-1.5">
                   <SelectItem value="none" className="rounded-lg py-2.5 text-sm font-medium">Auto-detect</SelectItem>
                   <SelectItem value="low" className="rounded-lg py-2.5 text-sm font-medium text-emerald-400">Low</SelectItem>
                   <SelectItem value="medium" className="rounded-lg py-2.5 text-sm font-medium text-amber-400">Medium</SelectItem>
@@ -209,12 +209,12 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Category</Label>
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Category</Label>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold px-4">
+                <SelectTrigger className="h-11 rounded-xl border-border bg-muted/50 text-sm font-semibold px-4">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-white/[0.08] bg-[#0d1117] p-1.5 max-h-[220px]">
+                <SelectContent className="rounded-xl border-border bg-popover p-1.5 max-h-[220px]">
                   <SelectItem value="none" className="rounded-lg py-2.5 text-sm font-medium">No category</SelectItem>
                   {categories?.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-lg py-2.5 text-sm font-medium">
@@ -231,14 +231,14 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
           {/* Due date */}
           <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-2">
-              <Calendar className="w-3.5 h-3.5" /> Due date <span className="normal-case tracking-normal text-white/20">(optional)</span>
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" /> Due date <span className="normal-case tracking-normal text-muted-foreground/60">(optional)</span>
             </Label>
             <Input
               type="datetime-local"
               value={deadlineInputValue}
               onChange={(e) => handleDeadlineChange(e.target.value)}
-              className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold px-4"
+              className="h-11 rounded-xl border-border bg-muted/50 text-sm font-semibold px-4"
             />
             <AnimatePresence>
               {selectedDeadline && (
@@ -249,7 +249,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
                   className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20"
                 >
                   <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="text-xs font-semibold text-white/60">Due {formatRelativeDate(selectedDeadline)}</span>
+                  <span className="text-xs font-semibold text-muted-foreground/60">Due {formatRelativeDate(selectedDeadline)}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -257,8 +257,8 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
           {/* Reminders — only show if deadline set */}
           {selectedDeadline && (
-            <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Reminder</Label>
+            <div className="space-y-3 pt-2 border-t border-border">
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Reminder</Label>
               <ReminderSettings
                 reminderEnabled={reminderEnabled}
                 reminderType={reminderType}
@@ -271,19 +271,19 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           )}
         </div>
 
-          <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex gap-3 flex-shrink-0">
+          <div className="px-6 py-4 border-t border-border bg-muted/10 flex gap-3 flex-shrink-0">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-11 rounded-xl font-bold text-sm text-white/40 hover:text-white hover:bg-white/[0.06] transition-all border border-white/[0.06]"
+              className="flex-1 h-11 rounded-xl font-bold text-sm text-muted-foreground/40 hover:text-foreground hover:bg-muted transition-all border border-border"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isPending || !taskTitle.trim()}
-              className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
               {isPending ? (
                 <>

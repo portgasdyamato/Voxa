@@ -58,7 +58,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
   if (tasksLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#030305]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -78,7 +78,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         <aside className="space-y-12 lg:sticky lg:top-28 hidden lg:block">
           <div className="space-y-10">
             <div className="space-y-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 px-4 italic leading-none">Perspective</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground px-4 italic leading-none">Perspective</p>
               <nav className="space-y-2">
                 {[
                   { id: 'all', label: 'All Tasks', icon: Layers },
@@ -91,8 +91,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                     className={cn(
                       "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] group relative overflow-hidden transition-all duration-500",
                       selectedFilter === filter.id 
-                        ? "bg-primary text-white shadow-2xl shadow-primary/20" 
-                        : "text-white/20 hover:text-white hover:bg-white/[0.03]"
+                        ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/20" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
                     <div className="flex items-center gap-4 relative z-10 italic">
@@ -106,7 +106,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
             <div className="space-y-6 pt-10 border-t border-white/[0.03]">
               <div className="px-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/20 italic leading-none">Folders</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground italic leading-none">Folders</p>
               </div>
               <CategoryFilter 
                 selectedCategory={selectedCategory} 
@@ -124,7 +124,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
             <div className="flex items-center justify-between gap-4 w-full">
               <div className="space-y-0.5 min-w-0 flex-1">
                 <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground leading-none truncate">Workspace</h1>
-                <p className="text-white/40 font-black text-[9px] md:text-sm uppercase tracking-[0.2em] italic truncate">
+                <p className="text-muted-foreground font-black text-[9px] md:text-sm uppercase tracking-[0.2em] italic truncate">
                    {activeTasks.length} Systems Active
                 </p>
               </div>
@@ -133,7 +133,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsModalOpen(true)}
-                className="h-9 md:h-16 px-4 md:px-10 rounded-lg md:rounded-2xl bg-primary text-white flex items-center justify-center gap-2 shadow-lg shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all shrink-0"
+                className="h-9 md:h-16 px-4 md:px-10 rounded-lg md:rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 shadow-lg shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all shrink-0"
               >
                 <Plus className="w-3.5 h-3.5 md:w-6 md:h-6 relative z-10" />
                 <span className="text-[8px] md:text-[11px] font-black uppercase tracking-[0.1em] relative z-10 italic">New Task</span>
@@ -156,8 +156,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                   className={cn(
                     "flex-shrink-0 flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border",
                     selectedFilter === filter.id && selectedCategory === null
-                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
-                      : "bg-white/[0.03] text-white/40 border-white/[0.04]"
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                      : "bg-muted/50 text-muted-foreground border-border/50"
                   )}
                 >
                   <filter.icon className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 </button>
               ))}
               
-              <div className="w-[1px] h-6 bg-white/[0.08] self-center flex-shrink-0 mx-1" />
+              <div className="w-[1px] h-6 bg-border self-center flex-shrink-0 mx-1" />
 
               {categories?.map((cat) => (
                 <button
@@ -177,8 +177,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                   className={cn(
                     "flex-shrink-0 flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border",
                     selectedCategory === cat.id 
-                      ? "bg-white/[0.08] text-white border-white/20 shadow-xl" 
-                      : "bg-white/[0.03] text-white/40 border-white/[0.04]"
+                      ? "bg-primary/20 text-primary border-primary shadow-xl" 
+                      : "bg-muted/50 text-muted-foreground border-border/50"
                   )}
                 >
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
@@ -201,10 +201,10 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   className="py-40 flex flex-col items-center text-center space-y-10 frosted-layer border-dashed bg-transparent shadow-none"
                 >
-                  <Compass className="w-16 h-16 text-white/10 animate-pulse" />
+                  <Compass className="w-16 h-16 text-foreground/5 animate-pulse" />
                   <div className="space-y-4 max-w-sm relative z-10">
-                    <h3 className="text-3xl font-black text-white italic">Workspace Clear</h3>
-                    <p className="text-white/10 text-[10px] font-black uppercase tracking-[0.4em] italic leading-relaxed">
+                    <h3 className="text-3xl font-black text-foreground italic">Workspace Clear</h3>
+                    <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.4em] italic leading-relaxed">
                       All systems optimal. Create a new task to resume.
                     </p>
                   </div>
@@ -216,8 +216,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           {completedTasks.length > 0 && (
             <section className="space-y-10 pt-20 border-t border-white/[0.05]">
               <div className="flex items-center gap-6 px-6">
-                 <History className="w-6 h-6 text-white" />
-                 <h3 className="text-3xl font-black tracking-tight text-white italic">Archived</h3>
+                 <History className="w-6 h-6 text-foreground" />
+                 <h3 className="text-3xl font-black tracking-tight text-foreground italic">Archived</h3>
               </div>
               <div className="grid grid-cols-1 gap-4 opacity-40 hover:opacity-100 transition-all duration-[1000ms] grayscale hover:grayscale-0">
                 {completedTasks.slice(0, 10).map((task) => (
@@ -233,7 +233,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
            <div className="frosted-layer p-10 space-y-10">
               <div className="flex items-center justify-between pb-6 border-b border-white/[0.03]">
                 <div className="space-y-1">
-                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-white leading-none">Efficiency</h4>
+                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-foreground leading-none">Efficiency</h4>
                   <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic leading-none">Synchronized</p>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
@@ -244,7 +244,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               <div className="space-y-8">
                 <div className="space-y-6">
                    <div className="flex items-end justify-between">
-                      <div className="text-7xl font-black tracking-[-0.1em] text-white leading-none">{completionRate}%</div>
+                      <div className="text-7xl font-black tracking-[-0.1em] text-foreground leading-none">{completionRate}%</div>
                       <ArrowUpRight className="w-8 h-8 text-emerald-500/20" />
                    </div>
                    <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden p-0.5">

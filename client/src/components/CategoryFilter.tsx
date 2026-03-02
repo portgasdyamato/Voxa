@@ -16,7 +16,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
     return (
       <div className="space-y-4 px-1">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-14 w-full rounded-2xl bg-white/[0.02] animate-pulse border border-white/[0.05]" />
+          <div key={i} className="h-14 w-full rounded-2xl bg-muted animate-pulse border border-border" />
         ))}
       </div>
     );
@@ -29,8 +29,8 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
         className={cn(
           "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-700 group relative overflow-hidden",
           selectedCategory === null 
-            ? "bg-primary text-white shadow-2xl shadow-primary/20" 
-            : "text-white/20 hover:text-white hover:bg-white/[0.03]"
+            ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/20" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >
         <div className="flex items-center gap-4 relative z-10">
@@ -49,8 +49,8 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
           className={cn(
             "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-700 group relative overflow-hidden",
             selectedCategory === category.id 
-              ? "bg-white/[0.08] text-white border border-white/[0.1] shadow-3xl" 
-              : "text-white/20 hover:text-white hover:bg-white/[0.03]"
+              ? "bg-primary/20 text-primary border border-primary/20 shadow-3xl" 
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
           )}
         >
           <div className="flex items-center gap-4 relative z-10">

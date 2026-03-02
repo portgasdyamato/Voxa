@@ -32,7 +32,7 @@ export default function Stats() {
             transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
             className="w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary"
           />
-          <p className="text-[10px] uppercase tracking-[0.4em] font-black text-white/20">Loading analytics...</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] font-black text-muted-foreground">Loading analytics...</p>
         </div>
       </div>
     );
@@ -69,10 +69,10 @@ export default function Stats() {
             <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-primary" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Analytics</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Analytics</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-[-0.04em] text-foreground leading-none">Performance</h1>
-          <p className="text-white/25 text-xs md:text-sm font-medium mt-1">
+          <p className="text-muted-foreground text-xs md:text-sm font-medium mt-1">
             Your productivity at a glance
           </p>
         </div>
@@ -86,8 +86,8 @@ export default function Stats() {
               className={cn(
                 'h-10 px-6 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-400',
                 selectedPeriod === p.key
-                  ? 'bg-primary text-white shadow-[0_4px_20px_rgba(59,130,246,0.4)]'
-                  : 'text-white/30 hover:text-white/60 hover:bg-white/[0.04]'
+                  ? 'bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(59,130,246,0.4)]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               )}
             >
               {p.label}
@@ -149,8 +149,8 @@ export default function Stats() {
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-white">Productivity Trend</h2>
-                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black mt-0.5">Tasks over time</p>
+                <h2 className="text-xl font-black text-foreground">Productivity Trend</h2>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-black mt-0.5">Tasks over time</p>
               </div>
             </div>
           </div>
@@ -323,13 +323,13 @@ function KpiCard({
         >
           {icon}
         </div>
-        <ArrowUpRight className="w-4 h-4 text-white/[0.05] group-hover:text-white/20 transition-colors" />
+        <ArrowUpRight className="w-4 h-4 text-foreground/5 group-hover:text-foreground/20 transition-colors" />
       </div>
 
       <div className="space-y-1">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25 truncate">{label}</p>
-        <p className="text-3xl md:text-4xl font-black tracking-tight text-white leading-none whitespace-nowrap">{value}</p>
-        {sub && <p className="text-[9px] font-black uppercase tracking-widest text-white/20 pt-1 truncate">{sub}</p>}
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground truncate">{label}</p>
+        <p className="text-3xl md:text-4xl font-black tracking-tight text-foreground leading-none whitespace-nowrap">{value}</p>
+        {sub && <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 pt-1 truncate">{sub}</p>}
       </div>
     </motion.div>
   );
