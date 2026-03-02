@@ -123,7 +123,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           <header className="flex flex-col gap-6 border-b border-white/[0.03] pb-8 w-full">
             <div className="flex items-center justify-between gap-4 w-full">
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-none truncate">Workspace</h1>
+                <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground leading-none truncate">Workspace</h1>
                 <p className="text-white/40 font-black text-[9px] md:text-sm uppercase tracking-[0.2em] italic truncate">
                    {activeTasks.length} Systems Active
                 </p>

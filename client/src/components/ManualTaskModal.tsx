@@ -141,7 +141,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
         
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
@@ -153,10 +153,10 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
               {isEditing ? <Edit3 className="w-5 h-5 text-amber-400" /> : <Plus className="w-5 h-5 text-primary" />}
             </div>
             <div>
-              <DialogTitle className="text-xl font-black text-white tracking-tight">
+              <DialogTitle className="text-xl font-black text-foreground tracking-tight">
                 {isEditing ? 'Edit Task' : 'New Task'}
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-white/30 font-medium mt-0.5">
+              <DialogDescription className="text-[11px] text-muted-foreground font-medium mt-0.5">
                 {isEditing ? 'Update task details below' : 'Add the details for your new task'}
               </DialogDescription>
             </div>

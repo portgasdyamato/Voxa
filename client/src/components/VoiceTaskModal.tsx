@@ -157,8 +157,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col">
-        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] bg-[#0a0a0a] flex-shrink-0 relative overflow-hidden">
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-border bg-card flex-shrink-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-16 opacity-[0.02] pointer-events-none">
             <Radio className="w-64 h-64 text-primary animate-pulse" />
           </div>
@@ -177,10 +177,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               <Mic className="w-5 h-5" />
             </motion.div>
             <div>
-              <DialogTitle className="text-xl font-black tracking-tight text-white">
+              <DialogTitle className="text-xl font-black tracking-tight text-foreground">
                 {isListening ? 'Listening...' : 'Processing...'}
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-white/30 mt-0.5">
+              <DialogDescription className="text-[11px] text-muted-foreground mt-0.5">
                 {isListening ? "Speak clearly — say a task or command." : "Analyzing your voice input."}
               </DialogDescription>
             </div>

@@ -45,33 +45,33 @@ export function ProfileDropdown() {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[calc(100vw-32px)] sm:w-64 max-w-[280px]" align="end" sideOffset={8}>
+        <DropdownMenuContent className="w-[calc(100vw-32px)] sm:w-64 max-w-[280px] bg-popover text-popover-foreground border-border shadow-2xl" align="end" sideOffset={8}>
           <DropdownMenuLabel className="font-normal px-3 py-3">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border border-white/[0.1] flex-shrink-0">
+              <Avatar className="h-10 w-10 border border-border flex-shrink-0">
                  <AvatarImage src={(user as any)?.profileImageUrl || ''} className="object-cover" />
-                 <AvatarFallback className="bg-primary text-white text-sm font-black">{userInitials}</AvatarFallback>
+                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-black">{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col min-w-0">
-                <p className="text-sm font-bold text-white truncate">{displayName}</p>
-                <p className="text-[11px] text-white/30 truncate">{(user as any)?.email || 'Personal Account'}</p>
+                <p className="text-sm font-bold truncate">{displayName}</p>
+                <p className="text-[11px] opacity-40 truncate">{(user as any)?.email || 'Personal Account'}</p>
               </div>
             </div>
           </DropdownMenuLabel>
           
-          <DropdownMenuSeparator className="mx-2 opacity-5" />
+          <DropdownMenuSeparator className="mx-2 opacity-10" />
           
           <div className="p-1 space-y-0.5">
             <DropdownMenuItem 
               onClick={() => setShowEditProfile(true)} 
-              className="rounded-xl gap-3 py-2.5 px-3 focus:bg-white/[0.06] transition-all cursor-pointer group"
+              className="rounded-xl gap-3 py-2.5 px-3 focus:bg-accent focus:text-accent-foreground transition-all cursor-pointer group"
             >
-              <Settings className="h-4 w-4 text-white/30 group-hover:text-white transition-colors" />
-              <span className="text-sm font-semibold text-white/60 group-hover:text-white">Account settings</span>
+              <Settings className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+              <span className="text-sm font-semibold opacity-70 group-hover:opacity-100">Account settings</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="mx-2 opacity-5" />
-            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-white/20 px-3 py-2">Appearance</DropdownMenuLabel>
+            <DropdownMenuSeparator className="mx-2 opacity-10" />
+            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest opacity-20 px-3 py-2">Appearance</DropdownMenuLabel>
             
             <div className="grid grid-cols-3 gap-1 p-1">
               {[
@@ -85,8 +85,8 @@ export function ProfileDropdown() {
                   className={cn(
                     "flex flex-col items-center justify-center gap-1.5 py-2 rounded-lg transition-all",
                     theme === t.id 
-                      ? "bg-primary/20 text-primary border border-primary/20" 
-                      : "text-white/30 hover:text-white hover:bg-white/[0.03] border border-transparent"
+                      ? "bg-primary/10 text-primary border border-primary/20" 
+                      : "text-foreground/40 hover:text-foreground hover:bg-muted border border-transparent"
                   )}
                 >
                   <t.icon className="w-4 h-4" />
@@ -96,12 +96,12 @@ export function ProfileDropdown() {
             </div>
           </div>
           
-          <DropdownMenuSeparator className="mx-2 opacity-5" />
+          <DropdownMenuSeparator className="mx-2 opacity-10" />
           
           <div className="p-1">
             <DropdownMenuItem 
               onClick={handleLogout} 
-              className="rounded-xl gap-3 py-2.5 px-3 text-rose-400 focus:bg-rose-500/10 focus:text-rose-400 transition-all cursor-pointer group"
+              className="rounded-xl gap-3 py-2.5 px-3 text-rose-500 focus:bg-rose-500/10 focus:text-rose-500 transition-all cursor-pointer group"
             >
               <LogOut className="h-4 w-4" />
               <span className="text-sm font-semibold">Sign out</span>

@@ -71,7 +71,7 @@ export default function Stats() {
             </div>
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Analytics</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-[-0.04em] text-white leading-none">Performance</h1>
+          <h1 className="text-4xl md:text-6xl font-black tracking-[-0.04em] text-foreground leading-none">Performance</h1>
           <p className="text-white/25 text-xs md:text-sm font-medium mt-1">
             Your productivity at a glance
           </p>

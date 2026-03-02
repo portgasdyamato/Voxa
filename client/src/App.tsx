@@ -22,7 +22,7 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
   useDeadlineNotifications(tasks);
 
   return (
-    <div className="min-h-screen bg-[#020202] text-white selection:bg-primary/30 overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 overflow-x-hidden transition-colors duration-300">
       <div className="mesh-gradient" />
       <Navigation 
         activeTab={activeTab} 
