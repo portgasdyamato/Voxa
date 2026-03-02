@@ -71,7 +71,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="max-w-[1700px] mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-64">
+    <div className="max-w-[1700px] mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-64 overflow-hidden md:overflow-visible">
       <div className="grid lg:grid-cols-[240px_1fr_300px] gap-8 lg:gap-20 items-start">
         
         {/* Workspace Sidebar */}
@@ -180,7 +180,7 @@ export default function Home({ searchQuery = '' }: HomeProps) {
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsModalOpen(true)}
-              className="h-14 lg:h-16 px-8 lg:px-10 rounded-2xl bg-primary text-white flex items-center justify-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all self-start lg:self-end"
+              className="h-14 lg:h-16 px-8 lg:px-10 rounded-2xl bg-primary text-white flex items-center justify-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all w-fit self-start lg:self-end"
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Plus className="w-5 h-5 lg:w-6 lg:h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />

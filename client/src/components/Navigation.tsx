@@ -43,8 +43,8 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-20 flex items-center px-4 md:px-8 lg:px-16 nav-blur">
-        <div className="max-w-[1700px] mx-auto w-full flex items-center justify-between gap-12">
+      <header className="fixed top-0 left-0 right-0 z-50 h-20 flex items-center px-4 md:px-8 lg:px-16 nav-blur overflow-hidden md:overflow-visible">
+        <div className="max-w-[1700px] mx-auto w-full flex items-center justify-between gap-4 md:gap-12">
           {/* Elite Signature */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
