@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigation } from "@/components/Navigation";
 import { VoiceTaskModal } from "@/components/VoiceTaskModal";
+import { useTasks } from "@/hooks/useTasks";
+import { useDeadlineNotifications } from "@/hooks/useDeadlineNotifications";
 import { Mic, Zap, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import NotFound from "@/pages/not-found";
@@ -16,6 +18,9 @@ import Home from "@/pages/home";
 import Stats from "@/pages/stats";
 
 function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
+  const { data: tasks = [] } = useTasks();
+  useDeadlineNotifications(tasks);
+
   return (
     <div className="min-h-screen bg-[#020202] text-white selection:bg-primary/30 overflow-x-hidden">
       <div className="mesh-gradient" />

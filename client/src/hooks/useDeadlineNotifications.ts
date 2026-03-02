@@ -27,23 +27,36 @@ export function useDeadlineNotifications(tasks: any[]) {
   }, []);
 
   const showNotification = useCallback((task: any, title: string, body: string) => {
-    // Show toast
+    // Show toast for immediate UI feedback
     toast({
       title,
       description: body,
       duration: 10000,
     });
 
-    // Show browser notification
+    // Show device-level push notification via Service Worker
     if (Notification.permission === 'granted') {
-      try {
-        new Notification(title, {
-          body,
-          icon: '/favicon.ico',
-          tag: `task-${task.id}`,
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(title, {
+            body,
+            icon: '/logo.png',
+            badge: '/logo.png',
+            tag: `task-${task.id}`,
+            vibrate: [100, 50, 100],
+            data: {
+              url: '/'
+            },
+            renotify: true
+          });
+        }).catch(err => {
+          console.warn('SW notification failed:', err);
+          // Fallback to legacy notification if SW fails
+          new Notification(title, { body, icon: '/logo.png', tag: `task-${task.id}` });
         });
-      } catch (e) {
-        console.warn('Notification failed:', e);
+      } else {
+        // Fallback for browsers without SW support
+        new Notification(title, { body, icon: '/logo.png', tag: `task-${task.id}` });
       }
     }
   }, [toast]);
