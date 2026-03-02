@@ -162,7 +162,7 @@ export default function Stats() {
               categories={categories || []}
             />
           ) : (
-            <div className="h-64 flex items-center justify-center text-white/20 text-sm">No data available</div>
+            <div className="h-64 flex items-center justify-center text-muted-foreground/20 text-sm">No data available</div>
           )}
         </motion.div>
 
@@ -181,8 +181,8 @@ export default function Stats() {
                 <Trophy className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">Insights</h3>
-                <p className="text-[10px] text-white/20 font-black uppercase tracking-widest">Performance score</p>
+                <h3 className="text-lg font-black text-foreground">Insights</h3>
+                <p className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">Performance score</p>
               </div>
             </div>
 
@@ -191,7 +191,7 @@ export default function Stats() {
               <div className="flex items-center gap-6">
                 <div className="relative w-24 h-24 flex-shrink-0">
                   <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" className="text-muted-foreground/5" strokeWidth="8"/>
                     <circle
                       cx="50" cy="50" r="38"
                       fill="none"
@@ -204,14 +204,14 @@ export default function Stats() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-black text-white leading-none">{completionRate}%</span>
+                    <span className="text-2xl font-black text-foreground leading-none">{completionRate}%</span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/25">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                     {completionRate >= 80 ? '🔥 Excellent' : completionRate >= 60 ? '✨ Good' : completionRate >= 40 ? '📈 Growing' : '🎯 Just started'}
                   </p>
-                  <p className="text-white/50 text-xs font-medium leading-relaxed">
+                  <p className="text-muted-foreground/80 text-xs font-medium leading-relaxed">
                     {completionRate >= 80
                       ? 'Outstanding performance this period.'
                       : completionRate >= 60
@@ -224,14 +224,14 @@ export default function Stats() {
               </div>
 
               {/* Mini stats */}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/[0.05]">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border">
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Avg / Day</p>
-                  <p className="text-2xl font-black text-white">{avgDaily}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Avg / Day</p>
+                  <p className="text-2xl font-black text-foreground">{avgDaily}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Overdue</p>
-                  <p className="text-2xl font-black text-white" style={{ color: overdueTasks > 0 ? '#f43f5e' : undefined }}>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Overdue</p>
+                  <p className="text-2xl font-black text-foreground" style={{ color: overdueTasks > 0 ? '#f43f5e' : undefined }}>
                     {overdueTasks}
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export default function Stats() {
           >
             <div className="flex items-center gap-3 mb-6">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <h3 className="text-sm font-black uppercase tracking-widest text-white/50">Summary</h3>
+              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Summary</h3>
             </div>
             <div className="space-y-5">
               {[
@@ -258,24 +258,24 @@ export default function Stats() {
                 { label: 'Remaining', value: pendingTasks },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/25">{item.label}</span>
-                  <span className="text-sm font-black text-white">{item.value}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{item.label}</span>
+                  <span className="text-sm font-black text-foreground">{item.value}</span>
                 </div>
               ))}
 
               {/* Progress bar */}
-              <div className="pt-4 border-t border-white/[0.05] space-y-2">
+              <div className="pt-4 border-t border-border space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Completion</span>
-                  <span className="text-[9px] font-black text-white/40">{completionRate}%</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Completion</span>
+                  <span className="text-[9px] font-black text-muted-foreground/80">{completionRate}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${completionRate}%` }}
                     transition={{ duration: 1.2, delay: 0.6, ease: 'easeOut' }}
                     className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', boxShadow: '0 0 12px rgba(59,130,246,0.5)' }}
+                    style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', boxShadow: '0 0 12px rgba(59,130,246,0.3)' }}
                   />
                 </div>
               </div>
