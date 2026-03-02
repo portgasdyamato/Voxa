@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Camera, Upload, Link, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface EditProfileProps {
   open: boolean;
@@ -74,12 +75,12 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_80px_rgba(0,0,0,0.8)] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] max-h-[85vh] flex flex-col translate-y-[-50%]">
         
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
-          <DialogTitle className="text-xl font-black text-white tracking-tight">Edit Profile</DialogTitle>
-          <DialogDescription className="text-[11px] text-white/30 font-medium mt-0.5">
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-border flex-shrink-0">
+          <DialogTitle className="text-xl font-black text-foreground tracking-tight">Edit Profile</DialogTitle>
+          <DialogDescription className="text-[11px] text-muted-foreground font-medium mt-0.5">
             Update your name and profile photo
           </DialogDescription>
         </DialogHeader>
@@ -88,18 +89,18 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
           <div className="px-6 py-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
             
             {/* Avatar section */}
-            <div className="flex flex-col items-center gap-5 pb-5 border-b border-white/[0.06]">
+            <div className="flex flex-col items-center gap-5 pb-5 border-b border-border">
               <div className="relative group">
-                <Avatar className="h-24 w-24 rounded-2xl border-2 border-white/10 shadow-xl">
+                <Avatar className="h-24 w-24 rounded-2xl border-2 border-border shadow-xl">
                   <AvatarImage src={profileImageUrl || (user as any)?.profileImageUrl || ''} className="object-cover" />
-                  <AvatarFallback className="bg-primary text-white text-2xl font-black rounded-2xl">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-black rounded-2xl">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-primary text-white shadow-lg border-2 border-[#0a0c10] flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                  className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-primary text-primary-foreground shadow-lg border-2 border-card flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
                 >
                   <Camera className="w-4 h-4" />
                 </button>
@@ -111,14 +112,14 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl text-[12px] font-bold text-white/40 hover:text-white border border-white/[0.08] hover:border-white/[0.15] transition-all"
+                  className="flex items-center gap-2 h-9 px-4 rounded-xl text-[12px] font-bold text-muted-foreground hover:text-foreground border border-border hover:border-primary/20 transition-all bg-muted/30"
                 >
                   <Upload className="w-3.5 h-3.5" /> Upload photo
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowUrlInput(!showUrlInput)}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl text-[12px] font-bold text-white/40 hover:text-white border border-white/[0.08] hover:border-white/[0.15] transition-all"
+                  className="flex items-center gap-2 h-9 px-4 rounded-xl text-[12px] font-bold text-muted-foreground hover:text-foreground border border-border hover:border-primary/20 transition-all bg-muted/30"
                 >
                   <Link className="w-3.5 h-3.5" /> Use URL
                 </button>
@@ -136,7 +137,7 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
                       placeholder="https://example.com/photo.jpg"
                       value={profileImageUrl}
                       onChange={(e) => setProfileImageUrl(e.target.value)}
-                      className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm"
+                      className="h-11 rounded-xl border-border bg-muted/20 text-sm"
                     />
                   </motion.div>
                 )}
@@ -146,21 +147,21 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
             {/* Name fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">First name</Label>
+                <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">First name</Label>
                 <Input
                   autoFocus
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold"
+                  className="h-11 rounded-xl border-border bg-muted/20 text-sm font-semibold"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Last name</Label>
+                <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Last name</Label>
                 <Input
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-sm font-semibold"
+                  className="h-11 rounded-xl border-border bg-muted/20 text-sm font-semibold"
                   required
                 />
               </div>
@@ -168,34 +169,34 @@ export function EditProfile({ open, onOpenChange }: EditProfileProps) {
 
             {/* Email (read-only) */}
             <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-white/30">Email</Label>
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Email</Label>
               <Input
                 value={(user as any)?.email || ''}
                 disabled
-                className="h-11 rounded-xl border-white/[0.06] bg-white/[0.02] text-white/30 text-sm cursor-not-allowed"
+                className="h-11 rounded-xl border-border bg-muted/10 text-muted-foreground/50 text-sm cursor-not-allowed"
               />
-              <p className="text-[10px] text-white/20 px-1">Email cannot be changed here</p>
+              <p className="text-[10px] text-muted-foreground opacity-50 px-1">Email cannot be changed here</p>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex gap-3 flex-shrink-0">
+          <div className="px-6 py-4 border-t border-border bg-muted/10 flex gap-3 flex-shrink-0">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-11 rounded-xl font-bold text-sm text-white/40 hover:text-white hover:bg-white/[0.06] border border-white/[0.06]"
+              className="flex-1 h-11 rounded-xl font-bold text-sm border-border hover:bg-muted"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={updateProfile.isPending}
-              className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+              className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
             >
               {updateProfile.isPending ? (
                 <>
-                  <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <div className="w-4 h-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
                   Saving...
                 </>
               ) : (
