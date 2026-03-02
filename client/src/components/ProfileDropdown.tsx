@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, LogOut, Crown, User as UserIcon, Moon, Sun, Monitor, Bell, Check } from 'lucide-react';
+import { Settings, LogOut, Moon, Sun, Monitor } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import {
@@ -9,10 +9,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -24,31 +20,8 @@ export function ProfileDropdown() {
   const { theme, setTheme } = useTheme();
   const [showEditProfile, setShowEditProfile] = useState(false);
 
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'default'
-  );
-
   const handleLogout = () => {
     logout();
-  };
-
-  const handleRequestNotifications = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      setNotifPermission(permission);
-      
-      if (permission === 'granted') {
-        if ('serviceWorker' in navigator) {
-          const registration = await navigator.serviceWorker.ready;
-          registration.showNotification('VoXa Notifications Active', {
-            body: 'You will now receive task reminders on your device!',
-            icon: '/logo.png',
-            badge: '/logo.png',
-            vibrate: [100, 50, 100],
-          } as any);
-        }
-      }
-    }
   };
 
   const userInitials = (user as any)?.firstName && (user as any)?.lastName 
@@ -72,7 +45,7 @@ export function ProfileDropdown() {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64" align="end">
+        <DropdownMenuContent className="w-[calc(100vw-32px)] sm:w-64 max-w-[280px]" align="end" sideOffset={8}>
           <DropdownMenuLabel className="font-normal px-3 py-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-white/[0.1] flex-shrink-0">
@@ -97,50 +70,30 @@ export function ProfileDropdown() {
               <span className="text-sm font-semibold text-white/60 group-hover:text-white">Account settings</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="rounded-xl gap-3 py-2.5 px-3 focus:bg-white/[0.06] transition-all cursor-pointer group data-[state=open]:bg-white/[0.06]">
-                <Moon className="h-4 w-4 text-white/30 group-hover:text-white transition-colors" />
-                <span className="text-sm font-semibold text-white/60 group-hover:text-white">Theme</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent side="left" className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-40" sideOffset={8}>
-                  <DropdownMenuItem onClick={() => setTheme('light')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-amber-500/10 focus:text-amber-500 transition-colors">
-                    <Sun className="h-4 w-4" />
-                    <span>Light</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme('dark')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-indigo-500/10 focus:text-indigo-500 transition-colors">
-                    <Moon className="h-4 w-4" />
-                    <span>Dark</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme('system')} className="rounded-xl font-bold gap-3 py-2.5 focus:bg-primary/10 transition-colors">
-                    <Monitor className="h-4 w-4" />
-                    <span>System</span>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="rounded-xl gap-3 py-2.5 px-3 focus:bg-white/[0.06] transition-all cursor-pointer group data-[state=open]:bg-white/[0.06]">
-                <Bell className="h-4 w-4 text-white/30 group-hover:text-white transition-colors" />
-                <span className="text-sm font-semibold text-white/60 group-hover:text-white">Notifications</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent side="left" className="border-white/[0.08] bg-[#0d1117]/95 backdrop-blur-3xl shadow-[0_16px_60px_rgba(0,0,0,0.7)] p-1.5 rounded-2xl w-56" sideOffset={8}>
-                  <div className="px-3 py-2 mb-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Status: {notifPermission}</p>
-                  </div>
-                  <DropdownMenuItem 
-                    onClick={handleRequestNotifications} 
-                    className="rounded-xl font-bold gap-3 py-2.5 focus:bg-primary/10 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      {notifPermission === 'granted' ? <Check className="h-4 w-4 text-primary" /> : <Bell className="h-4 w-4 text-primary" />}
-                    </div>
-                    <span>{notifPermission === 'granted' ? 'Send Test' : 'Enable Device Push'}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+            <DropdownMenuSeparator className="mx-2 opacity-5" />
+            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-white/20 px-3 py-2">Appearance</DropdownMenuLabel>
+            
+            <div className="grid grid-cols-3 gap-1 p-1">
+              {[
+                { id: 'light', icon: Sun, label: 'Light' },
+                { id: 'dark', icon: Moon, label: 'Dark' },
+                { id: 'system', icon: Monitor, label: 'System' }
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id as any)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1.5 py-2 rounded-lg transition-all",
+                    theme === t.id 
+                      ? "bg-primary/20 text-primary border border-primary/20" 
+                      : "text-white/30 hover:text-white hover:bg-white/[0.03] border border-transparent"
+                  )}
+                >
+                  <t.icon className="w-4 h-4" />
+                  <span className="text-[9px] font-bold uppercase tracking-tighter">{t.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
           
           <DropdownMenuSeparator className="mx-2 opacity-5" />

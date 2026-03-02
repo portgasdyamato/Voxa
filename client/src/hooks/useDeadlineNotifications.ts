@@ -1,20 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-interface DeadlineNotification {
-  id: number;
-  title: string;
-  dueDate: Date;
-  reminderType: 'manual' | 'morning' | 'default';
-  reminderTime?: string;
-  reminderEnabled: boolean;
-}
-
 export function useDeadlineNotifications(tasks: any[]) {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const { toast } = useToast();
   
-  // Track which tasks have been notified in the current session to avoid duplicates
+  // Track which tasks have been notified in the current session
   const notifiedTasksRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
@@ -24,36 +15,23 @@ export function useDeadlineNotifications(tasks: any[]) {
   }, []);
 
   const showNotification = useCallback((task: any, title: string, body: string) => {
-    // Show toast for immediate UI feedback
+    // Show toast for immediate UI feedback (Always works)
     toast({
       title,
       description: body,
       duration: 10000,
     });
 
-    // Show device-level push notification via Service Worker
+    // Show browser notification if permission is granted
     if (Notification.permission === 'granted') {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then((registration) => {
-          registration.showNotification(title, {
-            body,
-            icon: '/logo.png',
-            badge: '/logo.png',
-            tag: `task-${task.id}`,
-            vibrate: [100, 50, 100],
-            data: {
-              url: '/'
-            },
-            renotify: true
-          } as any);
-        }).catch(err => {
-          console.warn('SW notification failed:', err);
-          // Fallback to legacy notification if SW fails
-          new Notification(title, { body, icon: '/logo.png', tag: `task-${task.id}` });
+      try {
+        new Notification(title, {
+          body,
+          icon: '/logo.png',
+          tag: `task-${task.id}`,
         });
-      } else {
-        // Fallback for browsers without SW support
-        new Notification(title, { body, icon: '/logo.png', tag: `task-${task.id}` });
+      } catch (e) {
+        console.warn('Browser notification failed:', e);
       }
     }
   }, [toast]);
@@ -71,9 +49,6 @@ export function useDeadlineNotifications(tasks: any[]) {
         const dueTs = dueDate.getTime();
         const diffMinutes = (dueTs - nowTs) / (1000 * 60);
         
-        // Unique key for this notification window to avoid re-triggering if user refreshes
-        // For 'default' (2h), the window is the hour before.
-        // For 'manual' or 'morning', the window is the date + time.
         let notificationKey = '';
         let shouldNotify = false;
         let title = "⏰ Task Reminder";
@@ -84,12 +59,12 @@ export function useDeadlineNotifications(tasks: any[]) {
           if (diffMinutes <= 120 && diffMinutes > -5) {
             notificationKey = `${task.id}-default-${dueDate.getHours()}`;
             shouldNotify = true;
-            body = `"${task.title}" is due in ${Math.max(0, Math.ceil(diffMinutes))} minutes!`;
+            body = `"${task.title}" is due soon!`;
           }
         } 
         else if (task.reminderType === 'morning') {
-          // Trigger at 8 AM on the day of deadline
-          if (now.getHours() === 8 && dueDate.toDateString() === now.toDateString()) {
+          // Trigger at 9 AM on the day of deadline
+          if (now.getHours() === 9 && dueDate.toDateString() === now.toDateString()) {
             notificationKey = `${task.id}-morning-${now.toDateString()}`;
             shouldNotify = true;
             title = "🌅 Morning Brief";
@@ -97,17 +72,15 @@ export function useDeadlineNotifications(tasks: any[]) {
           }
         }
         else if (task.reminderType === 'manual' && task.reminderTime) {
-          // Trigger at the specified time
           const [targetH, targetM] = task.reminderTime.split(':').map(Number);
           if (now.getHours() === targetH && now.getMinutes() === targetM) {
             notificationKey = `${task.id}-manual-${now.toDateString()}-${task.reminderTime}`;
             shouldNotify = true;
             title = "🔔 Scheduled Alert";
-            body = `Task "${task.title}" reminder.`;
+            body = `Reminder for "${task.title}"`;
           }
         }
 
-        // Only notify if we haven't already notified for this specific trigger key
         if (shouldNotify && !notifiedTasksRef.current[notificationKey]) {
           notifiedTasksRef.current[notificationKey] = nowTs;
           showNotification(task, title, body);
@@ -116,7 +89,7 @@ export function useDeadlineNotifications(tasks: any[]) {
     };
 
     const interval = setInterval(checkReminders, 30000); // Check every 30 seconds
-    checkReminders(); // Initial check
+    checkReminders();
 
     return () => clearInterval(interval);
   }, [tasks, showNotification]);
