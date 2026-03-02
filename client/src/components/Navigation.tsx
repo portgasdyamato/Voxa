@@ -1,6 +1,7 @@
 import { useLocation } from 'wouter';
+import { useState } from 'react';
 import { 
-  BarChart3, Bell, LayoutGrid, Zap, Search, Mic 
+  BarChart3, Bell, LayoutGrid, Zap, Search, Mic, X 
 } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +28,7 @@ interface NavigationProps {
 
 export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange }: NavigationProps) {
   const [location, setLocation] = useLocation();
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { data: tasks = [] } = useTasks();
 
   const upcomingTasks = tasks
@@ -58,6 +60,18 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
               <p className="text-[10px] font-black text-primary tracking-[0.3em] uppercase opacity-40 mt-1 italic leading-none">Intelligence</p>
             </div>
           </motion.div>
+
+          {/* Mobile Search Toggle */}
+          <div className="md:hidden flex-1 flex justify-end">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="rounded-xl text-white/40 hover:text-white"
+            >
+              {isMobileSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+            </Button>
+          </div>
 
           {/* Elite Command Bar */}
           <div className="flex-1 max-w-xl relative group hidden md:block group">
@@ -129,6 +143,29 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
             <ProfileDropdown />
           </div>
         </div>
+
+        {/* Mobile Search Bar Expansion */}
+        <AnimatePresence>
+          {isMobileSearchOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="absolute top-20 left-0 right-0 bg-[#030305]/95 backdrop-blur-3xl border-b border-white/[0.05] md:hidden px-8 py-4 overflow-hidden"
+            >
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                <Input 
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="Search Workspace..."
+                  className="h-12 rounded-xl bg-white/5 border-white/10 pl-11 text-sm focus:ring-0 focus:border-primary/50"
+                  autoFocus
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Fluid Tab Navigation - Width & Cutoff Fix */}
@@ -136,9 +173,9 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
         <motion.div 
           initial={{ y: 50, opacity: 0, x: "-50%" }}
           animate={{ y: 0, opacity: 1, x: "-50%" }}
-          className="fixed bottom-8 left-1/2 z-[100] p-1 rounded-full bg-black/80 backdrop-blur-3xl border border-white/[0.08] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] overflow-hidden"
+          className="fixed bottom-8 left-1/2 z-[100] p-1 rounded-full bg-black/80 backdrop-blur-3xl border border-white/[0.08] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-auto"
         >
-          <div className="flex items-center gap-1 min-w-[320px]">
+          <div className="flex items-center gap-1 w-full md:min-w-[320px]">
             <TabButton 
                isActive={activeTab === 'home'} 
                onClick={() => handleNavigation('/home', 'home')}

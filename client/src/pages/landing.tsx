@@ -93,16 +93,11 @@ export default function Landing() {
               transition={{ duration: 0.7, delay: 0.1 }}
               className="text-center max-w-5xl mx-auto mb-8"
             >
-              <h1 className="text-[64px] md:text-[80px] lg:text-[96px] font-black tracking-[-0.04em] leading-[0.92]">
+              <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-[-0.04em] leading-[0.92]">
                 <span className="text-white">Speak it</span>
                 <br />
                 <span
-                  style={{
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
+                  className="bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
                 >
                   into existence.
                 </span>
@@ -169,7 +164,7 @@ export default function Landing() {
 
               <div className="hidden sm:block w-px h-8 bg-white/10" />
 
-              <div className="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-6 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest flex-wrap justify-center">
                 <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> No credit card</span>
                 <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-blue-400" /> Private & secure</span>
               </div>
@@ -188,15 +183,15 @@ export default function Landing() {
             <div className="absolute -inset-1 bg-gradient-to-b from-primary/20 via-violet-500/10 to-transparent rounded-[2.5rem] blur-2xl" />
 
             {/* App window */}
-            <div className="relative rounded-[2rem] overflow-hidden border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
+            <div className="relative rounded-2xl md:rounded-[2rem] overflow-hidden border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
               {/* Window chrome */}
-              <div className="h-11 border-b border-white/[0.06] bg-white/[0.02] flex items-center px-5 gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-500/60" />
-                <div className="w-3 h-3 rounded-full bg-amber-500/60" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
-                <div className="flex-1 mx-8">
-                  <div className="h-6 rounded-md bg-white/[0.04] border border-white/[0.04] w-64 mx-auto flex items-center justify-center">
-                    <span className="text-[9px] font-mono text-white/20">app.voxa.io/workspace</span>
+              <div className="h-9 md:h-11 border-b border-white/[0.06] bg-white/[0.02] flex items-center px-4 md:px-5 gap-2">
+                <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-rose-500/60" />
+                <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-amber-500/60" />
+                <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-emerald-500/60" />
+                <div className="flex-1 mx-4 md:mx-8">
+                  <div className="h-5 md:h-6 rounded-md bg-white/[0.04] border border-white/[0.04] w-32 md:w-64 mx-auto flex items-center justify-center">
+                    <span className="text-[7px] md:text-[9px] font-mono text-white/20 truncate">app.voxa.io/workspace</span>
                   </div>
                 </div>
               </div>

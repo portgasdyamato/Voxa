@@ -17,6 +17,7 @@ interface HomeProps {
 
 export default function Home({ searchQuery = '' }: HomeProps) {
   const { data: tasks, isLoading: tasksLoading } = useTasks();
+  const { data: categories } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
@@ -70,8 +71,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="max-w-[1700px] mx-auto px-8 lg:px-16 pt-16 pb-64">
-      <div className="grid lg:grid-cols-[260px_1fr_300px] gap-12 lg:gap-20 items-start">
+    <div className="max-w-[1700px] mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-64">
+      <div className="grid lg:grid-cols-[240px_1fr_300px] gap-8 lg:gap-20 items-start">
         
         {/* Workspace Sidebar */}
         <aside className="space-y-12 lg:sticky lg:top-28 hidden lg:block">
@@ -120,23 +121,70 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dashboard Core */}
         <main className="space-y-16">
-          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-white/[0.03] pb-12">
+          <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 md:gap-12 border-b border-white/[0.03] pb-12">
             <div className="space-y-4">
-              <h1 className="text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
-              <p className="text-white/20 font-black text-sm uppercase tracking-[0.4em] italic mt-2">
+              <h1 className="text-5xl md:text-7xl font-black tracking-[-0.05em] text-white leading-none">Workspace</h1>
+              <p className="text-white/20 font-black text-[11px] md:text-sm uppercase tracking-[0.4em] italic mt-2">
                 Optimizing {activeTasks.length} active tasks
               </p>
+            </div>
+
+            {/* Mobile Filter Pill Bar */}
+            <div className="flex lg:hidden overflow-x-auto pb-4 -mx-4 px-4 gap-2 no-scrollbar scroll-smooth">
+              {[
+                { id: 'all', label: 'All', icon: Layers },
+                { id: 'today', label: 'Today', icon: Activity },
+                { id: 'overdue', label: 'Priority', icon: Zap },
+              ].map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => {
+                    setSelectedFilter(filter.id);
+                    setSelectedCategory(null);
+                  }}
+                  className={cn(
+                    "flex-shrink-0 flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border",
+                    selectedFilter === filter.id && selectedCategory === null
+                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+                      : "bg-white/[0.03] text-white/40 border-white/[0.04]"
+                  )}
+                >
+                  <filter.icon className="w-3.5 h-3.5" />
+                  <span>{filter.label}</span>
+                </button>
+              ))}
+              
+              <div className="w-[1px] h-6 bg-white/[0.08] self-center flex-shrink-0 mx-1" />
+
+              {categories?.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setSelectedFilter('all');
+                  }}
+                  className={cn(
+                    "flex-shrink-0 flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border",
+                    selectedCategory === cat.id 
+                      ? "bg-white/[0.08] text-white border-white/20 shadow-xl" 
+                      : "bg-white/[0.03] text-white/40 border-white/[0.04]"
+                  )}
+                >
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                  <span>{cat.name}</span>
+                </button>
+              ))}
             </div>
             
             <motion.button 
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsModalOpen(true)}
-              className="h-16 px-10 rounded-2xl bg-primary text-white flex items-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all"
+              className="h-14 lg:h-16 px-8 lg:px-10 rounded-2xl bg-primary text-white flex items-center justify-center gap-4 shadow-2xl shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all"
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus className="w-6 h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10 italic">New Task</span>
+              <Plus className="w-5 h-5 lg:w-6 lg:h-6 relative z-10 group-hover:rotate-90 transition-transform duration-500" />
+              <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.3em] relative z-10 italic">New Task</span>
             </motion.button>
           </header>
 

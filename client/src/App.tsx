@@ -30,16 +30,16 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
       </main>
       
       {/* Floating Elite Assistant Trigger */}
-      <div className="fixed bottom-12 right-12 z-[100]">
+      <div className="fixed bottom-24 right-6 md:bottom-12 md:right-12 z-[100]">
         <motion.button
           whileHover={{ scale: 1.1, rotate: 6 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setVoiceModalOpen(true)}
-          className="w-24 h-24 rounded-[3rem] bg-primary text-white flex items-center justify-center shadow-[0_30px_70px_-15px_rgba(var(--primary),0.1)] hover:shadow-[0_40px_80px_-20px_rgba(var(--primary),0.3)] transition-all duration-700 group relative overflow-hidden group/btn"
+          className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[3rem] bg-primary text-white flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(var(--primary),0.2)] hover:shadow-[0_40px_80px_-20px_rgba(var(--primary),0.3)] transition-all duration-700 group relative overflow-hidden group/btn"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-700" />
           <div className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-1000 bg-gradient-to-tr from-transparent via-white/5 to-white/10" />
-          <Mic className="w-10 h-10 relative z-10 transition-transform duration-700 group-hover/btn:scale-110 drop-shadow-2xl" />
+          <Mic className="w-6 h-6 md:w-10 md:h-10 relative z-10 transition-transform duration-700 group-hover/btn:scale-110 drop-shadow-2xl" />
           <motion.div 
             animate={{ scale: [1, 1.4, 1], opacity: [0, 0.4, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
