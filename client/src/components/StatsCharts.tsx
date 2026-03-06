@@ -157,7 +157,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'var(--muted-foreground)', fontSize: 9, fontWeight: 900, letterSpacing: '0.1em' }}
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 900, letterSpacing: '0.1em' }}
                 tickFormatter={(v) => formatDate(v, period)}
                 interval={period === 'week' ? 0 : 'preserveStartEnd'}
                 dy={12}
@@ -165,7 +165,7 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'var(--muted-foreground)', fontSize: 9, fontWeight: 900 }}
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 900 }}
                 allowDecimals={false}
               />
               <Tooltip content={<AreaTooltip period={period}/>}/>
@@ -264,9 +264,9 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Completed', value: data.completedTasks, color: '#3b82f6' },
-                          { name: 'Pending', value: data.pendingTasks, color: '#8b5cf6' },
-                          { name: 'Overdue', value: data.overdueTasks, color: '#f43f5e' },
+                          { name: 'High', value: data.highPriority, color: '#f43f5e' },
+                          { name: 'Medium', value: data.mediumPriority, color: '#f59e0b' },
+                          { name: 'Low', value: data.lowPriority, color: '#3b82f6' },
                         ].filter(d => d.value > 0)}
                         cx="50%"
                         cy="50%"
@@ -279,9 +279,9 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
                         animationEasing="ease-out"
                       >
                         {[
-                          { name: 'Completed', value: data.completedTasks, color: '#3b82f6' },
-                          { name: 'Pending', value: data.pendingTasks, color: '#8b5cf6' },
-                          { name: 'Overdue', value: data.overdueTasks, color: '#f43f5e' },
+                          { name: 'High', value: data.highPriority, color: '#f43f5e' },
+                          { name: 'Medium', value: data.mediumPriority, color: '#f59e0b' },
+                          { name: 'Low', value: data.lowPriority, color: '#3b82f6' },
                         ].filter(d => d.value > 0).map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} style={{ filter: `drop-shadow(0 0 8px ${entry.color}80)` }}/>
                         ))}
@@ -300,9 +300,9 @@ export function StatsCharts({ data, period, categories }: StatsChartsProps) {
             {/* Legend */}
             <div className="flex flex-col gap-4 flex-1">
               {[
-                { label: 'Completed', value: data.completedTasks, color: '#3b82f6' },
-                { label: 'Pending', value: data.pendingTasks, color: '#8b5cf6' },
-                { label: 'Overdue', value: data.overdueTasks, color: '#f43f5e' },
+                { label: 'High', value: data.highPriority, color: '#f43f5e' },
+                { label: 'Medium', value: data.mediumPriority, color: '#f59e0b' },
+                { label: 'Low', value: data.lowPriority, color: '#3b82f6' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-3">
                   <div
