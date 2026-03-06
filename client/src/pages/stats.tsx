@@ -55,7 +55,7 @@ export default function Stats() {
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-16 pt-12 sm:pt-24 md:pt-28 pb-44">
+    <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-16 pt-6 sm:pt-8 md:pt-10 pb-44">
       
       {/* Header */}
       <motion.div
