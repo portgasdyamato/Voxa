@@ -532,6 +532,10 @@ async function handler(req, res) {
         }
       });
       
+      const highPriority = periodTasks.filter((task) => task.priority === 'high').length;
+      const mediumPriority = periodTasks.filter((task) => task.priority === 'medium').length;
+      const lowPriority = periodTasks.filter((task) => task.priority === 'low').length;
+
       const stats = {
         totalTasks,
         completedTasks,
@@ -540,7 +544,10 @@ async function handler(req, res) {
         completionRate,
         period,
         chartData,
-        categoryDistribution
+        categoryDistribution,
+        highPriority,
+        mediumPriority,
+        lowPriority
       };
       console.log(`Returning stats for ${period}:`, stats);
       res.status(200).json(stats);
