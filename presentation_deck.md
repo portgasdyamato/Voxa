@@ -1,5 +1,5 @@
 # VoXa: Voice-Native Task Orchestration
-*Case Study for Palantir Interaction Design Interview*
+*Case Study*
 
 ---
 
