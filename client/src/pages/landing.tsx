@@ -1,5 +1,5 @@
 import { 
-  ArrowRight, Sparkles, Database, ArrowUpRight, 
+  ArrowRight, Sparkles, Database, ArrowUp, ArrowUpRight, 
   LayoutGrid, Layers, History, RefreshCw, Box, 
   Bot, Workflow, ShieldCheck
 } from 'lucide-react';
@@ -294,7 +294,7 @@ export default function Landing() {
             </motion.div>
 
             <div className="flex flex-col gap-6 scale-[0.85] xl:scale-[0.9] origin-center lg:origin-right">
-               <div className="p-8 md:p-10 rounded-[3rem] border border-white/[0.25] bg-white/[0.12] backdrop-blur-[40px] shadow-[0_60px_120px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] relative overflow-hidden group">
+               <div className="p-8 md:p-10 rounded-[3rem] border border-white/[0.25] bg-white/[0.12] backdrop-blur-[40px] shadow-[0_60px_120px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.25)] relative overflow-hidden group">
                   <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
                   <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
                   <div className="flex items-center gap-5 mb-6 text-white/90">
@@ -307,7 +307,7 @@ export default function Landing() {
                <div className="flex gap-6">
                  {[ {gif: heroGif, label: 'Listening', node: 'LISTEN'}, {gif: processGif, label: 'Transcribing', node: 'TRANSCRIBE'} ]
                   .map((n, i) => (
-                   <div key={`hero-ns-v7-${i}`} className="flex-1 p-6 rounded-[2.8rem] border border-white/[0.25] bg-white/[0.12] backdrop-blur-[40px] group flex flex-col items-center relative overflow-hidden shadow-[0_45px_100px_-15px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)]">
+                   <div key={`hero-ns-v7-${i}`} className="flex-1 p-6 rounded-[2.8rem] border border-white/[0.25] bg-white/[0.12] backdrop-blur-[40px] group flex flex-col items-center relative overflow-hidden shadow-[0_45px_100px_-15px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.25)]">
                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
                       <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
                       <div className="aspect-square w-full rounded-[2.2rem] overflow-hidden bg-black/40 border border-white/10 mb-5 relative shadow-inner">
@@ -373,21 +373,36 @@ export default function Landing() {
         {/* ── CTA ── */}
         <section id="cta" className="relative z-10 px-6 md:px-16 2xl:px-24 mb-60">
             <div className="max-w-[1200px] mx-auto">
-               <div className="relative rounded-[4rem] border border-white/[0.3] bg-white/[0.12] backdrop-blur-3xl p-16 md:p-24 flex flex-col md:flex-row items-center justify-between gap-16 overflow-hidden shadow-[0_80px_160px_-20px_rgba(0,0,0,1),inset_0_1px_1px_rgba(255,255,255,0.25)]">
+               <div className="relative rounded-[4rem] border border-white/[0.3] bg-white/[0.08] backdrop-blur-3xl p-16 md:p-24 flex flex-col lg:flex-row items-center justify-between gap-16 overflow-hidden shadow-[0_80px_160px_-20px_rgba(0,0,0,1),inset_0_1px_1px_rgba(255,255,255,0.2)]">
                   <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
                   <div 
                      className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" 
                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
                   />
-                  <h2 className="text-[3.5rem] md:text-[4.5rem] font-bold text-white tracking-[-0.05em] leading-[0.95]">
-                     Evolve your <br /> <span className="font-serif italic font-light text-white/70">vocal workflow.</span>
-                  </h2>
+                  {/* Decorative Glow */}
+                  <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
                   
-                  <button onClick={handleLogin} className="group relative px-16 py-8 rounded-full border border-white/20 bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] text-white text-[15px] font-medium tracking-tight transition-all hover:scale-105 active:scale-95 shadow-2xl overflow-hidden">
-                     <div className="absolute inset-0 bg-white/[0.02] group-hover:bg-white/[0.05] transition-colors" />
-                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
-                     <span className="relative z-20">Launch VoXa Portal</span>
-                  </button>
+                  <div className="relative z-10 flex-1 max-w-2xl">
+                    <h2 className="text-[3.5rem] md:text-[5rem] font-bold text-white tracking-[-0.05em] leading-[0.9] mb-8">
+                       Evolve your <br /> <span className="font-serif italic font-light text-white/70">vocal workflow.</span>
+                    </h2>
+                    <p className="text-[18px] text-white/40 leading-relaxed font-light tracking-wide max-w-md">
+                       Step into a world where your voice is the only interface you need. Absolute precision, infinite possibilities.
+                    </p>
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <button onClick={handleLogin} className="group relative px-16 py-8 rounded-full border border-white/20 bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] text-white text-[15px] font-medium tracking-tight transition-all hover:scale-105 active:scale-95 shadow-2xl overflow-hidden">
+                       <div className="absolute inset-0 bg-white/[0.02] group-hover:bg-white/[0.05] transition-colors" />
+                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
+                       <span className="relative z-20 flex items-center gap-3">
+                          Launch VoXa Portal
+                          <ArrowRight className="w-5 h-5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                       </span>
+                    </button>
+                  </div>
+
+                  <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-500/5 blur-[100px] pointer-events-none" />
                </div>
             </div>
         </section>
@@ -432,7 +447,10 @@ export default function Landing() {
                   </div>
                </div>
 
-               <div className="flex flex-col md:flex-row justify-between items-center gap-10 pt-16 border-t border-white/[0.08] relative z-20">
+               <div className="flex flex-col md:flex-row justify-between items-center gap-10 pt-16 relative z-20">
+                  {/* Subtle centered line replacement for full-width border */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  
                   <div className="flex gap-10 text-[10px] font-bold tracking-[0.2em] text-white/20 uppercase">
                      <span>Privacy Policy</span>
                      <span>Terms of Service</span>
@@ -440,7 +458,7 @@ export default function Landing() {
                   </div>
                   <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="group relative px-6 py-6 rounded-full bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] border border-white/20 flex items-center justify-center hover:bg-white/[0.1] transition-all shadow-xl overflow-hidden">
                      <div className="absolute inset-x-0 top-0 h-px bg-white/40 rounded-full" />
-                     <ArrowUpRight className="w-6 h-6 text-white/50 group-hover:text-white transition-all duration-500 group-hover:rotate-45" />
+                     <ArrowUp className="w-6 h-6 text-white/50 group-hover:text-white transition-all duration-500 group-hover:-translate-y-1" />
                   </button>
                </div>
             </div>
