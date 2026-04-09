@@ -1,639 +1,459 @@
-import { Button } from '@/components/ui/button';
-import { Mic, ArrowRight, Zap, CheckCircle2, Star, Shield, Sparkles, Brain, Calendar, Bell, Globe, Play, ChevronRight, Quote } from 'lucide-react';
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { 
+  ArrowRight, Sparkles, Database, ArrowUpRight, 
+  LayoutGrid, Layers, History, RefreshCw, Box, 
+  Bot, Workflow, ShieldCheck
+} from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring, useInView, useMotionValue } from 'framer-motion';
+import { useRef, useEffect } from 'react';
 import heroGif from '@/assets/hero.gif';
+import processGif from '@/assets/process.gif';
 
-export default function Landing() {
-  const featuresRef = useRef<HTMLDivElement>(null);
+/* ─── HLS Video Hook ────────────────────────────────── */
+function useHlsVideo(src: string) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const tryPlay = () => { video && video.play().catch(() => {}); };
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = src;
+      video.addEventListener('loadedmetadata', tryPlay);
+      return () => video.removeEventListener('loadedmetadata', tryPlay);
+    } else {
+      import('hls.js').then(({ default: Hls }) => {
+        if (Hls.isSupported()) {
+          const hls = new Hls({ enableWorker: false });
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+          return () => hls.destroy();
+        }
+      });
+    }
+  }, [src]);
+  return videoRef;
+}
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
+/* ─── Premium Interactive Bento Card ─────────────────── */
+function BentoCard({ title, icon: Icon, span = "col-span-1", children, delay = 0 }: any) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-100, 100], [5, -5]);
+  const rotateY = useTransform(x, [-100, 100], [-5, 5]);
+  
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set(event.clientX - centerX);
+    y.set(event.clientY - centerY);
+    mouseX.set(event.clientX - rect.left);
+    mouseY.set(event.clientY - rect.top);
+  }
 
   return (
-    <div className="min-h-screen bg-[#030507] text-white overflow-x-hidden">
-      
-      {/* ── Ambient background ── */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[160px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[160px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(59,130,246,0.06)_0%,transparent_70%)]" />
-        {/* subtle grid */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)`,
-            backgroundSize: '72px 72px',
-          }}
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 1, delay, ease: [0.16, 1, 0.3, 1] }}
+      style={{ perspective: 1200 }}
+      className={`${span} relative h-full`}
+    >
+      <motion.div
+        whileHover={{ scale: 1.015 }}
+        style={{ rotateX, rotateY }}
+        className="relative h-full rounded-[2.8rem] border border-white/[0.22] bg-white/[0.1] backdrop-blur-[40px] overflow-hidden transition-all duration-500 group flex flex-col will-change-transform shadow-[0_45px_100px_-25px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)]"
+      >
+        <div 
+          className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" 
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
         />
-      </div>
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
+        <motion.div 
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-30"
+          style={{ background: useTransform([mouseX, mouseY], ([mx, my]) => `radial-gradient(450px circle at ${mx}px ${my}px, rgba(59,130,246,0.18), transparent 80%)`) }}
+        />
 
-      {/* ═══════════════════════════════════════
-          NAV
-      ════════════════════════════════════════ */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 mt-4">
-          <div className="flex items-center justify-between h-14 px-6 rounded-2xl bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_16px_40px_rgba(0,0,0,0.4)]">
-            {/* Logo */}
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/40 group-hover:scale-110 transition-transform">
-                <Zap className="w-4 h-4 text-white fill-white" />
-              </div>
-              <span className="text-lg font-black tracking-tight">VoXa</span>
+        <div className="p-8 pb-2 relative z-10">
+          <div className="flex items-center gap-5">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.1] border border-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-all duration-500 shadow-inner">
+              <Icon className="w-5.5 h-5.5 text-white/40 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-500" />
             </div>
-
-            {/* Nav links */}
-            <nav className="hidden md:flex items-center gap-8 text-[12px] font-semibold uppercase tracking-widest text-white/40">
-              <a href="#features" className="hover:text-white transition-colors duration-300">Features</a>
-              <a href="#how-it-works" className="hover:text-white transition-colors duration-300">How it Works</a>
-              <a href="#about" className="hover:text-white transition-colors duration-300">About</a>
-            </nav>
-
-            {/* CTA */}
-            <div className="flex items-center gap-3">
-              <button onClick={handleLogin} className="text-[12px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors px-4 py-2 hidden sm:block">
-                Sign In
-              </button>
-              <button
-                onClick={handleLogin}
-                className="flex items-center gap-2 h-9 px-5 rounded-xl bg-primary text-white text-[12px] font-black uppercase tracking-wider shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.03] active:scale-95 transition-all duration-300"
-              >
-                Get started <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <h4 className="text-[20px] font-bold tracking-tight text-white/95 group-hover:text-white transition-colors">{title}</h4>
           </div>
         </div>
-      </header>
+        
+        <div className="px-8 pb-8 flex-1 relative z-10 flex flex-col">
+          {children}
+        </div>
+        <div className="absolute -bottom-20 -right-20 w-52 h-52 bg-blue-500/[0.08] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+      </motion.div>
+    </motion.div>
+  );
+}
 
-      <main className="relative z-10">
-        {/* ═══════════════════════════════════════
-            HERO
-        ════════════════════════════════════════ */}
-        <section className="relative pt-36 pb-24 px-6">
-          <div className="max-w-7xl mx-auto">
-            
-            {/* Pill badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex justify-center mb-8"
-            >
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/10 border border-primary/25 text-primary">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]">Voice-powered task management</span>
-              </div>
-            </motion.div>
+/* ─── Ultra High-Fidelity Interactive Assets ─── */
 
-            {/* Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="text-center max-w-5xl mx-auto mb-8"
-            >
-              <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-[-0.04em] leading-[0.92]">
-                <span className="text-white">Speak it</span>
-                <br />
-                <span
-                  className="bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
-                >
-                  into existence.
-                </span>
-              </h1>
-            </motion.div>
-
-            {/* Subheadline */}
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-center text-xl text-white/40 max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
-            >
-              The high-performance task manager that listens. Just speak — VoXa captures, organises, and schedules everything automatically.
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
-            >
-              <button
-                onClick={handleLogin}
-                className="group flex items-center gap-3 h-14 px-10 rounded-2xl bg-primary text-white font-black text-[14px] uppercase tracking-widest shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_50px_rgba(59,130,246,0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
-              >
-                <Mic className="w-5 h-5" />
-                Start for free
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="group flex items-center gap-3 h-14 px-10 rounded-2xl bg-white/[0.05] border border-white/[0.1] text-white font-bold text-[13px] uppercase tracking-widest hover:bg-white/[0.08] transition-all duration-300">
-                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Play className="w-3 h-3 fill-white ml-0.5" />
-                </div>
-                Watch demo
-              </button>
-            </motion.div>
-
-            {/* Social proof */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-8 text-white/30"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2.5">
-                  {[1,2,3,4,5].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-[#030507] bg-gradient-to-br from-blue-500 to-violet-500 overflow-hidden shadow-md">
-                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 7}`} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex gap-0.5 mb-0.5">
-                    {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
-                  </div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest">
-                    <span className="text-white">1,200+</span> people trust VoXa
-                  </p>
-                </div>
-              </div>
-
-              <div className="hidden sm:block w-px h-8 bg-white/10" />
-
-              <div className="flex items-center gap-6 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest flex-wrap justify-center">
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> No credit card</span>
-                <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-blue-400" /> Private & secure</span>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* ── Hero App Preview ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-5xl mx-auto mt-20 relative"
-          >
-            {/* Glow behind card */}
-            <div className="absolute inset-x-0 -top-8 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-            <div className="absolute -inset-1 bg-gradient-to-b from-primary/20 via-violet-500/10 to-transparent rounded-[2.5rem] blur-2xl" />
-
-            {/* App window */}
-            <div className="relative rounded-2xl md:rounded-[2rem] overflow-hidden border border-white/[0.08] bg-[#0a0c10] shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
-              {/* Window chrome */}
-              <div className="h-9 md:h-11 border-b border-white/[0.06] bg-white/[0.02] flex items-center px-4 md:px-5 gap-2">
-                <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-rose-500/60" />
-                <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-amber-500/60" />
-                <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-emerald-500/60" />
-                <div className="flex-1 mx-4 md:mx-8">
-                  <div className="h-5 md:h-6 rounded-md bg-white/[0.04] border border-white/[0.04] w-32 md:w-64 mx-auto flex items-center justify-center">
-                    <span className="text-[7px] md:text-[9px] font-mono text-white/20 truncate">app.voxa.io/workspace</span>
-                  </div>
-                </div>
-              </div>
-              <div className="aspect-[16/9] overflow-hidden">
-                <img
-                  src={heroGif}
-                  alt="VoXa Interface"
-                  className="w-full h-full object-cover"
-                />
-                {/* Subtle gradient overlay at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0c10] to-transparent" />
-              </div>
-            </div>
-
-            {/* ── Floating notification cards ── */}
-            <motion.div
-              animate={{ y: [0, -12, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -top-5 -right-6 hidden lg:flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#0d1117]/90 backdrop-blur-xl border border-white/[0.1] shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
-            >
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/35 mb-0.5">System</p>
-                <p className="text-[13px] font-bold text-white leading-none">Objectives Synced</p>
-              </div>
-              <div className="ml-2 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#4ade80]" />
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 14, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-              className="absolute -bottom-5 -left-6 hidden lg:flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#0d1117]/90 backdrop-blur-xl border border-white/[0.1] shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
-            >
-              <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Mic className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/35 mb-0.5">Voice</p>
-                <p className="text-[13px] font-bold text-white leading-none">Listening...</p>
-              </div>
-              <motion.div
-                className="ml-2 flex gap-0.5 items-center"
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-              >
-                {[1,2,3,4].map(i => (
-                  <motion.div
-                    key={i}
-                    className="w-0.5 rounded-full bg-primary"
-                    animate={{ height: [4, 14, 4] }}
-                    transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.1, ease: 'easeInOut' }}
-                  />
-                ))}
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </section>
-
-        {/* ═══════════════════════════════════════
-            STATS STRIPE
-        ════════════════════════════════════════ */}
-        <section className="py-16 px-6 border-y border-white/[0.05] bg-white/[0.01]">
-          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
-            {[
-              { value: '1,200+', label: 'Active users' },
-              { value: '98%', label: 'Accuracy rate' },
-              { value: '<2s', label: 'Task capture' },
-              { value: '5★', label: 'User rating' },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="text-center space-y-2"
-              >
-                <div
-                  className="text-4xl md:text-5xl font-black tracking-tight"
-                  style={{
-                    background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.5) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  {stat.value}
-                </div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-white/30">{stat.label}</p>
-              </motion.div>
+const NeuralCylindricalCore = () => (
+  <div className="relative w-full h-[140px] rounded-[2rem] bg-black/30 border border-white/5 overflow-hidden group-hover:border-blue-500/20 transition-all shadow-inner my-4">
+    <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 via-transparent to-blue-500/5 opacity-50" />
+    <div className="flex items-end justify-center gap-2.5 h-full px-12 pb-5">
+       {[0, 1, 2, 3, 4, 3, 2, 1, 0].map((hIndex, i) => (
+         <div key={`col-v6-${i}`} className="flex flex-col gap-1.5 flex-1 items-center">
+            {Array.from({length: 6}).map((_, dotIndex) => (
+              <motion.div 
+                key={`dot-v6-${i}-${dotIndex}`}
+                animate={{ 
+                  opacity: dotIndex < hIndex + 1 ? [0.3, 1, 0.3] : [0.05, 0.1, 0.05],
+                  scale: dotIndex < hIndex + 1 ? [0.9, 1.15, 0.9] : [1, 1, 1]
+                }}
+                transition={{ 
+                  duration: 2.2, 
+                  repeat: Infinity, 
+                  repeatType: "loop",
+                  delay: (i * 0.1) + (dotIndex * 0.1),
+                  ease: "easeInOut"
+                }}
+                className={`w-full aspect-square rounded-full shadow-[0_0_8px_rgba(59,130,246,0.2)] ${dotIndex < hIndex + 1 ? 'bg-blue-400' : 'bg-white/10'}`}
+                style={{ maxWidth: '6px' }}
+              />
             ))}
-          </div>
-        </section>
+         </div>
+       ))}
+    </div>
+  </div>
+);
 
-        {/* ═══════════════════════════════════════
-            FEATURES ─ Bento Grid
-        ════════════════════════════════════════ */}
-        <section id="features" ref={featuresRef} className="py-32 px-6">
-          <div className="max-w-6xl mx-auto">
-            
-            {/* Section header */}
-            <div className="text-center mb-20 space-y-5">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/40">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]">Everything you need</span>
-              </div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-[-0.03em] text-white leading-tight">
-                Built for people who<br />
-                <span className="text-white/30">move fast.</span>
-              </h2>
-              <p className="text-lg text-white/35 max-w-xl mx-auto leading-relaxed">
-                No more typing. No more friction. Just speak, and VoXa handles the rest — from capture to completion.
-              </p>
+const OrbitalMeshSystem = () => (
+  <div className="relative w-full h-[150px] flex items-center justify-center py-4">
+     <div className="relative w-28 h-28">
+        {[0, 1, 2].map((i) => (
+           <motion.div 
+             key={`orb-v6-${i}`}
+             animate={{ rotate: i % 2 === 0 ? [0, 360] : [0, -360] }}
+             transition={{ duration: 15 + (i * 5), repeat: Infinity, ease: "linear", repeatType: "loop" }}
+             className="absolute inset-0 rounded-full border border-dashed border-blue-500/10"
+             style={{ padding: `${i * 12}px` }}
+           >
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_12px_#60a5fa30]" />
+           </motion.div>
+        ))}
+        <div className="absolute inset-0 flex items-center justify-center">
+           <div className="w-12 h-12 rounded-full bg-blue-500/5 border border-blue-500/20 flex items-center justify-center backdrop-blur-3xl shadow-[0_0_40px_rgba(59,130,246,0.1)]">
+              <RefreshCw className="w-5 h-5 text-blue-400 animate-spin" style={{ animationDuration: '6s' }} />
+           </div>
+        </div>
+     </div>
+  </div>
+);
+
+const FractalPrismShield = () => (
+  <div className="relative w-full h-[150px] flex items-center justify-center p-4">
+     <div className="grid grid-cols-4 gap-2.5 w-36">
+        {Array.from({length: 12}).map((_, i) => (
+           <motion.div 
+             key={`prizm-v6-${i}`}
+             animate={{ 
+               opacity: [0.1, 0.5, 0.1],
+               scale: [0.95, 1, 0.95]
+             }}
+             transition={{ duration: 3, repeat: Infinity, delay: i * 0.1, repeatType: "loop" }}
+             className="aspect-square rounded-xl border border-white/5 bg-blue-500/5 backdrop-blur-sm group-hover:border-blue-500/20 transition-colors"
+           />
+        ))}
+     </div>
+  </div>
+);
+
+const HyperFastDataStreams = () => (
+   <div className="relative w-full h-[140px] bg-black/20 border border-white/5 rounded-3xl overflow-hidden my-4 group-hover:border-blue-400/10 transition-all">
+      <div className="flex justify-around items-end h-full px-12 pb-2">
+         {Array.from({length: 8}).map((_, i) => (
+            <div key={`strm-v6-${i}`} className="relative w-2 h-full bg-white/[0.01]">
+               <motion.div 
+                 animate={{ y: ['100%', '-100%'], opacity: [0, 1, 0] }}
+                 transition={{ 
+                   duration: 1.2 + (i * 0.25), 
+                   repeat: Infinity, 
+                   ease: "linear",
+                   repeatType: "loop"
+                 }}
+                 className="absolute inset-x-0 h-1/3 bg-gradient-to-b from-transparent via-blue-400/40 to-transparent shadow-[0_0_20px_#60a5fa15]"
+               />
             </div>
+         ))}
+      </div>
+   </div>
+);
 
-            {/* Bento grid */}
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              
-              {/* Large feature 1 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="md:col-span-4 group relative rounded-3xl p-8 bg-gradient-to-br from-primary/10 via-[#0d1117] to-[#0d1117] border border-white/[0.07] hover:border-primary/30 transition-all duration-500 overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center mb-6">
-                  <Mic className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-black text-white mb-3 tracking-tight">Voice-First Capture</h3>
-                <p className="text-white/40 leading-relaxed text-[15px] max-w-md">
-                  Just say it. VoXa listens, understands context, and instantly creates a structured task — no tapping, no typing, no friction.
-                </p>
-                {/* Mini demo UI */}
-                <div className="mt-8 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center flex-shrink-0">
-                    <Mic className="w-4 h-4 text-rose-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[12px] text-white/30 font-mono italic">"Remind me to send the report by Friday 5pm"</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/20" />
-                  <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <p className="text-[11px] font-bold text-emerald-400">Task added ✓</p>
-                  </div>
-                </div>
-              </motion.div>
+const RadarScan = () => (
+  <div className="relative w-full h-[130px] flex items-center justify-center">
+    <div className="w-28 h-28 rounded-full border border-white/10 flex items-center justify-center relative bg-black/20 shadow-inner overflow-hidden">
+       <motion.div 
+         animate={{ rotate: [0, 360] }}
+         transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatType: "loop" }}
+         className="absolute inset-0 bg-gradient-to-r from-blue-400/40 to-transparent origin-center rounded-full"
+         style={{ clipPath: 'conic-gradient(from 0deg, white, transparent)' }}
+       />
+       <div className="absolute inset-2 border border-blue-500/10 rounded-full opacity-30" />
+       <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_20px_#60a5fa] relative z-10" />
+    </div>
+  </div>
+);
 
-              {/* Tall feature 2 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="md:col-span-2 group relative rounded-3xl p-8 bg-gradient-to-br from-violet-500/10 via-[#0d1117] to-[#0d1117] border border-white/[0.07] hover:border-violet-400/30 transition-all duration-500 overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-violet-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                <div className="w-12 h-12 rounded-2xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center mb-6">
-                  <Brain className="w-6 h-6 text-violet-400" />
-                </div>
-                <h3 className="text-xl font-black text-white mb-3 tracking-tight">AI Organisation</h3>
-                <p className="text-white/40 leading-relaxed text-[14px]">
-                  Automatically categorises, tags priority, and sorts tasks so your workspace is always clean.
-                </p>
-                {/* Mini tags */}
-                <div className="mt-8 flex flex-wrap gap-2">
-                  {['Work', 'Urgent', 'Personal', 'Later'].map((tag, i) => (
-                    <span key={i} className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-white/[0.04] border border-white/[0.08] text-white/40">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
+export default function Landing() {
+  const handleLogin = () => { window.location.href = '/api/login'; };
+  const videoRef = useHlsVideo('https://stream.mux.com/r6pXRAJb3005XEEbl1hYU1x01RFJDSn7KQApwNGgAHHbU.m3u8');
+  const containerRef = useRef<HTMLDivElement>(null);
 
-              {/* Feature 3 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.15 }}
-                className="md:col-span-2 group relative rounded-3xl p-8 bg-gradient-to-br from-cyan-500/8 via-[#0d1117] to-[#0d1117] border border-white/[0.07] hover:border-cyan-400/30 transition-all duration-500 overflow-hidden"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center mb-6">
-                  <Calendar className="w-6 h-6 text-cyan-400" />
-                </div>
-                <h3 className="text-xl font-black text-white mb-3 tracking-tight">Smart Deadlines</h3>
-                <p className="text-white/40 leading-relaxed text-[14px]">
-                  Dates and times extracted automatically from natural speech. "Next Friday at 3pm" just works.
-                </p>
-                <div className="mt-6 px-4 py-3 rounded-xl bg-cyan-500/5 border border-cyan-500/15 flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-cyan-400 flex-shrink-0" />
-                  <span className="text-[12px] font-bold text-cyan-400/70">Fri, Mar 7 · 15:00</span>
-                </div>
-              </motion.div>
+  const { scrollYProgress } = useScroll({ offset: ["start start", "end end"] });
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 80, damping: 25 });
+  
+  const videoY = useTransform(smoothProgress, [0, 1], ["0%", "15%"]);
+  const heroOpacity = useTransform(smoothProgress, [0, 0.1], [1, 0]);
 
-              {/* Feature 4 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className="md:col-span-2 group relative rounded-3xl p-8 bg-gradient-to-br from-amber-500/8 via-[#0d1117] to-[#0d1117] border border-white/[0.07] hover:border-amber-400/30 transition-all duration-500 overflow-hidden"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center mb-6">
-                  <Bell className="w-6 h-6 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-black text-white mb-3 tracking-tight">Smart Reminders</h3>
-                <p className="text-white/40 leading-relaxed text-[14px]">
-                  Never miss a deadline with intelligent notifications that adapt to how you actually work.
-                </p>
-              </motion.div>
+  return (
+    <div className="relative bg-[#010101] text-[#f1f1f1] font-sans selection:bg-white/20 overflow-x-hidden min-h-screen">
+      <div ref={containerRef} className="relative w-full h-full">
+        
+        {/* ── Background Video ── */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <motion.video
+            ref={videoRef} autoPlay muted loop playsInline
+            style={{ y: videoY }}
+            className="w-full h-full object-cover scale-[1.05]"
+          />
+          <div className="absolute inset-0 bg-[#010101]/65" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#010101]/80 via-transparent to-transparent" />
+        </div>
 
-              {/* Feature 5 — wide */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.25 }}
-                className="md:col-span-2 group relative rounded-3xl p-8 bg-gradient-to-br from-emerald-500/8 via-[#0d1117] to-[#0d1117] border border-white/[0.07] hover:border-emerald-400/30 transition-all duration-500 overflow-hidden"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mb-6">
-                  <Shield className="w-6 h-6 text-emerald-400" />
-                </div>
-                <h3 className="text-xl font-black text-white mb-3 tracking-tight">Private by Design</h3>
-                <p className="text-white/40 leading-relaxed text-[14px]">
-                  End-to-end encrypted. Your voice data is yours — never sold, never shared, never stored.
-                </p>
-              </motion.div>
+        {/* ── HEADER ── */}
+        <header className="fixed top-0 left-0 right-0 z-[100] p-6 md:p-10 pointer-events-none">
+          <div className="max-w-[1800px] mx-auto flex items-center justify-between">
+               <div className="flex items-center gap-5 group cursor-pointer pointer-events-auto" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                  <div className="w-3.5 h-3.5 rounded-full bg-white shadow-[0_0_20px_white]" />
+                  <span className="text-[22px] font-black tracking-[0.2em] text-white/95 uppercase">VoXa</span>
+               </div>
 
-              {/* Feature 6 — analytics teaser */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-                className="md:col-span-6 group relative rounded-3xl p-8 md:p-10 bg-gradient-to-r from-primary/8 via-[#0d1117] to-violet-500/8 border border-white/[0.07] hover:border-white/[0.12] transition-all duration-500 overflow-hidden"
-              >
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                  <div className="space-y-3 max-w-xl">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center">
-                      <Globe className="w-6 h-6 text-white/50" />
-                    </div>
-                    <h3 className="text-2xl font-black text-white tracking-tight">Works everywhere, syncs instantly</h3>
-                    <p className="text-white/40 leading-relaxed">
-                      Web, mobile, tablet — your workspace follows you. Real-time sync keeps everything up-to-date across all your devices.
-                    </p>
-                  </div>
-                  <div className="flex gap-3 flex-shrink-0">
-                    {['Web', 'iOS', 'Android'].map((p) => (
-                      <div key={p} className="px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[12px] font-black uppercase tracking-widest text-white/30">
-                        {p}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════
-            HOW IT WORKS
-        ════════════════════════════════════════ */}
-        <section id="how-it-works" className="py-32 px-6 border-t border-white/[0.05]">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-20 space-y-5">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/40">
-                <Zap className="w-3.5 h-3.5 text-primary" />
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]">In three steps</span>
-              </div>
-              <h2 className="text-5xl md:text-6xl font-black tracking-[-0.03em] text-white leading-tight">
-                Simple as<br />
-                <span className="text-white/30">speaking.</span>
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  step: '01',
-                  title: 'Speak your task',
-                  desc: 'Open VoXa and just say what you need to do. No buttons, no forms — only your voice.',
-                  color: 'text-primary',
-                  border: 'border-primary/20',
-                  bg: 'bg-primary/10',
-                },
-                {
-                  step: '02',
-                  title: 'AI does the rest',
-                  desc: 'VoXa extracts the task, deadline, priority, and category automatically. Reviewed in seconds.',
-                  color: 'text-violet-400',
-                  border: 'border-violet-400/20',
-                  bg: 'bg-violet-400/10',
-                },
-                {
-                  step: '03',
-                  title: 'Stay on track',
-                  desc: 'Smart reminders and your performance dashboard keep you accountable and moving forward.',
-                  color: 'text-emerald-400',
-                  border: 'border-emerald-400/20',
-                  bg: 'bg-emerald-400/10',
-                },
-              ].map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="relative group rounded-3xl p-8 bg-[#0d1117] border border-white/[0.07] hover:border-white/[0.12] transition-all duration-500"
-                >
-                  <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.border} border flex items-center justify-center mb-6`}>
-                    <span className={`text-sm font-black ${item.color}`}>{item.step}</span>
-                  </div>
-                  <h3 className="text-xl font-black text-white mb-3 tracking-tight">{item.title}</h3>
-                  <p className="text-white/40 leading-relaxed text-[14px]">{item.desc}</p>
-                  {/* Connector line on desktop */}
-                  {i < 2 && (
-                    <div className="hidden md:block absolute top-[3.5rem] -right-3 w-6 h-px bg-gradient-to-r from-white/20 to-transparent z-10" />
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════
-            QUOTE / HIGHLIGHT
-        ════════════════════════════════════════ */}
-        <section className="py-24 px-6 border-t border-white/[0.05]">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="rounded-3xl p-10 md:p-16 bg-gradient-to-br from-primary/10 via-[#0d1117] to-violet-500/10 border border-white/[0.08] relative overflow-hidden"
-            >
-              <div className="absolute top-8 left-8 opacity-10">
-                <Quote className="w-24 h-24 text-primary" />
-              </div>
-              <div className="relative z-10 space-y-8">
-                <p className="text-2xl md:text-3xl font-bold text-white/80 leading-relaxed italic">
-                  "Remind me to finalize the project report by Friday at 5 PM, high priority."
-                </p>
-                <div className="flex flex-wrap gap-3">
+               <nav className="hidden lg:flex items-center gap-8 px-10 py-5 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-3xl shadow-2xl pointer-events-auto relative overflow-hidden">
+                  <div className="absolute inset-x-0 top-0 h-px bg-white/30 rounded-full" />
                   {[
-                    { label: 'Task', value: 'Finalize project report', color: 'text-primary bg-primary/10 border-primary/20' },
-                    { label: 'Due', value: 'Fri · 17:00', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
-                    { label: 'Priority', value: 'High', color: 'text-rose-400 bg-rose-400/10 border-rose-400/20' },
-                  ].map((tag) => (
-                    <span key={tag.label} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-wider border ${tag.color}`}>
-                      <span className="opacity-50">{tag.label}:</span> {tag.value}
-                    </span>
+                    { icon: LayoutGrid, target: 'hero' },
+                    { icon: Layers, target: 'features' },
+                    { icon: History, target: 'cta' }
+                  ].map((item, i) => (
+                    <div 
+                      key={`nav-ic-v4-${i}`} 
+                      onClick={() => {
+                        const target = document.getElementById(item.target);
+                        if (target) target.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="group/nav relative flex items-center justify-center p-2 cursor-pointer z-20"
+                    >
+                      <item.icon className="w-6 h-6 text-white/40 group-hover/nav:text-white group-hover/nav:scale-110 transition-all duration-300" />
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-px bg-white group-hover/nav:w-4 transition-all duration-300" />
+                    </div>
                   ))}
-                </div>
-                <p className="text-white/30 text-sm font-medium">VoXa extracts all of this automatically — in under a second.</p>
-              </div>
-            </motion.div>
+               </nav>
           </div>
-        </section>
+        </header>
 
-        {/* ═══════════════════════════════════════
-            FINAL CTA
-        ════════════════════════════════════════ */}
-        <section className="py-32 px-6 border-t border-white/[0.05] relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />
-          </div>
-          <div className="max-w-3xl mx-auto text-center space-y-10 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="space-y-6"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/40">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]">Get started today — it's free</span>
-              </div>
-              <h2 className="text-6xl md:text-7xl font-black tracking-[-0.04em] text-white leading-[0.9]">
-                Your most<br />
-                <span className="text-white/25">productive self</span><br />
-                starts here.
-              </h2>
-              <p className="text-lg text-white/35 max-w-xl mx-auto leading-relaxed">
-                Join thousands of people who use VoXa to stay on top of everything — without the stress.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <button
-                onClick={handleLogin}
-                className="group flex items-center gap-3 h-14 px-12 rounded-2xl bg-primary text-white font-black text-[14px] uppercase tracking-widest shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_60px_rgba(59,130,246,0.6)] hover:-translate-y-1 active:translate-y-0 transition-all duration-300"
+        {/* ── Hero ── */}
+        <motion.section 
+          id="hero"
+          style={{ opacity: heroOpacity }}
+          className="relative z-10 w-full h-screen flex flex-col justify-center pt-24 pb-12 px-6 md:px-16 2xl:px-24 max-w-[1800px] mx-auto overflow-hidden"
+        >
+          <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2 }}>
+              <h1 className="text-[4rem] sm:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[0.88] tracking-[-0.05em] text-white mb-8">
+                The architecture <br /> 
+                <span className="font-serif italic font-light text-white/70">of absolute</span> <br /> 
+                vocal intelligence.
+              </h1>
+              <p className="text-[18px] text-white/30 mb-8 max-w-lg font-light tracking-wide italic leading-relaxed">"The VoXa protocol refines every spoken word into its most crystalline form."</p>
+              
+              <button 
+                onClick={handleLogin} 
+                className="group relative px-10 py-5 rounded-full transition-all hover:scale-[1.03] active:scale-95 shadow-[0_30px_100px_rgba(0,0,0,0.6)] bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] border border-white/20 overflow-hidden"
               >
-                Launch VoXa
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                 <div className="absolute inset-0 bg-white/[0.02] group-hover:bg-white/[0.05] transition-colors" />
+                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
+                 <span className="text-[14px] font-medium tracking-tight text-white relative z-20">Start Your VoXa Journey</span>
               </button>
             </motion.div>
+
+            <div className="flex flex-col gap-6 scale-[0.85] xl:scale-[0.9] origin-center lg:origin-right">
+               <div className="p-8 md:p-10 rounded-[3rem] border border-white/[0.25] bg-white/[0.12] backdrop-blur-[40px] shadow-[0_60px_120px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] relative overflow-hidden group">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
+                  <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+                  <div className="flex items-center gap-5 mb-6 text-white/90">
+                     <div className="w-12 h-12 rounded-2xl bg-white/[0.12] flex items-center justify-center border border-white/10 shadow-inner group-hover:bg-blue-500/10 transition-all duration-500"><Sparkles className="w-5 h-5 text-white/60" /></div>
+                     <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/60">VoXa Intelligence</span>
+                  </div>
+                  <p className="text-[17px] text-white/50 leading-relaxed font-light tracking-wide max-w-sm">VoXa seamlessly converts natural voice commands into high-fidelity structured intelligence.</p>
+               </div>
+
+               <div className="flex gap-6">
+                 {[ {gif: heroGif, label: 'Listening', node: 'LISTEN'}, {gif: processGif, label: 'Transcribing', node: 'TRANSCRIBE'} ]
+                  .map((n, i) => (
+                   <div key={`hero-ns-v7-${i}`} className="flex-1 p-6 rounded-[2.8rem] border border-white/[0.25] bg-white/[0.12] backdrop-blur-[40px] group flex flex-col items-center relative overflow-hidden shadow-[0_45px_100px_-15px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)]">
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
+                      <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+                      <div className="aspect-square w-full rounded-[2.2rem] overflow-hidden bg-black/40 border border-white/10 mb-5 relative shadow-inner">
+                         <img src={n.gif} className="w-full h-full object-cover opacity-70 mix-blend-screen scale-110 group-hover:scale-120 transition-all duration-[2s]" />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-5">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">{n.label}</span>
+                         </div>
+                      </div>
+                      <span className="text-[9px] font-bold tracking-[0.2em] text-white/30 uppercase">Status: Operating</span>
+                   </div>
+                 ))}
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ── Features ── */}
+        <section id="features" className="relative z-10 px-6 md:px-16 2xl:px-24 pb-60 max-w-[1800px] mx-auto">
+          <h2 className="text-[4rem] sm:text-[5rem] lg:text-[6.5rem] font-bold leading-[1] text-white tracking-[-0.05em] mb-24 max-w-5xl">
+             VoXa: Exploring the boundary of <br /> <span className="font-serif italic font-light opacity-[0.4] pr-4">orchestrated voice.</span>
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            <BentoCard title="Voice Intelligence" icon={Bot} span="md:col-span-2">
+              <p className="text-[17px] text-white/40 leading-relaxed font-light mb-8 max-w-lg">Advanced voice processing that understands your context and intent with perfect accuracy.</p>
+              <NeuralCylindricalCore />
+            </BentoCard>
+
+            <BentoCard title="Real-time Sync" icon={RefreshCw}>
+              <p className="text-[14px] text-white/20 leading-relaxed font-light mb-auto italic">Keep your data synchronized across all devices instantly and securely.</p>
+              <OrbitalMeshSystem />
+            </BentoCard>
+
+            <BentoCard title="Data Security" icon={ShieldCheck}>
+              <p className="text-[14px] text-white/20 leading-relaxed font-light mb-auto italic">Bank-grade encryption that keeps your personal voice recordings safe and private.</p>
+              <FractalPrismShield />
+            </BentoCard>
+
+            <BentoCard title="Smart Multitasking" icon={Workflow} span="lg:col-span-2">
+              <div className="flex flex-col gap-8 h-full">
+                 <HyperFastDataStreams />
+                 <p className="text-[17px] text-white/40 leading-relaxed font-light max-w-2xl">Handle multiple tasks and voice commands at once without missing a beat, powered by the VoXa processing engine.</p>
+              </div>
+            </BentoCard>
+
+            <BentoCard title="Secure History" icon={Database}>
+               <div className="space-y-3 pt-8">
+                  {[1,2,3].map(i => (
+                    <div key={`archv-v7-${i}`} className="group/item flex items-center justify-between p-4 rounded-2xl bg-white/[0.04] border border-white/5 hover:bg-white/10 hover:border-blue-500/20 transition-all cursor-pointer">
+                       <Box className="w-4 h-4 text-white/20 group-hover/item:text-blue-400 transition-colors" />
+                       <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden"><div className="w-1/2 h-full bg-blue-500/20" /></div>
+                    </div>
+                  ))}
+               </div>
+            </BentoCard>
+
+            <BentoCard title="Instant Cloud" icon={RefreshCw}>
+              <div className="flex-1 flex flex-col items-center justify-center pt-6"><RadarScan /></div>
+            </BentoCard>
           </div>
         </section>
-      </main>
 
-      {/* ═══════════════════════════════════════
-          FOOTER
-      ════════════════════════════════════════ */}
-      <footer id="about" className="border-t border-white/[0.05] py-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-10">
-            
-            {/* Brand */}
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-                <Zap className="w-4 h-4 text-white fill-white" />
-              </div>
-              <span className="text-lg font-black tracking-tight">VoXa</span>
-              <span className="text-white/20 text-sm font-medium ml-2">© 2026</span>
+        {/* ── CTA ── */}
+        <section id="cta" className="relative z-10 px-6 md:px-16 2xl:px-24 mb-60">
+            <div className="max-w-[1200px] mx-auto">
+               <div className="relative rounded-[4rem] border border-white/[0.3] bg-white/[0.12] backdrop-blur-3xl p-16 md:p-24 flex flex-col md:flex-row items-center justify-between gap-16 overflow-hidden shadow-[0_80px_160px_-20px_rgba(0,0,0,1),inset_0_1px_1px_rgba(255,255,255,0.25)]">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+                  <div 
+                     className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" 
+                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+                  />
+                  <h2 className="text-[3.5rem] md:text-[4.5rem] font-bold text-white tracking-[-0.05em] leading-[0.95]">
+                     Evolve your <br /> <span className="font-serif italic font-light text-white/70">vocal workflow.</span>
+                  </h2>
+                  
+                  <button onClick={handleLogin} className="group relative px-16 py-8 rounded-full border border-white/20 bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] text-white text-[15px] font-medium tracking-tight transition-all hover:scale-105 active:scale-95 shadow-2xl overflow-hidden">
+                     <div className="absolute inset-0 bg-white/[0.02] group-hover:bg-white/[0.05] transition-colors" />
+                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
+                     <span className="relative z-20">Launch VoXa Portal</span>
+                  </button>
+               </div>
+            </div>
+        </section>
+
+        {/* ── Footer ── */}
+        <footer className="relative z-20 px-6 md:px-16 2xl:px-24 pb-20 pt-60 overflow-hidden">
+            <div className="max-w-[1800px] mx-auto relative z-10 space-y-24">
+               <div className="flex flex-col lg:flex-row items-start justify-between gap-20">
+                  <div className="p-10 rounded-[3rem] border border-white/[0.25] bg-white/[0.08] backdrop-blur-[40px] shadow-[0_45px_100px_rgba(0,0,0,0.6)] relative overflow-hidden group max-w-md">
+                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
+                     <div className="flex items-center gap-5 mb-8">
+                        <div className="w-10 h-10 rounded-2xl bg-white/[0.1] border border-white/10 flex items-center justify-center shadow-inner group-hover:bg-blue-500/20 transition-all duration-500"><Sparkles className="w-5 h-5 text-white/50" /></div>
+                        <span className="text-[18px] font-black uppercase tracking-[0.4em] text-white/90">VoXa</span>
+                     </div>
+                     <p className="text-[15px] text-white/40 leading-relaxed font-light mb-8">Designing the future of human-voice interaction with absolute precision and simple, intuitive design.</p>
+                     <div className="flex items-center gap-4 py-2 px-4 rounded-full bg-white/[0.05] border border-white/10 w-fit">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6] animate-pulse" />
+                        <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/40">Status: Active</span>
+                     </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-10 lg:gap-24 flex-1 justify-end">
+                     {[
+                       { label: 'Platform', links: ['Capabilities', 'Ecosystem', 'History'] },
+                       { label: 'Security', links: ['Privacy', 'Archive', 'Protection'] },
+                       { label: 'Network', links: ['X-Twitter', 'Support', 'Legal'] }
+                     ].map((group, idx) => (
+                       <div key={`f-gl-v3-${idx}`} className="space-y-10 min-w-[140px]">
+                          <h5 className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20">{group.label}</h5>
+                          <ul className="space-y-5">
+                             {group.links.map((link, lIdx) => (
+                               <li key={`f-li-v3-${idx}-${lIdx}`}>
+                                  <a href="#" className="group/link text-[15px] text-white/30 hover:text-white transition-all duration-300 relative inline-block">
+                                     {link}
+                                     <div className="absolute -bottom-1 left-0 w-0 h-px bg-blue-500/50 group-hover/link:w-full transition-all duration-500" />
+                                  </a>
+                               </li>
+                             ))}
+                          </ul>
+                       </div>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="flex flex-col md:flex-row justify-between items-center gap-10 pt-16 border-t border-white/[0.08] relative z-20">
+                  <div className="flex gap-10 text-[10px] font-bold tracking-[0.2em] text-white/20 uppercase">
+                     <span>Privacy Policy</span>
+                     <span>Terms of Service</span>
+                     <span>© 2026 VoXa</span>
+                  </div>
+                  <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="group relative px-6 py-6 rounded-full bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] border border-white/20 flex items-center justify-center hover:bg-white/[0.1] transition-all shadow-xl overflow-hidden">
+                     <div className="absolute inset-x-0 top-0 h-px bg-white/40 rounded-full" />
+                     <ArrowUpRight className="w-6 h-6 text-white/50 group-hover:text-white transition-all duration-500 group-hover:rotate-45" />
+                  </button>
+               </div>
             </div>
 
-            {/* Links */}
-            <div className="flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-white/25">
-              <a href="#features" className="hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-            </div>
-
-            {/* Social */}
-            <div className="flex items-center gap-4 text-[11px] font-black uppercase tracking-widest text-white/25">
-              <a href="#" className="hover:text-white transition-colors">Twitter</a>
-              <a href="#" className="hover:text-white transition-colors">GitHub</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+            {/* Massive Background Text - Moved to Bottom for Structural Grounding */}
+            <motion.div 
+               style={{ y: useTransform(smoothProgress, [0.9, 1], [0, -120]) }}
+               className="absolute -bottom-20 left-0 right-0 text-center pointer-events-none select-none z-0"
+            >
+               <h2 className="text-[16vw] font-serif italic font-light text-white/[0.03] leading-none tracking-tight">VOXA</h2>
+            </motion.div>
+        </footer>
+      </div>
     </div>
   );
 }
