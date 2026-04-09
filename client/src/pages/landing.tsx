@@ -213,20 +213,28 @@ const RadarScan = () => (
 
 /* ─── Scrolling Marquee ──────────────────── */
 const PhilosophicalMarquee = () => (
-   <div className="relative w-full overflow-hidden py-24 border-y border-white/[0.05] bg-white/[0.01]">
+   <div className="relative w-full overflow-hidden py-40 border-y border-white/[0.08] bg-[#020202]">
+      <div className="absolute inset-0 bg-blue-500/[0.02] blur-3xl pointer-events-none" />
       <motion.div 
-        animate={{ x: [0, -2000] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        className="flex whitespace-nowrap gap-32 items-center"
+        animate={{ x: [0, -2800] }}
+        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+        className="flex whitespace-nowrap gap-40 items-center relative z-10"
       >
-        {Array.from({length: 6}).map((_, i) => (
-          <span key={`mrq-${i}`} className="text-[12px] font-black tracking-[0.8em] text-white/5 uppercase select-none">
-            Precision • Intelligence • Automation • Security • Scalability • Innovation • Orchestrated Voice • 
-          </span>
+        {Array.from({length: 8}).map((_, i) => (
+          <div key={`mrq-v2-${i}`} className="flex items-center gap-40">
+            <span className="text-[13px] font-black tracking-[1.2em] text-white/35 uppercase select-none">Absolute Precision</span>
+            <Sparkles className="w-4 h-4 text-white/10" />
+            <span className="text-[13px] font-black tracking-[1.2em] text-white/35 uppercase select-none">Vocal Intelligence</span>
+            <RefreshCw className="w-4 h-4 text-white/10" />
+            <span className="text-[13px] font-black tracking-[1.2em] text-white/35 uppercase select-none">Native Encryption</span>
+            <Workflow className="w-4 h-4 text-white/10" />
+            <span className="text-[13px] font-black tracking-[1.2em] text-white/35 uppercase select-none">Orchestrated Flow</span>
+            <Bot className="w-4 h-4 text-white/10" />
+          </div>
         ))}
       </motion.div>
-      <div className="absolute inset-y-0 left-0 w-64 bg-gradient-to-r from-[#010101] to-transparent z-10" />
-      <div className="absolute inset-y-0 right-0 w-64 bg-gradient-to-l from-[#010101] to-transparent z-10" />
+      <div className="absolute inset-y-0 left-0 w-80 bg-gradient-to-r from-[#010101] via-[#010101]/80 to-transparent z-20" />
+      <div className="absolute inset-y-0 right-0 w-80 bg-gradient-to-l from-[#010101] via-[#010101]/80 to-transparent z-20" />
    </div>
 );
 
