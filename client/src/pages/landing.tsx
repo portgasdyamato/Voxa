@@ -1,7 +1,7 @@
 import { 
   ArrowRight, Sparkles, Database, ArrowUp, ArrowUpRight, 
   LayoutGrid, Layers, History, RefreshCw, Box, 
-  Bot, Workflow, ShieldCheck
+  Bot, Workflow, ShieldCheck, Zap
 } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring, useInView, useMotionValue } from 'framer-motion';
 import { useRef, useEffect } from 'react';
@@ -211,6 +211,25 @@ const RadarScan = () => (
   </div>
 );
 
+/* ─── Scrolling Marquee ──────────────────── */
+const PhilosophicalMarquee = () => (
+   <div className="relative w-full overflow-hidden py-24 border-y border-white/[0.05] bg-white/[0.01]">
+      <motion.div 
+        animate={{ x: [0, -2000] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        className="flex whitespace-nowrap gap-32 items-center"
+      >
+        {Array.from({length: 6}).map((_, i) => (
+          <span key={`mrq-${i}`} className="text-[12px] font-black tracking-[0.8em] text-white/5 uppercase select-none">
+            Precision • Intelligence • Automation • Security • Scalability • Innovation • Orchestrated Voice • 
+          </span>
+        ))}
+      </motion.div>
+      <div className="absolute inset-y-0 left-0 w-64 bg-gradient-to-r from-[#010101] to-transparent z-10" />
+      <div className="absolute inset-y-0 right-0 w-64 bg-gradient-to-l from-[#010101] to-transparent z-10" />
+   </div>
+);
+
 export default function Landing() {
   const handleLogin = () => { window.location.href = '/api/login'; };
   const videoRef = useHlsVideo('https://stream.mux.com/r6pXRAJb3005XEEbl1hYU1x01RFJDSn7KQApwNGgAHHbU.m3u8');
@@ -248,9 +267,9 @@ export default function Landing() {
                <nav className="hidden lg:flex items-center gap-8 px-10 py-5 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-3xl shadow-2xl pointer-events-auto relative overflow-hidden">
                   <div className="absolute inset-x-0 top-0 h-px bg-white/30 rounded-full" />
                   {[
-                    { icon: LayoutGrid, target: 'hero' },
-                    { icon: Layers, target: 'features' },
-                    { icon: History, target: 'cta' }
+                    { icon: Zap, target: 'hero' },
+                    { icon: Box, target: 'features' },
+                    { icon: ArrowRight, target: 'cta' }
                   ].map((item, i) => (
                     <div 
                       key={`nav-ic-v4-${i}`} 
@@ -371,7 +390,7 @@ export default function Landing() {
         </section>
 
         {/* ── CTA ── */}
-        <section id="cta" className="relative z-10 px-6 md:px-16 2xl:px-24 mb-60">
+        <section id="cta" className="relative z-10 px-6 md:px-16 2xl:px-24 mb-32">
             <div className="max-w-[1200px] mx-auto">
                <div className="relative rounded-[4rem] border border-white/[0.3] bg-white/[0.08] backdrop-blur-3xl p-16 md:p-24 flex flex-col lg:flex-row items-center justify-between gap-16 overflow-hidden shadow-[0_80px_160px_-20px_rgba(0,0,0,1),inset_0_1px_1px_rgba(255,255,255,0.2)]">
                   <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
@@ -407,8 +426,13 @@ export default function Landing() {
             </div>
         </section>
 
+        {/* ── Marquee Transition ── */}
+        <section className="relative z-10">
+           <PhilosophicalMarquee />
+        </section>
+
         {/* ── Footer ── */}
-        <footer className="relative z-20 px-6 md:px-16 2xl:px-24 pb-20 pt-60 overflow-hidden">
+        <footer className="relative z-20 px-6 md:px-16 2xl:px-24 pb-20 pt-32 overflow-hidden">
             <div className="max-w-[1800px] mx-auto relative z-10 space-y-24">
                <div className="flex flex-col lg:flex-row items-start justify-between gap-20">
                   <div className="p-10 rounded-[3rem] border border-white/[0.25] bg-white/[0.08] backdrop-blur-[40px] shadow-[0_45px_100px_rgba(0,0,0,0.6)] relative overflow-hidden group max-w-md">
