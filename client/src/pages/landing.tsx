@@ -1,7 +1,7 @@
 import { 
   ArrowRight, Sparkles, Database, ArrowUp, ArrowUpRight, 
   LayoutGrid, Layers, History, RefreshCw, Box, 
-  Bot, Workflow, ShieldCheck, Zap
+  Bot, Workflow, ShieldCheck, Zap, Cpu, Server
 } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring, useInView, useMotionValue } from 'framer-motion';
 import { useRef, useEffect } from 'react';
