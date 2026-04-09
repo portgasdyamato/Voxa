@@ -384,11 +384,18 @@ export default function Landing() {
             </BentoCard>
 
             <BentoCard title="Secure History" icon={Database}>
-               <div className="space-y-3 pt-6 md:pt-8">
-                  {[1,2,3].map(i => (
-                    <div key={`archv-v7-${i}`} className="group/item flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/[0.04] border border-white/5 hover:bg-white/10 hover:border-blue-500/20 transition-all cursor-pointer">
-                       <Box className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/20 group-hover/item:text-blue-400 transition-colors" />
-                       <div className="w-10 md:w-12 h-0.5 md:h-1 bg-white/5 rounded-full overflow-hidden"><div className="w-1/2 h-full bg-blue-500/20" /></div>
+               <div className="space-y-3 pt-6 md:pt-8 flex-1">
+                  {[
+                    { label: 'Voice Log 01', size: '12mb' },
+                    { label: 'Encrypted Vault', size: '45mb' },
+                    { label: 'Session Archive', size: '08mb' }
+                  ].map((item, i) => (
+                    <div key={`archv-v7-${i}`} className="group/item flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/10 hover:border-blue-500/20 transition-all cursor-pointer">
+                       <div className="flex items-center gap-3">
+                          <Box className="w-3.5 h-3.5 text-white/10 group-hover/item:text-blue-400 transition-colors" />
+                          <span className="text-[11px] font-medium tracking-wide text-white/20 group-hover/item:text-white/60 transition-colors">{item.label}</span>
+                       </div>
+                       <span className="text-[9px] font-black uppercase tracking-widest text-white/5 opacity-0 group-hover/item:opacity-40 transition-all">{item.size}</span>
                     </div>
                   ))}
                </div>
@@ -459,38 +466,32 @@ export default function Landing() {
                      </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-8 md:gap-10 lg:gap-24 flex-1 justify-center lg:justify-end">
-                     {[
-                       { label: 'Platform', links: ['Capabilities', 'Ecosystem', 'History'] },
-                       { label: 'Security', links: ['Privacy', 'Archive', 'Protection'] },
-                       { label: 'Network', links: ['X-Twitter', 'Support', 'Legal'] }
-                     ].map((group, idx) => (
-                       <div key={`f-gl-v3-${idx}`} className="space-y-6 md:space-y-10 min-w-[120px] md:min-w-[140px] text-center lg:text-left">
-                          <h5 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em] text-white/20">{group.label}</h5>
-                          <ul className="space-y-4 md:space-y-5">
-                             {group.links.map((link, lIdx) => (
-                               <li key={`f-li-v3-${idx}-${lIdx}`}>
-                                  <a href="#" className="group/link text-[14px] md:text-[15px] text-white/30 hover:text-white transition-all duration-300 relative inline-block">
-                                     {link}
-                                     <div className="absolute -bottom-1 left-0 w-0 h-px bg-blue-500/50 group-hover/link:w-full transition-all duration-500" />
-                                  </a>
-                               </li>
-                             ))}
-                          </ul>
-                       </div>
-                     ))}
+                  <div className="flex flex-col items-center lg:items-end gap-8 md:gap-12 text-center lg:text-right">
+                     <div className="flex flex-wrap justify-center lg:justify-end gap-x-10 gap-y-6">
+                        {['X-Twitter', 'Capabilities', 'Security', 'Support'].map((link, i) => (
+                           <a key={`f-link-min-${i}`} href="#" className="group/link text-[13px] md:text-[14px] font-medium tracking-[0.1em] text-white/30 hover:text-white transition-all duration-300 relative">
+                              {link}
+                              <div className="absolute -bottom-1.5 left-0 w-0 h-px bg-white/20 group-hover/link:w-full transition-all duration-500" />
+                           </a>
+                        ))}
+                     </div>
+                     <div className="px-6 py-3 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl">
+                        <span className="text-[10px] font-black tracking-[0.4em] text-white/10 uppercase">Orchestrating Human Intent</span>
+                     </div>
                   </div>
                </div>
 
-               <div className="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-10 pt-12 md:pt-16 relative z-20">
-                  {/* Subtle centered line replacement for full-width border */}
+               <div className="flex flex-col md:flex-row justify-between items-center gap-10 pt-16 relative z-20">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                   
-                  <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-[9px] md:text-[10px] font-bold tracking-[0.2em] text-white/20 uppercase">
-                     <span>Privacy Policy</span>
-                     <span>Terms of Service</span>
+                  <div className="flex flex-wrap justify-center gap-8 md:gap-10 text-[9px] md:text-[10px] font-bold tracking-[0.2em] text-white/20 uppercase">
                      <span>© 2026 VoXa</span>
+                     <span className="opacity-40">•</span>
+                     <span>Privacy Policy</span>
+                     <span className="opacity-40">•</span>
+                     <span>Terms</span>
                   </div>
+                  
                   <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="group relative px-5 py-5 md:px-6 md:py-6 rounded-full bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-[40px] border border-white/20 flex items-center justify-center hover:bg-white/[0.1] transition-all shadow-xl overflow-hidden">
                      <div className="absolute inset-x-0 top-0 h-px bg-white/40 rounded-full" />
                      <ArrowUp className="w-5 h-5 md:w-6 md:h-6 text-white/50 group-hover:text-white transition-all duration-500 group-hover:-translate-y-1" />
