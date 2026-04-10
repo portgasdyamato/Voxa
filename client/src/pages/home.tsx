@@ -6,7 +6,7 @@ import { ManualTaskModal } from '@/components/ManualTaskModal';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
 import { 
-  Plus, History, Activity, Zap, Layers, Compass, BarChart3, ArrowUpRight, Workflow
+  Plus, History, Activity, Zap, Layers, Compass, BarChart3, ArrowUpRight, Workflow, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -190,7 +190,6 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 </button>
               ))}
             </div>
-          </header>
 
           <div className="grid grid-cols-1 gap-6 md:gap-8">
             <AnimatePresence mode="popLayout" initial={false}>
