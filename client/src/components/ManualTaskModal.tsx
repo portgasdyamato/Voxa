@@ -264,30 +264,29 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           )}
         </div>
 
-          <div className="px-10 py-10 border-t border-white/[0.05] bg-white/[0.01] flex gap-6 flex-shrink-0">
+          <div className="px-10 py-6 bg-black/20 flex gap-4 flex-shrink-0 items-center justify-end">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest text-white/20 hover:text-white hover:bg-white/[0.03] transition-all border border-white/5"
+              className="py-2 px-6 h-10 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/10 transition-colors"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isPending || !taskTitle.trim()}
-              className="flex-[2] h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white/[0.05] border border-white/[0.15] text-white hover:bg-white/[0.08] shadow-xl disabled:opacity-20 transition-all flex items-center justify-center gap-3 group"
+              className="py-2 px-8 h-10 rounded-full text-sm font-medium bg-white text-black hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               {isPending ? (
                 <>
-                  <div className="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-black/20 border-t-black animate-spin" />
                   Updating...
                 </>
               ) : (
                 <>
                   {isEditing ? 'Update Task' : 'Establish Task'}
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform opacity-30" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </Button>

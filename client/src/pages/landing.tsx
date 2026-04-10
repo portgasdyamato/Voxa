@@ -211,38 +211,6 @@ const RadarScan = () => (
   </div>
 );
 
-/* ─── Cinematic Bridge ──────────────────── */
-const CinematicBridge = () => (
-  <div className="relative w-full py-40 md:py-60 flex flex-col items-center justify-center overflow-hidden">
-    {/* Atmospheric Elements */}
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-80 bg-blue-600/[0.02] blur-[150px] rounded-full pointer-events-none" />
-    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent w-full" />
-    
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1.5, ease: "easeOut" }}
-      className="relative z-10 flex flex-col items-center gap-10"
-    >
-      {/* Floating Bevel Emblem */}
-      <div className="w-20 h-20 rounded-full border border-white/[0.22] bg-white/[0.08] backdrop-blur-[40px] flex items-center justify-center relative group shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)]">
-        <div className="absolute inset-0 bg-white/5 rounded-full scale-110 group-hover:scale-125 transition-transform duration-1000" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
-        <Zap className="w-8 h-8 text-white/30 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-700" />
-      </div>
-
-      <div className="flex flex-col items-center gap-6 text-center">
-        <span className="text-[11px] md:text-[13px] font-black tracking-[1.2em] md:tracking-[1.5em] text-white/20 uppercase select-none pl-[1.5em]">Absolute Intelligence</span>
-        <div className="flex items-center gap-12 opacity-[0.08]">
-          <div className="w-[1px] h-12 bg-white" />
-          <div className="w-1.5 h-1.5 rounded-full bg-white" />
-          <div className="w-[1px] h-12 bg-white" />
-        </div>
-      </div>
-    </motion.div>
-  </div>
-);
-
 export default function Landing() {
   const handleLogin = () => { window.location.href = '/api/login'; };
   const videoRef = useHlsVideo('https://stream.mux.com/r6pXRAJb3005XEEbl1hYU1x01RFJDSn7KQApwNGgAHHbU.m3u8');
@@ -444,11 +412,6 @@ export default function Landing() {
                   <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-500/5 blur-[100px] pointer-events-none" />
                </div>
             </div>
-        </section>
-
-        {/* ── Cinematic Bridge ── */}
-        <section className="relative z-10">
-           <CinematicBridge />
         </section>
 
         {/* ── Footer ── */}
