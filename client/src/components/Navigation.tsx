@@ -187,24 +187,23 @@ function TabButton({ isActive, onClick, icon, label }: { isActive: boolean; onCl
     <button
       onClick={onClick}
       className={cn(
-        "relative flex items-center justify-center gap-2 md:gap-3 px-6 md:px-12 h-12 rounded-full transition-all duration-700 min-w-0 flex-1 whitespace-nowrap group/tab",
-        isActive ? "text-white" : "text-white/40 hover:text-white/80"
+        "relative flex items-center justify-center gap-2 md:gap-3 px-6 md:px-12 h-10 rounded-full transition-colors min-w-0 flex-1 whitespace-nowrap group/tab",
+        isActive ? "text-black" : "text-white/40 hover:text-white"
       )}
     >
-      <div className="relative z-10 flex items-center gap-3">
-        <div className={cn("transition-all duration-700", isActive ? "scale-110 text-white" : "scale-100 group-hover/tab:scale-105 group-hover/tab:text-white/60")}>{icon}</div>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] mt-0.5">{label}</span>
+      <div className="relative z-10 flex items-center gap-2">
+        <div className={cn("transition-colors", isActive ? "text-black" : "group-hover/tab:text-white text-white/40")}>{icon}</div>
+        <span className="text-sm font-medium">{label}</span>
       </div>
       
-      {/* Precision Bevel Indicator */}
+      {/* Slide-up Active Indicator */}
       {isActive && (
         <motion.div 
-          layoutId="tab-pill-precision"
-          className="absolute inset-0 bg-white/[0.08] border border-white/[0.22] rounded-full z-0 shadow-inner"
-          transition={{ type: "spring", bounce: 0.15, duration: 0.7 }}
-        >
-           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </motion.div>
+          initial={{ y: 15, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="absolute inset-0 bg-white rounded-full z-0 shadow-sm"
+        />
       )}
     </button>
   );
