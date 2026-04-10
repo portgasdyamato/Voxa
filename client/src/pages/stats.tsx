@@ -96,13 +96,13 @@ export default function Stats() {
         {/* Period Toggle - Sliding Pill */}
         <div
           ref={periodContainerRef}
-          className="relative flex items-center p-1.5 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg"
+          className="relative flex items-center p-2 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg min-w-[320px] overflow-hidden"
         >
           {/* Single pill that slides — never unmounts */}
           <motion.div
-            className="absolute top-1.5 bottom-1.5 rounded-full bg-white/[0.1] border border-white/[0.2] shadow-inner pointer-events-none"
+            className="absolute top-2 bottom-2 rounded-full bg-white/[0.1] border border-white/[0.2] shadow-inner pointer-events-none"
             animate={{ left: pillStyle.left, width: pillStyle.width, opacity: pillStyle.opacity }}
-            transition={{ type: 'spring', stiffness: 400, damping: 35, mass: 0.8 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 40, mass: 0.8 }}
           />
           {periods.map((p, i) => (
             <button
@@ -110,11 +110,13 @@ export default function Stats() {
               ref={el => { periodRefs.current[i] = el; }}
               onClick={() => setSelectedPeriod(p.key)}
               className={cn(
-                'relative h-10 px-6 rounded-full text-sm font-medium transition-colors duration-150 z-10',
+                'relative flex-1 h-10 px-6 rounded-full text-sm font-medium transition-colors duration-150 z-10',
                 selectedPeriod === p.key ? 'text-white' : 'text-white/40 hover:text-white/70'
               )}
             >
-              {p.label}
+              <div className="flex items-center justify-center w-full">
+                {p.label}
+              </div>
             </button>
           ))}
         </div>

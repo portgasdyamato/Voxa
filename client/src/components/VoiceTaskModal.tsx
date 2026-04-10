@@ -198,7 +198,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         <div className="px-10 py-6 space-y-8 overflow-y-auto flex-1 no-scrollbar relative z-10">
           {!showTranscription ? (
             <div className="flex flex-col items-center gap-6">
-              <div className="relative flex items-center justify-center w-full h-[280px]">
+              <div className="relative flex items-center justify-center w-full h-[350px]">
                 <AnimatePresence mode="wait">
                   {isListening ? (
                     <motion.div 
@@ -211,7 +211,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       <img 
                         src={heroGif} 
                         alt="Listening..." 
-                        className="w-[340px] h-[340px] object-contain opacity-95 mix-blend-screen"
+                        className="w-[400px] h-[400px] object-contain opacity-100 mix-blend-screen"
                       />
                     </motion.div>
                   ) : (
@@ -225,7 +225,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       <img 
                         src={processGif} 
                         alt="Processing..." 
-                        className="w-[340px] h-[340px] object-contain opacity-60 mix-blend-screen"
+                        className="w-[400px] h-[400px] object-contain opacity-70 mix-blend-screen"
                       />
                     </motion.div>
                   )}
