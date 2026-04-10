@@ -52,9 +52,9 @@ export function CategoryManager() {
           Edit Sectors
         </button>
       </DialogTrigger>
-      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:max-w-md w-[calc(100%-2rem)] p-0 overflow-hidden rounded-[2.5rem] border border-white/[0.22] bg-[#080809] backdrop-blur-[60px] shadow-[0_60px_120px_rgba(0,0,0,0.98)] flex flex-col max-h-[85vh] transition-all">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:max-w-md w-[calc(100%-2rem)] p-0 overflow-hidden rounded-[2.5rem] border border-white/[0.22] bg-[#080809] backdrop-blur-[60px] shadow-[0_60px_120px_rgba(0,0,0,0.98)] flex flex-col max-h-[85vh] transition-all no-scrollbar">
         {/* Bevel Top Highlight */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent z-50 pointer-events-none" />
         {/* Subtle glass overlay */}
         <div className="absolute inset-0 bg-white/[0.03] pointer-events-none" />
 
