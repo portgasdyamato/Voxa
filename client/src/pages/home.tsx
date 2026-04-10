@@ -222,33 +222,51 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         <aside className="space-y-6 lg:sticky lg:top-32 hidden xl:block">
            <div className="relative p-10 rounded-[2.5rem] overflow-hidden border border-white/[0.12] bg-[#080809] backdrop-blur-[60px] shadow-[0_45px_100px_rgba(0,0,0,0.8)] group">
               {/* Bevel Top Highlight */}
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent z-20 pointer-events-none" />
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent z-20 pointer-events-none" />
+              <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none" />
               
-              <div className="flex items-center gap-4 mb-10 text-white/40 relative z-10 font-medium">
-                <Activity className="w-5 h-5 text-blue-400/60" />
-                <h4 className="text-sm tracking-tight text-white/60">Efficiency</h4>
+              <div className="flex items-center gap-4 mb-10 relative z-10 font-medium">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-blue-400" />
+                </div>
+                <h4 className="text-sm font-semibold tracking-tight text-white/70">Efficiency</h4>
               </div>
               
               <div className="flex flex-col items-center justify-center py-6 relative z-10">
                  <div className="relative flex items-center justify-center">
-                    <svg className="w-40 h-40 transform -rotate-90">
+                    {/* Background Pulse */}
+                    <motion.div 
+                      animate={{ scale: [1, 1.05, 1], opacity: [0.1, 0.2, 0.1] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                      className="absolute inset-0 bg-blue-500/10 rounded-full blur-3xl"
+                    />
+                    
+                    <svg className="w-40 h-40 transform -rotate-90 relative z-10">
+                       <defs>
+                          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                             <stop offset="0%" stopColor="#3b82f6" />
+                             <stop offset="100%" stopColor="#22d3ee" />
+                          </linearGradient>
+                       </defs>
                        <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/[0.03]" />
                        <motion.circle 
                          cx="80" cy="80" r="70" 
-                         stroke="currentColor" strokeWidth="8" fill="transparent" 
+                         stroke="url(#progressGradient)" 
+                         strokeWidth="10" 
+                         fill="transparent" 
                          strokeDasharray="439.82" 
                          initial={{ strokeDashoffset: 439.82 }}
                          animate={{ strokeDashoffset: 439.82 - (439.82 * completionRate) / 100 }}
-                         transition={{ duration: 1.5, ease: "easeOut" }}
-                         className="text-white shadow-[0_0_20px_white/20]" 
+                         transition={{ duration: 2, ease: "easeOut" }}
+                         className="drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
                          strokeLinecap="round"
                        />
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                       <span className="text-4xl font-semibold text-white tracking-tight">{completionRate}<span className="text-xl text-white/40 ml-0.5">%</span></span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                       <span className="text-5xl font-bold text-white tracking-tighter">{completionRate}<span className="text-xl text-white/40 ml-0.5">%</span></span>
                     </div>
                  </div>
-                 <p className="text-sm text-white/30 font-medium pt-10">Success Rate</p>
+                 <p className="text-sm text-white/40 font-semibold pt-12 tracking-wide uppercase">Success Rate</p>
               </div>
            </div>
         </aside>

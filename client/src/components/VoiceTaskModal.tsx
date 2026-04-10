@@ -162,11 +162,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:max-w-2xl w-[calc(100%-2rem)] p-0 overflow-hidden border border-white/[0.22] bg-[#080809] backdrop-blur-[60px] shadow-[0_60px_120px_rgba(0,0,0,0.98)] flex flex-col max-h-[90vh] rounded-[2.5rem] transition-all no-scrollbar">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:max-w-lg w-[calc(100%-2rem)] p-0 overflow-hidden border border-white/[0.22] bg-[#080809] backdrop-blur-[60px] shadow-[0_60px_120px_rgba(0,0,0,0.98)] flex flex-col max-h-[90vh] rounded-[2.5rem] transition-all no-scrollbar">
          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent z-50 pointer-events-none" />
          <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />
          
-        <DialogHeader className="px-10 pt-12 pb-10 border-b border-white/[0.05] flex-shrink-0 relative z-10 overflow-hidden">
+        <DialogHeader className="px-10 pt-10 pb-8 border-b border-white/[0.05] flex-shrink-0 relative z-10 overflow-hidden">
           <div className="absolute top-0 right-0 p-16 opacity-[0.03] pointer-events-none">
             <Radio className="w-80 h-80 text-blue-400 rotate-12" />
           </div>
@@ -178,17 +178,17 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                }}
                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                className={cn(
-                 "w-16 h-16 rounded-[1.75rem] flex items-center justify-center transition-all duration-700 flex-shrink-0 border",
+                 "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 flex-shrink-0 border",
                  isListening ? "bg-blue-500/10 border-blue-500/30 text-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.3)]" : "bg-white/[0.05] border-white/10 text-white/10"
                )}
             >
-              <Mic className="w-8 h-8" />
+              <Mic className="w-7 h-7" />
             </motion.div>
-            <div className="space-y-1">
-              <DialogTitle className="text-3xl font-semibold tracking-tight text-white leading-tight">
+            <div className="space-y-0.5">
+              <DialogTitle className="text-2xl font-semibold tracking-tight text-white leading-tight">
                 {isListening ? 'Voice Assistant' : 'Processing Input'}
               </DialogTitle>
-              <DialogDescription className="text-sm text-white/40 font-medium">
+              <DialogDescription className="text-xs text-white/30 font-medium">
                 {isListening ? "Listening for your command..." : "Analyzing your request..."}
               </DialogDescription>
             </div>
@@ -197,8 +197,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
         <div className="px-10 py-6 space-y-8 overflow-y-auto flex-1 no-scrollbar relative z-10">
           {!showTranscription ? (
-            <div className="flex flex-col items-center gap-8">
-              <div className="relative flex items-center justify-center w-full h-[220px]">
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative flex items-center justify-center w-full h-[280px]">
                 <AnimatePresence mode="wait">
                   {isListening ? (
                     <motion.div 
@@ -211,7 +211,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       <img 
                         src={heroGif} 
                         alt="Listening..." 
-                        className="w-[280px] h-[280px] object-contain opacity-90 mix-blend-screen"
+                        className="w-[340px] h-[340px] object-contain opacity-95 mix-blend-screen"
                       />
                     </motion.div>
                   ) : (
@@ -225,7 +225,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       <img 
                         src={processGif} 
                         alt="Processing..." 
-                        className="w-[280px] h-[280px] object-contain opacity-50 mix-blend-screen"
+                        className="w-[340px] h-[340px] object-contain opacity-60 mix-blend-screen"
                       />
                     </motion.div>
                   )}
