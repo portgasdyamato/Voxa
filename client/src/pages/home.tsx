@@ -82,35 +82,38 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         <aside className="space-y-12 lg:sticky lg:top-32 hidden lg:block">
           <div className="space-y-10">
             <div className="space-y-4">
-              <p className="text-xs font-semibold text-white/40 px-4">Views</p>
-              <nav className="space-y-1">
+              <p className="text-xs font-medium text-white/30 px-6">Views</p>
+              <nav className="space-y-1.5">
                 {[
                   { id: 'all', label: 'All Tasks', icon: Layers },
                   { id: 'today', label: 'Due Today', icon: Activity },
-                  { id: 'overdue', label: 'Priority', icon: Zap },
+                  { id: 'overdue', label: 'Priority Nodes', icon: Zap },
                 ].map((filter) => (
                   <button
                     key={filter.id}
                     onClick={() => setSelectedFilter(filter.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      "w-full flex items-center justify-between px-6 h-12 rounded-2xl text-sm font-medium transition-all group relative overflow-hidden",
                       selectedFilter === filter.id 
-                        ? "bg-white/10 text-white" 
-                        : "text-white/50 hover:text-white hover:bg-white/5"
+                        ? "bg-white/[0.1] text-white border border-white/[0.15] shadow-lg" 
+                        : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
                     )}
                   >
-                    <div className="flex items-center gap-3">
-                      <filter.icon className={cn("w-4 h-4", selectedFilter === filter.id ? "text-white" : "opacity-70")} />
+                    <div className="flex items-center gap-4 relative z-10">
+                      <filter.icon className={cn("w-4 h-4 transition-colors", selectedFilter === filter.id ? "text-blue-400" : "opacity-40 group-hover:opacity-100")} />
                       <span>{filter.label}</span>
                     </div>
+                    {selectedFilter === filter.id && (
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
+                    )}
                   </button>
                 ))}
               </nav>
             </div>
 
-            <div className="space-y-6 pt-8 border-t border-white/[0.05]">
-              <div className="px-4">
-                <p className="text-xs font-semibold text-white/40">Lists</p>
+            <div className="space-y-4 pt-8 border-t border-white/[0.05]">
+              <div className="px-6">
+                <p className="text-xs font-medium text-white/30">Sectors</p>
               </div>
               <CategoryFilter 
                 selectedCategory={selectedCategory} 

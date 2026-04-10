@@ -47,31 +47,36 @@ export function CategoryManager() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="w-full h-11 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted gap-3 border border-border transition-all">
-          <LayoutGrid className="w-4 h-4" />
-          Manage Categories
-        </Button>
+        <button className="w-full flex items-center justify-center gap-3 h-11 px-6 rounded-2xl text-xs font-medium text-white/30 hover:text-white/60 bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
+          <Palette className="w-3.5 h-3.5" />
+          Edit Sectors
+        </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col translate-y-[-50%]">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-[2.5rem] border border-white/[0.22] bg-[#080809] backdrop-blur-[60px] shadow-[0_60px_120px_rgba(0,0,0,0.98)] flex flex-col translate-y-[-50%]">
+        {/* Bevel Top Highlight */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+        {/* Subtle glass overlay */}
+        <div className="absolute inset-0 bg-white/[0.03] pointer-events-none" />
+
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
+        <DialogHeader className="px-8 pt-10 pb-6 border-b border-white/[0.06] flex-shrink-0 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 flex-shrink-0">
-               <Palette className="w-5 h-5 text-primary" />
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0">
+               <Palette className="w-5 h-5 text-blue-400" />
             </div>
-            <div>
-              <DialogTitle className="text-xl font-black text-foreground tracking-tight">Categories</DialogTitle>
-              <DialogDescription className="text-[11px] text-muted-foreground/60 font-medium mt-0.5">
-                Create and manage your task categories
+            <div className="space-y-0.5">
+              <DialogTitle className="text-xl font-semibold text-white tracking-tight">Manage Categories</DialogTitle>
+              <DialogDescription className="text-sm text-white/30 font-light">
+                Organize your workflow by sector
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+        <div className="px-8 py-8 space-y-8 overflow-y-auto flex-1 relative z-10 no-scrollbar">
           {/* New Category */}
           <div className="space-y-4">
-             <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">New Category</Label>
+             <Label className="text-xs font-medium text-white/40 pl-1">New Sector</Label>
              <div className="flex gap-3">
                 <Input 
                   autoFocus
@@ -80,22 +85,22 @@ export function CategoryManager() {
                   onKeyDown={(e) => {
                      if (e.key === 'Enter') handleCreate();
                   }}
-                  placeholder="Category name"
-                  className="h-11 rounded-xl bg-muted/50 border-border text-sm font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-primary/40"
+                  placeholder="e.g. Finance"
+                  className="h-11 rounded-2xl border-white/[0.1] bg-white/[0.04] text-sm font-medium px-5 placeholder:text-white/20 focus-visible:ring-white/10 transition-all"
                 />
-               <Button onClick={handleCreate} disabled={!newCatName.trim() || createCategory.isPending} className="h-11 w-11 p-0 rounded-xl bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/30 flex-shrink-0">
+               <Button onClick={handleCreate} disabled={!newCatName.trim() || createCategory.isPending} className="h-11 w-11 p-0 rounded-2xl bg-white text-black hover:bg-neutral-200 shadow-xl flex-shrink-0">
                  <Plus className="w-5 h-5" />
                </Button>
              </div>
              
-             <div className="flex gap-2 pt-2">
+             <div className="flex gap-2.5 pt-1 px-1">
                 {colors.map(color => (
                   <button
                     key={color}
                     onClick={() => setNewCatColor(color)}
                     className={cn(
-                      "w-7 h-7 rounded-full transition-transform border-2",
-                      newCatColor === color ? "border-white scale-110 shadow-md" : "border-transparent opacity-50 hover:opacity-100 hover:scale-110"
+                      "w-6 h-6 rounded-full transition-transform border-2",
+                      newCatColor === color ? "border-white scale-110 shadow-lg" : "border-transparent opacity-40 hover:opacity-100 hover:scale-110"
                     )}
                     style={{ backgroundColor: color }}
                   />
@@ -104,51 +109,46 @@ export function CategoryManager() {
           </div>
 
           {/* Category List */}
-          <div className="space-y-4 pt-4 border-t border-border">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">Existing Categories</Label>
+          <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+            <Label className="text-xs font-medium text-white/40 pl-1">Active Sectors</Label>
             <div className="space-y-2">
               <AnimatePresence mode="popLayout">
                 {categories?.map((cat) => (
                   <motion.div
                     key={cat.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20 group"
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-white/[0.05] bg-white/[0.02] group"
                   >
-                    <div className="flex items-center gap-3 pl-1">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                      <span className="text-sm font-semibold text-foreground">{cat.name}</span>
+                    <div className="flex items-center gap-3.5 pl-1">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <span className="text-sm font-medium text-white/80">{cat.name}</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(cat.id)}
-                      className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                      className="h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {(!categories || categories.length === 0) && (
-                <div className="text-center py-6 text-sm text-muted-foreground/40 font-medium border border-dashed border-border rounded-xl">
-                  No categories yet.
-                </div>
-              )}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-border bg-muted/10 shrink-0">
+        <div className="px-8 py-5 border-t border-white/[0.06] flex-shrink-0 relative z-10">
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="w-full h-11 rounded-xl font-bold text-sm border border-border text-foreground hover:bg-muted"
+            className="w-full h-11 rounded-full text-sm font-medium text-white/40 hover:text-white transition-colors"
           >
-            Done
+            Finished
           </Button>
         </div>
       </DialogContent>

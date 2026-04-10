@@ -84,14 +84,14 @@ export default function Stats() {
         transition={{ duration: 0.8 }}
         className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 lg:gap-12 mb-16 md:mb-24"
       >
-        <div className="space-y-4">
-          <div className="flex items-center gap-4 mb-2">
-            <Workflow className="w-5 h-5 text-white/[0.1]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Performance Protocol</span>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 mb-2">
+            <Workflow className="w-4 h-4 text-blue-400" />
+            <span className="text-sm font-medium text-white/30">Performance Analytics</span>
           </div>
-          <h1 className="text-[3rem] md:text-[5rem] xl:text-[6.5rem] font-black tracking-tight text-white leading-[0.9] select-none">Performance</h1>
-          <p className="text-white/30 font-serif italic text-sm md:text-xl tracking-tight pl-2 mt-4 max-w-xl">
-            Absolute throughput and operational efficiency metrics.
+          <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold tracking-tight text-white leading-none">Intelligence</h1>
+          <p className="text-white/40 text-lg font-light max-w-xl">
+            Real-time operational efficiency and system throughput metrics.
           </p>
         </div>
 
@@ -163,16 +163,17 @@ export default function Stats() {
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 1 }}
-          className="xl:col-span-2 frosted-layer p-10 md:p-14 group"
+          className="xl:col-span-2 rounded-[2.5rem] border border-white/[0.1] bg-white/[0.03] backdrop-blur-[40px] p-10 md:p-14 overflow-hidden relative group"
         >
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
           <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center gap-6">
-              <div className="w-14 h-14 rounded-[1.5rem] bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-1000">
-                <TrendingUp className="w-6 h-6 text-blue-400 shadow-[0_0_15px_#3b82f6]" />
+            <div className="flex items-center gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-700">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
               </div>
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black text-white tracking-tight">System Throughput</h2>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-white/10 font-black">Neural trend analysis</p>
+              <div className="space-y-0.5">
+                <h2 className="text-xl font-semibold text-white">System Throughput</h2>
+                <p className="text-sm text-white/30">Analytics Insight</p>
               </div>
             </div>
           </div>
@@ -198,80 +199,70 @@ export default function Stats() {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 1 }}
-            className="frosted-layer p-10 md:p-12 border-blue-500/[0.05]"
+            className="rounded-[2.5rem] border border-white/[0.1] bg-white/[0.03] backdrop-blur-[40px] p-10 overflow-hidden relative"
           >
-            <div className="flex items-center gap-6 mb-12">
-              <div className="w-14 h-14 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-inner">
-                <Trophy className="w-6 h-6 text-blue-400" />
+             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="flex items-center gap-5 mb-10">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-blue-400" />
               </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-black text-white tracking-tight">Efficiency Score</h3>
-                <p className="text-[10px] text-white/10 font-black uppercase tracking-[0.4em]">Protocol accuracy</p>
+              <div className="space-y-0.5">
+                <h3 className="text-lg font-semibold text-white">Efficiency</h3>
+                <p className="text-sm text-white/30">System Accuracy</p>
               </div>
             </div>
 
-            <div className="space-y-12">
-              <div className="flex flex-col items-center gap-8">
-                <div className="relative w-40 h-40">
-                  <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" className="text-white/[0.04]" strokeWidth="4"/>
-                    <motion.circle
-                      initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
-                      whileInView={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - completionRate / 100) }}
-                      transition={{ duration: 2, ease: "circOut" }}
-                      cx="50" cy="50" r="42"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 42}`}
-                      className="opacity-40"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-5xl font-black text-white leading-none tracking-tight">{completionRate}%</span>
-                  </div>
+            <div className="flex flex-col items-center gap-8">
+              <div className="relative w-36 h-36">
+                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" className="text-white/[0.05]" strokeWidth="4"/>
+                  <motion.circle
+                    initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
+                    whileInView={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - completionRate / 100) }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    cx="50" cy="50" r="42"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 42}`}
+                    className="opacity-40"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-4xl font-bold text-white tracking-tight">{completionRate}%</span>
                 </div>
-                
-                <div className="space-y-3 text-center">
-                  <p className="text-[11px] font-black uppercase tracking-[0.5em] text-blue-400 italic">
-                    {completionRate >= 80 ? 'Exceptional' : completionRate >= 60 ? 'Optimal' : completionRate >= 40 ? 'Synchronizing' : 'Initiating'}
-                  </p>
-                  <p className="text-white/20 text-[12px] font-serif italic italic leading-relaxed px-4">
-                    {completionRate >= 80
-                      ? 'The protocol is operating at peak intelligence levels.'
-                      : completionRate >= 60
-                      ? 'Solid throughput — keep the neural flow active.'
-                      : completionRate >= 40
-                      ? 'Synchronization is building momentum.'
-                      : 'Systems ready for first high-fidelity operation.'}
-                  </p>
-                </div>
+              </div>
+              
+              <div className="space-y-2 text-center">
+                <p className="text-sm font-semibold text-blue-400">
+                  {completionRate >= 80 ? 'Peak Intelligence' : completionRate >= 60 ? 'Optimal Flow' : 'Synchronizing'}
+                </p>
               </div>
             </div>
           </motion.div>
 
-          {/* Quick Summary Bento Box */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 1 }}
-            className="frosted-layer p-10 md:p-12 flex-1"
+            className="rounded-[2.5rem] border border-white/[0.1] bg-white/[0.03] backdrop-blur-[40px] p-10 overflow-hidden relative"
           >
-            <div className="flex items-center gap-4 mb-10">
-              <Sparkles className="w-4 h-4 text-white/10" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Metadata Archive</h3>
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="flex items-center gap-3 mb-8">
+              <Sparkles className="w-4 h-4 text-white/20" />
+              <h3 className="text-sm font-medium text-white/30">Session Overview</h3>
             </div>
-            <div className="space-y-8">
+            <div className="space-y-6">
               {[
-                { label: 'Active Period', value: selectedPeriod === 'week' ? '07 DAYS' : selectedPeriod === 'month' ? '30 DAYS' : '90 DAYS' },
+                { label: 'Active Period', value: selectedPeriod === 'week' ? '07 Days' : selectedPeriod === 'month' ? '30 Days' : '90 Days' },
                 { label: 'Nodes Created', value: totalTasks },
                 { label: 'Nodes Unified', value: completedTasks },
-                { label: 'Remaining Input', value: pendingTasks },
+                { label: 'Average Growth', value: `${((completedTasks / (totalTasks || 1)) * 100).toFixed(0)}%` },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between border-b border-white/[0.04] pb-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/10">{item.label}</span>
-                  <span className="text-[15px] font-black text-white italic tracking-tight">{item.value}</span>
+                <div key={item.label} className="flex items-center justify-between border-b border-white/[0.05] pb-4">
+                  <span className="text-sm text-white/30">{item.label}</span>
+                  <span className="text-sm font-semibold text-white">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -282,42 +273,36 @@ export default function Stats() {
   );
 }
 
-// --- Sub-component: KPI Card ---
 function KpiCard({
-  label, value, icon, sub, delay = 0, highlight = false
+  label, value, icon, sub, delay = 0
 }: {
   label: string;
   value: string | number;
   icon: React.ReactNode;
   sub?: string;
   delay?: number;
-  highlight?: boolean;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay, duration: 0.8, ease: "circOut" }}
-      className={cn(
-        'frosted-layer group relative overflow-hidden p-8 md:p-10 hover:scale-[1.02] hover:bg-white/[0.12]',
-        highlight && 'border-white/40'
-      )}
+      transition={{ delay, duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+      className="relative rounded-[2.5rem] border border-white/[0.1] bg-white/[0.03] backdrop-blur-[40px] p-8 md:p-10 overflow-hidden group hover:bg-white/[0.06] transition-colors"
     >
-      {/* Subtle Light Reflection */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
       
-      <div className="flex items-start justify-between mb-8">
-        <div className="w-14 h-14 rounded-[1.25rem] bg-white/[0.03] border border-white/10 flex items-center justify-center transition-all duration-700 group-hover:scale-110 group-hover:bg-white/5">
+      <div className="flex items-start justify-between mb-10">
+        <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
           {icon}
         </div>
-        <ArrowUpRight className="w-5 h-5 text-white/5 group-hover:text-white/20 transition-all duration-700" />
+        <ArrowUpRight className="w-4 h-4 text-white/10 group-hover:text-white/40 transition-colors" />
       </div>
 
-      <div className="space-y-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 truncate">{label}</p>
-        <p className="text-4xl md:text-5xl font-black tracking-[-0.04em] text-white leading-none whitespace-nowrap">{value}</p>
-        {sub && <p className="text-[10px] font-black uppercase tracking-widest text-white/10 pt-2 truncate italic">{sub}</p>}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-white/30">{label}</p>
+        <p className="text-5xl font-bold tracking-tight text-white leading-none">{value}</p>
+        {sub && <p className="text-xs text-white/20 pt-2 font-light">{sub}</p>}
       </div>
     </motion.div>
   );

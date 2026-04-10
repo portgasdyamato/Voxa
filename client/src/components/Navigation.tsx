@@ -76,25 +76,21 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={() => handleNavigation('/home', 'home')}
-            className="flex items-center gap-3 md:gap-5 group cursor-pointer shrink-0 pointer-events-auto"
+            className="flex items-center gap-4 group cursor-pointer shrink-0 pointer-events-auto"
           >
-            <div className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-white shadow-[0_0_20px_white]" />
-            <span className="text-[18px] md:text-[22px] font-black tracking-[0.2em] text-white/95 uppercase">VoXa</span>
+            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_15px_white]" />
+            <span className="text-xl font-bold tracking-tight text-white/90">VoXa</span>
           </motion.div>
 
           {/* Elite Glass Search Bar */}
           <div className="flex-1 max-w-xl relative group hidden md:block pointer-events-auto">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white transition-colors duration-500" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-white/40 transition-colors duration-500" />
             <Input 
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search Knowledge Base..."
-              className="h-12 rounded-[1.25rem] bg-white/[0.04] backdrop-blur-[30px] border border-white/[0.1] pl-14 pr-24 text-[13px] font-medium focus:bg-white/[0.08] focus:ring-0 focus:border-white/20 transition-all duration-500 placeholder:text-white/20 text-white"
+              placeholder="Search workspaces..."
+              className="h-11 rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] pl-14 pr-10 text-sm font-medium focus:bg-white/[0.06] focus:ring-0 focus:border-white/10 transition-all duration-500 placeholder:text-white/10 text-white"
             />
-            <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-20 group-focus-within:opacity-100 transition-opacity">
-               <div className="w-1.5 h-1.5 rounded-full bg-blue-500/50" />
-               <span className="text-[9px] font-black tracking-[0.2em] text-white/40 group-focus-within:text-white/60">SYSTEM ACTIVE</span>
-            </div>
           </div>
 
           <div className="flex items-center gap-4 md:gap-8 shrink-0 pointer-events-auto">
@@ -120,11 +116,11 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80 bg-[#0a0a0c]/95 backdrop-blur-[40px] border-white/[0.1] rounded-[1.5rem] p-2 mt-2">
+                  <DropdownMenuContent align="end" className="w-72 bg-[#0c0c0e]/98 backdrop-blur-3xl border-white/[0.08] rounded-3xl p-2 mt-4 shadow-2xl">
                     <DropdownMenuLabel className="font-normal px-4 py-4">
-                      <div className="flex flex-col gap-1.5">
-                        <h4 className="text-[15px] font-black tracking-tight text-white italic">Intelligent Reminders</h4>
-                        <p className="text-[10px] font-bold text-white/20 tracking-[0.1em] uppercase uppercase truncate">Near-term synchronization items</p>
+                      <div className="flex flex-col gap-1">
+                        <h4 className="text-sm font-semibold text-white">Notifications</h4>
+                        <p className="text-xs text-white/20">Upcoming task reminders</p>
                       </div>
                     </DropdownMenuLabel>
                    <DropdownMenuSeparator className="mx-2 bg-white/5" />
