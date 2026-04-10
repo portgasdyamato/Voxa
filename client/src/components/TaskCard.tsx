@@ -56,9 +56,12 @@ export function TaskCard({ task }: TaskCardProps) {
         className="task-node group cursor-pointer"
       >
         <div className={cn(
-          "task-node-inner transition-all duration-300 p-5 md:p-6",
+          "task-node-inner transition-all duration-300 p-5 md:p-6 relative overflow-hidden",
           task.completed ? "opacity-30 grayscale" : "opacity-100"
         )}>
+          {/* Bevel Highlight */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent z-20 pointer-events-none" />
+          
           {/* Subtle Internal Glow Hover */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
           
@@ -89,7 +92,7 @@ export function TaskCard({ task }: TaskCardProps) {
             <div className="flex-1 min-w-0 space-y-3.5">
               <div className="flex items-start justify-between gap-4">
                 <h3 className={cn(
-                  "text-lg md:text-xl font-extrabold tracking-tight text-white transition-all duration-500",
+                  "text-lg md:text-xl font-semibold tracking-tight text-white transition-all duration-500",
                   task.completed && "line-through text-white/10"
                 )}>
                   {task.title}

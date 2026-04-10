@@ -33,7 +33,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
             : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
         )}
       >
-        <div className="flex items-center gap-4 relative z-10">
+        <div className="flex items-center gap-4 relative z-10 normal-case">
           <Layers className={cn("w-4 h-4 transition-colors", selectedCategory === null ? "text-blue-400" : "opacity-40 group-hover:opacity-100")} />
           <span>All Sectors</span>
         </div>
@@ -53,7 +53,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
               : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
           )}
         >
-          <div className="flex items-center gap-4 relative z-10">
+          <div className="flex items-center gap-4 relative z-10 normal-case">
             <div 
               className="w-2 h-2 rounded-full border border-white/10 transition-transform duration-300 group-hover:scale-125" 
               style={{ backgroundColor: category.color }} 

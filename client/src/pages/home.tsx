@@ -140,15 +140,18 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 </p>
               </div>
 
-              <motion.button 
-                whileHover={{ scale: 1.02 }} 
-                whileTap={{ scale: 0.98 }}
+              <button 
                 onClick={() => setIsModalOpen(true)}
-                className="h-10 px-6 rounded-full bg-white text-black flex items-center justify-center gap-2 shadow-sm transition-colors hover:bg-neutral-200"
+                className="group relative h-11 px-8 rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
               >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm font-medium">New Task</span>
-              </motion.button>
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] to-white/[0.04] backdrop-blur-[40px] pointer-events-none" />
+                <div className="absolute inset-0 border border-white/20 rounded-full pointer-events-none" />
+                <div className="relative flex items-center justify-center gap-3 text-white z-20">
+                   <Plus className="w-4 h-4 transition-transform duration-500 group-hover:rotate-90" />
+                   <span className="text-sm font-medium">New Task</span>
+                </div>
+              </button>
             </motion.div>
           </header>
 
@@ -202,10 +205,12 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           </div>
 
           {completedTasks.length > 0 && (
-            <section className="space-y-16 md:space-y-20 pt-24 border-t border-white/[0.05]">
-              <div className="flex items-center gap-8 px-8">
-                 <History className="w-8 h-8 text-white/10" />
-                 <h3 className="text-4xl font-black tracking-tight text-white/20 italic select-none">Archived Protocol</h3>
+            <section className="space-y-12 md:space-y-16 pt-24 border-t border-white/[0.05]">
+              <div className="flex items-center gap-6 px-4">
+                 <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center">
+                    <History className="w-5 h-5 text-white/20" />
+                 </div>
+                 <h3 className="text-2xl font-semibold text-white/20 select-none">Archive</h3>
               </div>
               <div className="grid grid-cols-1 gap-6 opacity-40 hover:opacity-100 transition-all duration-[1000ms] grayscale hover:grayscale-0">
                 {completedTasks.slice(0, 5).map((task) => (
