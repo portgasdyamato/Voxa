@@ -96,7 +96,7 @@ export default function Stats() {
         {/* Period Toggle - Sliding Pill */}
         <div
           ref={periodContainerRef}
-          className="relative flex items-center p-1.5 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg"
+          className="relative flex items-center p-1.5 pr-2 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg"
         >
           {/* Single pill that slides — never unmounts */}
           <motion.div

@@ -123,16 +123,16 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           </div>
         </aside>
 
-        <main className="space-y-16 md:space-y-24 w-full min-w-0">
-          <header className="relative w-full py-6 md:py-8 border-b border-white/[0.08]">
+        <main className="space-y-10 md:space-y-14 w-full min-w-0">
+          <header className="relative w-full py-4 md:py-6 border-b border-white/[0.08]">
             <motion.div 
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col md:flex-row md:items-center justify-between gap-6"
             >
-              <div className="space-y-1">
-                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">Workspace</h1>
-                <p className="text-white/40 text-sm">
+              <div className="space-y-0.5">
+                <h1 className="text-3xl md:text-3xl font-semibold tracking-tight text-white">Workspace</h1>
+                <p className="text-white/30 text-xs font-medium">
                    {activeTasks.length} {activeTasks.length === 1 ? 'task' : 'tasks'} remaining
                 </p>
               </div>

@@ -195,10 +195,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           </div>
         </DialogHeader>
 
-        <div className="px-10 py-12 space-y-10 overflow-y-auto flex-1 no-scrollbar relative z-10">
+        <div className="px-10 py-6 space-y-8 overflow-y-auto flex-1 no-scrollbar relative z-10">
           {!showTranscription ? (
-            <div className="flex flex-col items-center gap-12">
-              <div className="relative flex items-center justify-center w-full h-[300px]">
+            <div className="flex flex-col items-center gap-8">
+              <div className="relative flex items-center justify-center w-full h-[220px]">
                 <AnimatePresence mode="wait">
                   {isListening ? (
                     <motion.div 
@@ -211,9 +211,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       <img 
                         src={heroGif} 
                         alt="Listening..." 
-                        className="w-[450px] h-[450px] object-contain opacity-80 mix-blend-screen scale-110"
+                        className="w-[280px] h-[280px] object-contain opacity-90 mix-blend-screen"
                       />
-                      <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-[#010101] opacity-60" />
                     </motion.div>
                   ) : (
                     <motion.div 
@@ -226,9 +225,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                       <img 
                         src={processGif} 
                         alt="Processing..." 
-                        className="w-[450px] h-[450px] object-contain opacity-40 mix-blend-screen"
+                        className="w-[280px] h-[280px] object-contain opacity-50 mix-blend-screen"
                       />
-                      <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-[#010101] opacity-60" />
                     </motion.div>
                   )}
                 </AnimatePresence>
