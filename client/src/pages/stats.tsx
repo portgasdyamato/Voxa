@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useTaskStats } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { isUnauthorizedError } from '@/lib/authUtils';
@@ -17,49 +17,25 @@ export default function Stats() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useTaskStats(selectedPeriod);
   const { data: categories } = useCategories();
 
+  // Ref-based sliding pill — measures the active button's position
+  const periodRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const periodContainerRef = useRef<HTMLDivElement>(null);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const periods = useMemo(() => [
+    { key: 'week', label: '7 Days' },
+    { key: 'month', label: '30 Days' },
+    { key: '3months', label: '90 Days' },
+  ], []);
+
   useEffect(() => {
     if (statsError && isUnauthorizedError(statsError)) {
       window.location.href = '/api/login';
     }
   }, [statsError]);
 
-  if (statsLoading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8">
-        <motion.div
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.6, 0.3]
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-16 h-16 rounded-[2rem] bg-white/[0.05] border border-white/10"
-        />
-        <p className="text-[10px] uppercase tracking-[0.5em] font-black text-white/10 italic">Synchronizing Analytics...</p>
-      </div>
-    );
-  }
-
-  const completionRate = stats?.completionRate || 0;
-  const completedTasks = stats?.completedTasks || 0;
-  const pendingTasks = stats?.pendingTasks || 0;
-  const overdueTasks = stats?.overdueTasks || 0;
-  const totalTasks = stats?.totalTasks || 0;
-
-  const days = selectedPeriod === 'week' ? 7 : selectedPeriod === 'month' ? 30 : 90;
-  const avgDaily = totalTasks > 0 ? (completedTasks / days).toFixed(1) : '0.0';
-
-  const periods = [
-    { key: 'week', label: '7 Days' },
-    { key: 'month', label: '30 Days' },
-    { key: '3months', label: '90 Days' },
-  ];
-
-  // Ref-based sliding pill — measures the active button's position
-  const periodRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const periodContainerRef = useRef<HTMLDivElement>(null);
-  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
-
   useEffect(() => {
+    if (statsLoading) return;
     const activeIndex = periods.findIndex(p => p.key === selectedPeriod);
     const button = periodRefs.current[activeIndex];
     const container = periodContainerRef.current;
@@ -72,7 +48,22 @@ export default function Stats() {
         opacity: 1,
       });
     }
-  }, [selectedPeriod]);
+  }, [selectedPeriod, statsLoading, periods]);
+
+  if (statsLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8">
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-16 h-16 rounded-[2rem] bg-white/[0.05] border border-white/10"
+        />
+        <p className="text-sm font-medium text-white/20">Analyzing Intelligence...</p>
+      </div>
+    );
+  }
+
+  const completionRate = stats?.completionRate || 0;
 
   return (
     <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-44">
