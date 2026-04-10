@@ -343,7 +343,7 @@ export default function Landing() {
                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
                       <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
                       <div className="aspect-square w-full rounded-[1.8rem] md:rounded-[2.2rem] overflow-hidden bg-black/40 border border-white/10 mb-4 md:mb-5 relative shadow-inner">
-                         <img src={n.gif} className="w-full h-full object-cover opacity-70 mix-blend-screen scale-110 group-hover:scale-120 transition-all duration-[2s]" />
+                         <img src={n.gif} className="w-full h-full object-cover opacity-70 mix-blend-screen scale-110 group-hover:scale-120 transition-all duration-[2000ms]" />
                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-4 md:pb-5">
                             <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">{n.label}</span>
                          </div>

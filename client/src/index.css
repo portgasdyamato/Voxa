@@ -132,7 +132,8 @@ html, body {
 
 /* Unique Task Card Aesthetics - Bevel Frost Edition */
 .task-node {
-  @apply relative rounded-[1.75rem] md:rounded-[2.25rem] bg-white/[0.04] border border-white/[0.12] backdrop-blur-[35px] transition-all duration-[800ms] overflow-hidden;
+  @apply relative rounded-[1.75rem] md:rounded-[2.25rem] bg-white/[0.04] border border-white/[0.12] backdrop-blur-[35px] transition-all overflow-hidden;
+  transition-duration: 800ms;
   box-shadow: 
     0 15px 40px -10px rgba(0, 0, 0, 0.6),
     inset 0 1px 1px rgba(255, 255, 255, 0.15);
