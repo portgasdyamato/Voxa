@@ -33,9 +33,9 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
             : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
         )}
       >
-        <div className="flex items-center gap-4 relative z-10 normal-case">
+        <div className="flex items-center gap-4 relative z-10 !normal-case !font-medium tracking-normal text-sm">
           <Layers className={cn("w-4 h-4 transition-colors", selectedCategory === null ? "text-blue-400" : "opacity-40 group-hover:opacity-100")} />
-          <span>All Sectors</span>
+          <span className="!normal-case !font-medium">All Sectors</span>
         </div>
         {selectedCategory === null && (
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
@@ -53,12 +53,12 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
               : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
           )}
         >
-          <div className="flex items-center gap-4 relative z-10 normal-case">
+          <div className="flex items-center gap-4 relative z-10 !normal-case !font-medium tracking-normal text-sm">
             <div 
-              className="w-2 h-2 rounded-full border border-white/10 transition-transform duration-300 group-hover:scale-125" 
+              className="w-2.5 h-2.5 rounded-full border border-white/10 transition-transform duration-300 group-hover:scale-125" 
               style={{ backgroundColor: category.color }} 
             />
-            <span>{category.name}</span>
+            <span className="!normal-case !font-medium">{category.name}</span>
           </div>
           {selectedCategory === category.id && (
              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />

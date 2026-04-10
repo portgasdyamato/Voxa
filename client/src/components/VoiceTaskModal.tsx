@@ -276,14 +276,14 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           )}
         </div>
 
-        <div className="px-10 py-10 border-t border-white/[0.05] bg-white/[0.02] flex gap-6 shrink-0 relative z-10 no-scrollbar">
+        <div className="px-10 py-10 border-t border-white/[0.05] bg-white/[0.04] flex gap-6 shrink-0 relative z-10 no-scrollbar">
           <button
             onClick={() => onOpenChange(false)}
             className="group relative flex-1 h-16 rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-10" />
-            <div className="absolute inset-0 bg-white/[0.03] border border-white/[0.08] rounded-2xl pointer-events-none" />
-            <div className="relative flex items-center justify-center gap-2 text-white/40 font-medium z-20 group-hover:text-white/60">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-0 bg-white/[0.05] border border-white/[0.15] rounded-2xl pointer-events-none" />
+            <div className="relative flex items-center justify-center gap-2 text-white/50 font-semibold z-20 group-hover:text-white">
               Cancel
             </div>
           </button>
@@ -294,15 +294,15 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                else handleExecuteCommand();
             }}
             disabled={!transcript && !isListening}
-            className="group relative flex-[2] h-16 rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-20 shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+            className="group relative flex-[2] h-16 rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-20 shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
           >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-10" />
-            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] to-white/[0.04] backdrop-blur-[40px] pointer-events-none" />
-            <div className="absolute inset-0 border border-white/20 rounded-2xl pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent pointer-events-none z-30" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.18] to-white/[0.06] backdrop-blur-[60px] pointer-events-none" />
+            <div className="absolute inset-0 border border-white/30 rounded-2xl pointer-events-none" />
             
-            <div className="relative flex items-center justify-center gap-4 text-white font-medium z-20">
+            <div className="relative flex items-center justify-center gap-4 text-white font-semibold z-20 transition-transform group-active:scale-95">
               {isListening ? 'Stop Listening' : 'Process Command'}
-              {!isListening && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+              {!isListening && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
             </div>
           </button>
         </div>

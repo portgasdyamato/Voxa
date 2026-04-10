@@ -60,14 +60,11 @@ export default function Home({ searchQuery = '' }: HomeProps) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8">
         <motion.div 
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.6, 0.3]
-          }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-16 h-16 rounded-[2rem] bg-white/[0.05] border border-white/10"
+          className="w-16 h-16 rounded-[2.5rem] bg-white/[0.05] border border-white/10 shadow-2xl"
         />
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 italic">Synchronizing Workspace...</p>
+        <p className="text-sm font-medium text-white/20">Synchronizing Workspace...</p>
       </div>
     );
   }
@@ -223,30 +220,35 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dynamic Activity Wing - Bento Box Refinement */}
         <aside className="space-y-6 lg:sticky lg:top-32 hidden xl:block">
-           <div className="p-8 rounded-[1.5rem] bg-[#0a0a0c]/60 border border-white/[0.06] backdrop-blur-xl shadow-2xl">
-              <div className="flex items-center gap-3 mb-8 text-white/40">
-                <Activity className="w-4 h-4" />
-                <h4 className="font-medium text-xs tracking-wide">Efficiency</h4>
+           <div className="relative p-10 rounded-[2.5rem] overflow-hidden border border-white/[0.12] bg-[#080809] backdrop-blur-[60px] shadow-[0_45px_100px_rgba(0,0,0,0.8)] group">
+              {/* Bevel Top Highlight */}
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent z-20 pointer-events-none" />
+              
+              <div className="flex items-center gap-4 mb-10 text-white/40 relative z-10 font-medium">
+                <Activity className="w-5 h-5 text-blue-400/60" />
+                <h4 className="text-sm tracking-tight text-white/60">Efficiency</h4>
               </div>
               
-              <div className="flex flex-col items-center justify-center py-4">
+              <div className="flex flex-col items-center justify-center py-6 relative z-10">
                  <div className="relative flex items-center justify-center">
-                    <svg className="w-32 h-32 transform -rotate-90">
-                       <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/[0.03]" />
-                       <circle 
-                         cx="64" cy="64" r="56" 
-                         stroke="currentColor" strokeWidth="6" fill="transparent" 
-                         strokeDasharray="351.858" 
-                         strokeDashoffset={351.858 - (351.858 * completionRate) / 100} 
-                         className="text-white transition-all duration-1000 ease-out" 
+                    <svg className="w-40 h-40 transform -rotate-90">
+                       <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/[0.03]" />
+                       <motion.circle 
+                         cx="80" cy="80" r="70" 
+                         stroke="currentColor" strokeWidth="8" fill="transparent" 
+                         strokeDasharray="439.82" 
+                         initial={{ strokeDashoffset: 439.82 }}
+                         animate={{ strokeDashoffset: 439.82 - (439.82 * completionRate) / 100 }}
+                         transition={{ duration: 1.5, ease: "easeOut" }}
+                         className="text-white shadow-[0_0_20px_white/20]" 
                          strokeLinecap="round"
                        />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                       <span className="text-3xl font-semibold text-white tracking-tight">{completionRate}<span className="text-lg text-white/40 ml-0.5">%</span></span>
+                       <span className="text-4xl font-semibold text-white tracking-tight">{completionRate}<span className="text-xl text-white/40 ml-0.5">%</span></span>
                     </div>
                  </div>
-                 <p className="text-xs text-white/30 font-medium pt-6">Success Rate</p>
+                 <p className="text-sm text-white/30 font-medium pt-10">Success Rate</p>
               </div>
            </div>
         </aside>
