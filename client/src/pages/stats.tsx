@@ -64,6 +64,10 @@ export default function Stats() {
   }
 
   const completionRate = stats?.completionRate || 0;
+  const completedTasks = stats?.completedTasks || 0;
+  const pendingTasks = stats?.pendingTasks || 0;
+  const overdueTasks = stats?.overdueTasks || 0;
+  const totalTasks = stats?.totalTasks || 0;
 
   return (
     <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-44">
