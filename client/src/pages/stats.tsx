@@ -93,7 +93,7 @@ export default function Stats() {
                   layoutId="perf-period-pill"
                   className="absolute inset-0 bg-white/[0.1] border border-white/[0.2] rounded-full shadow-inner"
                   transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                /
+                />
               )}
               <span className="relative z-10">{p.label}</span>
             </button>
