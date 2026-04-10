@@ -56,33 +56,41 @@ export function TaskCard({ task }: TaskCardProps) {
         className="task-node group cursor-pointer"
       >
         <div className={cn(
-          "task-node-inner transition-all duration-500 p-5 md:p-6",
+          "task-node-inner transition-all duration-300 p-5 md:p-6",
           task.completed ? "opacity-30 grayscale" : "opacity-100"
         )}>
-          <div className="flex items-start gap-5 w-full">
+          {/* Subtle Internal Glow Hover */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          
+          <div className="flex items-start gap-5 w-full relative z-10">
             <button 
               onClick={(e) => { e.stopPropagation(); handleToggleComplete(); }}
               className={cn(
-                "w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-500 relative shrink-0",
+                "w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-300 relative shrink-0",
                 task.completed 
-                  ? "bg-blue-500 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                  ? "bg-blue-500 border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.4)]" 
                   : "bg-white/5 border-white/10 hover:border-white/30"
               )}
             >
               <AnimatePresence mode="wait">
                 {task.completed && (
-                  <motion.div key="done" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                  <motion.div 
+                    key="done-anim"
+                    initial={{ scale: 0, opacity: 0 }} 
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
                     <Check className="w-3.5 h-3.5 text-white stroke-[4px]" />
                   </motion.div>
                 )}
               </AnimatePresence>
             </button>
 
-            <div className="flex-1 min-w-0 space-y-3">
+            <div className="flex-1 min-w-0 space-y-3.5">
               <div className="flex items-start justify-between gap-4">
                 <h3 className={cn(
-                  "text-lg md:text-xl font-bold tracking-tight text-white transition-all",
-                  task.completed && "line-through text-white/20"
+                  "text-lg md:text-xl font-extrabold tracking-tight text-white transition-all duration-500",
+                  task.completed && "line-through text-white/10"
                 )}>
                   {task.title}
                 </h3>
@@ -90,33 +98,33 @@ export function TaskCard({ task }: TaskCardProps) {
                 <div onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="text-white/10 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                        <button className="text-white/10 hover:text-white transition-colors p-1"><MoreHorizontal className="w-4 h-4" /></button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-[#0a0a0c]/95 border-white/10 rounded-xl">
-                        <DropdownMenuItem onClick={() => deleteTask.mutate(task.id)} className="text-rose-500 text-[10px] font-bold uppercase tracking-widest py-3 px-4 px-4 uppercase tracking-widest py-3 px-4">Delete Task</DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="bg-[#0a0a0c]/98 border-white/10 rounded-xl p-1 shadow-2xl">
+                        <DropdownMenuItem onClick={() => deleteTask.mutate(task.id)} className="text-rose-500/80 focus:text-rose-500 focus:bg-rose-500/10 text-[10px] font-bold uppercase tracking-widest py-3 px-5 transition-colors cursor-pointer rounded-lg">Delete Task</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
                 {category && (
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full" style={{ backgroundColor: category.color }} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{category.name}</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-1 h-1 rounded-full" style={{ backgroundColor: category.color, boxShadow: `0 0 8px ${category.color}40` }} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">{category.name}</span>
                   </div>
                 )}
                 
                 {task.dueDate && (
-                  <div className={cn("flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/20", isOverdue && !task.completed ? "text-rose-500/60" : "")}>
-                    <Calendar className="w-3 h-3" />
+                  <div className={cn("flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/15", isOverdue && !task.completed ? "text-rose-500/50" : "")}>
+                    <Calendar className="w-3.5 h-3.5 opacity-40" />
                     <span>{format(new Date(task.dueDate), 'MMM dd • HH:mm')}</span>
                   </div>
                 )}
 
                 <div className="flex items-center gap-2">
-                   <div className={cn("w-1 h-1 rounded-full", pm.color.replace('text-', 'bg-'), "opacity-40")} />
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">{task.priority}</span>
+                   <div className={cn("w-1 h-1 rounded-full bg-white/5")} />
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/15">{task.priority}</span>
                 </div>
               </div>
             </div>

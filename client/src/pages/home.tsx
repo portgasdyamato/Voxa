@@ -127,26 +127,30 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         </aside>
 
         <main className="space-y-16 md:space-y-24 w-full min-w-0">
-          <header className="relative w-full py-10 md:py-14 border-b border-white/[0.05]">
+          <header className="relative w-full py-8 md:py-10 border-b border-white/[0.05]">
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-12"
+              className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-12"
             >
-              <div className="space-y-2">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] animate-pulse" />
+                  <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">System Live</span>
+                </div>
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white select-none">Workspace</h1>
-                <p className="text-white/30 text-xs md:text-sm tracking-tight">
-                   {activeTasks.length} active tasks synchronized.
+                <p className="text-white/20 text-xs tracking-tight">
+                   {activeTasks.length} active nodes synchronized.
                 </p>
               </div>
 
               <motion.button 
-                whileHover={{ scale: 1.02 }} 
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }} 
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsModalOpen(true)}
-                className="h-12 px-8 rounded-2xl border border-white/[0.2] bg-white/[0.05] backdrop-blur-3xl text-white flex items-center justify-center gap-3 shadow-xl transition-all duration-500 hover:bg-white/[0.08]"
+                className="h-11 px-8 rounded-xl border border-white/[0.15] bg-white/[0.04] backdrop-blur-3xl text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300"
               >
-                <Plus className="w-4 h-4 text-white/50" />
+                <Plus className="w-4 h-4 text-white/40" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Add Task</span>
               </motion.button>
             </motion.div>
@@ -219,25 +223,25 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dynamic Activity Wing - Bento Box Refinement */}
         <aside className="space-y-8 lg:sticky lg:top-32 hidden xl:block">
-           <div className="frosted-layer p-8 space-y-8 border-white/[0.1]">
-              <div className="flex items-center justify-between pb-4 border-b border-white/[0.05]">
-                <h4 className="font-bold text-[10px] uppercase tracking-widest text-white/40">Efficiency</h4>
-                <Activity className="w-4 h-4 text-blue-400 opacity-50" />
+           <div className="frosted-layer p-8 space-y-6 border-white/[0.08]">
+              <div className="flex items-center justify-between pb-3 border-b border-white/[0.05]">
+                <h4 className="font-bold text-[9px] uppercase tracking-[0.3em] text-white/20">Efficiency</h4>
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500/30" />
               </div>
               
-              <div className="space-y-6">
-                 <div className="flex items-center justify-center">
-                    <div className="text-6xl font-bold tracking-tight text-white">{completionRate}%</div>
+              <div className="space-y-4">
+                 <div className="flex items-center justify-center py-2">
+                    <div className="text-5xl font-bold tracking-tight text-white">{completionRate}<span className="text-xl text-white/20">%</span></div>
                  </div>
-                 <div className="h-1 w-full bg-white/[0.03] rounded-full overflow-hidden">
+                 <div className="h-1 w-full bg-white/[0.02] rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${completionRate}%` }}
-                      transition={{ duration: 1.5 }}
-                      className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                      transition={{ duration: 1.5, ease: "circOut" }}
+                      className="h-full bg-blue-500/60 shadow-[0_0_10px_#3b82f640]"
                     />
                  </div>
-                 <p className="text-[10px] text-white/20 text-center uppercase tracking-widest">Protocol Success</p>
+                 <p className="text-[9px] text-white/10 text-center uppercase tracking-widest font-medium">Sync Rating</p>
               </div>
            </div>
         </aside>
