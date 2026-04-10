@@ -146,11 +146,13 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md rounded-[2.5rem] border border-white/[0.22] bg-[#010101] p-10 text-center space-y-8 shadow-[0_45px_100px_rgba(0,0,0,0.95)]">
-          <AlertCircle className="w-16 h-16 text-rose-500 mx-auto" />
-          <div className="space-y-4">
-             <DialogTitle className="text-white text-3xl font-black tracking-tight leading-none italic uppercase">Incompatible Protocol</DialogTitle>
-             <DialogDescription className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] italic leading-relaxed">
-               Voice input requires a high-fidelity browser environment with persistent microphone synchronization.
+          <div className="w-20 h-20 rounded-[2.5rem] bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4">
+             <AlertCircle className="w-10 h-10 text-rose-500" />
+          </div>
+          <div className="space-y-3">
+             <DialogTitle className="text-white text-3xl font-semibold tracking-tight">System Limitation</DialogTitle>
+             <DialogDescription className="text-white/40 text-sm font-medium leading-relaxed">
+               Voice commands require a high-fidelity browser environment with microphone access enabled.
              </DialogDescription>
           </div>
         </DialogContent>
@@ -160,7 +162,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border border-white/[0.22] bg-[#010101] backdrop-blur-[40px] shadow-[0_45px_100px_rgba(0,0,0,0.95)] flex flex-col max-h-[90vh] translate-y-[-50%] rounded-[2.5rem]">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:max-w-2xl w-[calc(100%-2rem)] p-0 overflow-hidden border border-white/[0.22] bg-[#080809] backdrop-blur-[60px] shadow-[0_60px_120px_rgba(0,0,0,0.98)] flex flex-col max-h-[90vh] rounded-[2.5rem] transition-all">
          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
          <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />
          
@@ -183,11 +185,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               <Mic className="w-8 h-8" />
             </motion.div>
             <div className="space-y-1">
-              <DialogTitle className="text-[2rem] font-black tracking-tight text-white leading-none">
-                {isListening ? 'Synchronizing Voice' : 'Processing Input'}
+              <DialogTitle className="text-3xl font-semibold tracking-tight text-white leading-tight">
+                {isListening ? 'Voice Assistant' : 'Processing Input'}
               </DialogTitle>
-              <DialogDescription className="text-[10px] text-white/20 font-black uppercase tracking-[0.4em] italic leading-none">
-                {isListening ? "Awaiting operational voice command protocol" : "Analyzing neural voice signature"}
+              <DialogDescription className="text-sm text-white/40 font-medium">
+                {isListening ? "Listening for your command..." : "Analyzing your request..."}
               </DialogDescription>
             </div>
           </div>
@@ -231,8 +233,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                   )}
                 </AnimatePresence>
               </div>
-              <p className="text-white/10 text-[11px] font-black uppercase tracking-[0.6em] italic text-center animate-pulse">
-                System Acknowledging Neural Input...
+              <p className="text-white/20 text-xs font-medium text-center animate-pulse">
+                Awaiting Command...
               </p>
             </div>
           ) : (
@@ -243,8 +245,8 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
               className="space-y-10"
             >
               <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 px-4 italic">Neural Output</Label>
-                <div className="p-8 rounded-[1.75rem] bg-white/[0.04] border border-white/10 text-2xl font-black text-white italic tracking-tight leading-relaxed">
+                <Label className="text-xs font-medium text-white/30 px-6">Transcription</Label>
+                <div className="p-10 rounded-[2rem] bg-white/[0.04] border border-white/10 text-2xl font-medium text-white tracking-tight leading-relaxed">
                    "{transcript}"
                 </div>
               </div>
@@ -253,19 +255,19 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                 <div className="p-10 rounded-[2.5rem] border border-blue-500/20 bg-blue-500/[0.03] space-y-8 relative overflow-hidden group">
                   <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                   <div className="flex items-center gap-4 text-blue-400">
-                    <Workflow className="w-5 h-5 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.5em] italic">Protocol Identified</span>
+                    <Workflow className="w-5 h-5" />
+                    <span className="text-xs font-semibold tracking-wide">Analysis Complete</span>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.4em]">Operational Payload:</p>
-                    <h3 className="text-[2.5rem] font-black text-white leading-none tracking-tight">"{parsedTaskName}"</h3>
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-white/30">Detected Task:</p>
+                    <h3 className="text-4xl font-semibold text-white leading-tight tracking-tight">"{parsedTaskName}"</h3>
                   </div>
                   {detectedDate && (
                     <div className="flex items-center gap-4 pt-8 border-t border-white/[0.05]">
                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-inner">
                           <Clock className="w-5 h-5 text-blue-400" />
                        </div>
-                       <span className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-400 italic">Synchronized: {detectedDate}</span>
+                       <span className="text-xs font-medium text-blue-400/80">Scheduled: {detectedDate}</span>
                     </div>
                   )}
                 </div>
@@ -275,25 +277,29 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
         </div>
 
         <div className="px-10 py-10 border-t border-white/[0.05] bg-white/[0.02] flex gap-6 shrink-0 relative z-10">
-          <Button
-            variant="ghost"
+          <button
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-14 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] italic text-white/20 hover:text-white hover:bg-white/[0.04] transition-all border border-white/[0.1]"
+            className="flex-1 h-16 rounded-2xl font-medium text-sm text-white/40 hover:text-white/60 hover:bg-white/[0.04] transition-all border border-white/[0.08]"
           >
-            Abort
-          </Button>
-          <Button
+            Cancel
+          </button>
+          <button
             onClick={() => {
                if (isListening) stopListening();
                else handleExecuteCommand();
             }}
             disabled={!transcript && !isListening}
-            className="flex-[2] h-14 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] italic bg-white/[0.08] border border-white/[0.22] backdrop-blur-[40px] text-white hover:bg-white/[0.12] shadow-2xl disabled:opacity-20 transition-all flex items-center justify-center gap-4 group"
+            className="group relative flex-[2] h-16 rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-20"
           >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-            {isListening ? 'End Synch' : 'Commit Payload'}
-            {!isListening && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-          </Button>
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] to-white/[0.04] backdrop-blur-[40px] pointer-events-none" />
+            <div className="absolute inset-0 border border-white/20 rounded-2xl pointer-events-none" />
+            
+            <div className="relative flex items-center justify-center gap-4 text-white font-medium z-20">
+              {isListening ? 'Stop Listening' : 'Process Command'}
+              {!isListening && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+            </div>
+          </button>
         </div>
       </DialogContent>
     </Dialog>
