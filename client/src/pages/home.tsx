@@ -127,40 +127,27 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         </aside>
 
         <main className="space-y-16 md:space-y-24 w-full min-w-0">
-          <header className="relative w-full py-16 md:py-24 border-b border-white/[0.05] overflow-hidden">
-            {/* Ambient Background Aura specifically for the Header */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-600/[0.03] blur-[120px] rounded-full pointer-events-none" />
-            
+          <header className="relative w-full py-10 md:py-14 border-b border-white/[0.05]">
             <motion.div 
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 flex flex-col items-center text-center gap-10"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-12"
             >
-              <div className="space-y-6 max-w-2xl">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6] animate-pulse" />
-                   <span className="text-[10px] font-black tracking-[0.6em] text-white/20 uppercase italic">Neural Command Center</span>
-                </div>
-                
-                <h1 className="text-[4rem] md:text-[6rem] lg:text-[7.5rem] font-bold tracking-tight text-white leading-[0.88] select-none">
-                   Work<span className="font-serif italic font-light text-white/40">space</span>
-                </h1>
-                
-                <p className="text-white/30 font-serif italic text-sm md:text-lg tracking-tight px-4 md:px-0">
-                   {activeTasks.length} operational nodes currently synchronized for absolute throughput.
+              <div className="space-y-2">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white select-none">Workspace</h1>
+                <p className="text-white/30 text-xs md:text-sm tracking-tight">
+                   {activeTasks.length} active tasks synchronized.
                 </p>
               </div>
 
               <motion.button 
-                whileHover={{ scale: 1.05, y: -2 }} 
+                whileHover={{ scale: 1.02 }} 
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsModalOpen(true)}
-                className="group relative h-16 md:h-20 px-12 md:px-16 rounded-[2.5rem] border border-white/[0.22] bg-white/[0.08] backdrop-blur-[40px] text-white flex items-center justify-center gap-4 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] overflow-hidden transition-all duration-700 hover:bg-white/[0.12]"
+                className="h-12 px-8 rounded-2xl border border-white/[0.2] bg-white/[0.05] backdrop-blur-3xl text-white flex items-center justify-center gap-3 shadow-xl transition-all duration-500 hover:bg-white/[0.08]"
               >
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Plus className="w-5 h-5 text-white/50 group-hover:text-white transition-all duration-700" />
-                <span className="text-[11px] md:text-[12px] font-black uppercase tracking-[0.3em] text-white/60 group-hover:text-white transition-all duration-700">Commit Task Node</span>
+                <Plus className="w-4 h-4 text-white/50" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Add Task</span>
               </motion.button>
             </motion.div>
           </header>
@@ -231,39 +218,26 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         </main>
 
         {/* Dynamic Activity Wing - Bento Box Refinement */}
-        <aside className="space-y-12 lg:sticky lg:top-32 hidden xl:block">
-           <div className="frosted-layer p-10 space-y-10 border-white/[0.15]">
-              <div className="flex items-center justify-between pb-6 border-b border-white/[0.05]">
-                <div className="space-y-1.5">
-                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-white/20 leading-none">Intelligence</h4>
-                  <p className="text-blue-400 text-[9px] font-black uppercase tracking-[0.3em] mt-1 italic leading-none">Sync Latency: 0ms</p>
-                </div>
-                <div className="w-10 h-10 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:bg-blue-500/10 transition-all duration-700">
-                  <Activity className="w-4 h-4 text-white/30 group-hover:text-blue-400 transition-all" />
-                </div>
+        <aside className="space-y-8 lg:sticky lg:top-32 hidden xl:block">
+           <div className="frosted-layer p-8 space-y-8 border-white/[0.1]">
+              <div className="flex items-center justify-between pb-4 border-b border-white/[0.05]">
+                <h4 className="font-bold text-[10px] uppercase tracking-widest text-white/40">Efficiency</h4>
+                <Activity className="w-4 h-4 text-blue-400 opacity-50" />
               </div>
               
-              <div className="space-y-8">
-                <div className="space-y-8 text-center">
-                   <div className="relative inline-flex items-center justify-center">
-                      <div className="text-[5.5rem] font-bold tracking-tight text-white leading-none select-none">{completionRate}%</div>
-                      <div className="absolute -top-4 -right-8">
-                         <Sparkles className="w-5 h-5 text-blue-400/40 animate-pulse" />
-                      </div>
-                   </div>
-                   <div className="h-1.5 w-full bg-white/[0.02] rounded-full overflow-hidden p-0.5 border border-white/5">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${completionRate}%` }}
-                        transition={{ duration: 2, ease: "circOut" }}
-                        className="h-full bg-gradient-to-r from-blue-600 via-blue-400 to-white/40 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.3)]"
-                      />
-                   </div>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                   <p className="text-[9px] font-black text-white/10 uppercase tracking-[0.5em] italic">Absolute Optimization</p>
-                   <p className="text-[8px] font-serif italic text-white/30 leading-relaxed text-center opacity-60 px-4">"The standard of excellence is synchronized throughput."</p>
-                </div>
+              <div className="space-y-6">
+                 <div className="flex items-center justify-center">
+                    <div className="text-6xl font-bold tracking-tight text-white">{completionRate}%</div>
+                 </div>
+                 <div className="h-1 w-full bg-white/[0.03] rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${completionRate}%` }}
+                      transition={{ duration: 1.5 }}
+                      className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                    />
+                 </div>
+                 <p className="text-[10px] text-white/20 text-center uppercase tracking-widest">Protocol Success</p>
               </div>
            </div>
         </aside>

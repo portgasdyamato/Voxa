@@ -48,96 +48,77 @@ export function TaskCard({ task }: TaskCardProps) {
     <>
       <motion.div
         layout
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        whileHover={{ y: -2 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        whileHover={{ y: -1 }}
         onClick={() => setIsEditModalOpen(true)}
         className="task-node group cursor-pointer"
       >
         <div className={cn(
-          "task-node-inner transition-all duration-[800ms] p-6 md:p-8",
+          "task-node-inner transition-all duration-500 p-5 md:p-6",
           task.completed ? "opacity-30 grayscale" : "opacity-100"
         )}>
-          {/* Status Node Connector */}
-          <div className="flex items-center gap-6 md:gap-10 w-full mb-4">
+          <div className="flex items-start gap-5 w-full">
             <button 
               onClick={(e) => { e.stopPropagation(); handleToggleComplete(); }}
               className={cn(
-                "w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center transition-all duration-700 relative group/btn",
+                "w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-500 relative shrink-0",
                 task.completed 
-                  ? "bg-blue-500/20 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.2)]" 
-                  : "bg-white/[0.03] border-white/10 hover:border-blue-500/30"
+                  ? "bg-blue-500 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                  : "bg-white/5 border-white/10 hover:border-white/30"
               )}
             >
               <AnimatePresence mode="wait">
-                {task.completed ? (
-                  <motion.div key="done-ic" initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                    <Check className="w-4 h-4 md:w-5 md:h-5 text-blue-400 stroke-[3px]" />
+                {task.completed && (
+                  <motion.div key="done" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                    <Check className="w-3.5 h-3.5 text-white stroke-[4px]" />
                   </motion.div>
-                ) : (
-                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/10 group-hover/btn:bg-blue-400 group-hover/btn:scale-125 transition-all duration-500" />
                 )}
               </AnimatePresence>
             </button>
 
-            <div className="flex-1 flex items-center justify-between min-w-0">
-               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                  <span className="text-[10px] font-black tracking-[0.4em] text-white/10 uppercase italic">Node {task.id.toString().padStart(3, '0')}</span>
-                  <div className="h-px w-4 bg-white/5 hidden md:block" />
-                  <div className="flex items-center gap-2">
-                     <div className={cn("w-1.5 h-1.5 rounded-full", pm.color.replace('text-', 'bg-'))} />
-                     <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] opacity-40")}>{task.priority} Priority</span>
-                  </div>
-               </div>
-               
-               <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="text-white/10 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-[#0a0a0c]/95 border-white/10 rounded-xl">
-                      <DropdownMenuItem onClick={() => deleteTask.mutate(task.id)} className="text-rose-500 text-[10px] font-black uppercase tracking-widest py-3 px-4">Terminate Node</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-               </div>
-            </div>
-          </div>
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex items-start justify-between gap-4">
+                <h3 className={cn(
+                  "text-lg md:text-xl font-bold tracking-tight text-white transition-all",
+                  task.completed && "line-through text-white/20"
+                )}>
+                  {task.title}
+                </h3>
+                
+                <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="text-white/10 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-[#0a0a0c]/95 border-white/10 rounded-xl">
+                        <DropdownMenuItem onClick={() => deleteTask.mutate(task.id)} className="text-rose-500 text-[10px] font-bold uppercase tracking-widest py-3 px-4 px-4 uppercase tracking-widest py-3 px-4">Delete Task</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+              </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-12 pl-[3.5rem] md:pl-[4.5rem]">
-            <div className="space-y-4 flex-1">
-              <h3 className={cn(
-                "text-2xl md:text-3xl font-bold tracking-tight text-white leading-tight",
-                task.completed && "line-through text-white/20"
-              )}>
-                {task.title}
-              </h3>
-              
-              <div className="flex flex-wrap items-center gap-6">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 {category && (
-                  <div className="flex items-center gap-2.5">
-                    <Box className="w-3.5 h-3.5 text-white/5" />
-                    <span 
-                      className="text-[10px] font-black uppercase tracking-[0.2em]"
-                      style={{ color: category.color || '#3b82f6', opacity: 0.6 }}
-                    >
-                      {category.name}
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full" style={{ backgroundColor: category.color }} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{category.name}</span>
                   </div>
                 )}
                 
                 {task.dueDate && (
-                  <div className={cn("flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-white/15", isOverdue && !task.completed ? "text-rose-500/40" : "")}>
-                    <Calendar className="w-3.5 h-3.5 opacity-40" />
+                  <div className={cn("flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/20", isOverdue && !task.completed ? "text-rose-500/60" : "")}>
+                    <Calendar className="w-3 h-3" />
                     <span>{format(new Date(task.dueDate), 'MMM dd • HH:mm')}</span>
                   </div>
                 )}
-              </div>
-            </div>
 
-            <div className="shrink-0 flex items-center gap-4 py-2 px-5 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-sm self-start md:self-auto">
-               <div className="w-1 h-1 rounded-full bg-blue-500/40" />
-               <span className="text-[9px] font-black tracking-[0.2em] text-white/20 uppercase whitespace-nowrap">Synchronized</span>
+                <div className="flex items-center gap-2">
+                   <div className={cn("w-1 h-1 rounded-full", pm.color.replace('text-', 'bg-'), "opacity-40")} />
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">{task.priority}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
