@@ -69,6 +69,9 @@ export default function Stats() {
   const overdueTasks = stats?.overdueTasks || 0;
   const totalTasks = stats?.totalTasks || 0;
 
+  const days = selectedPeriod === 'week' ? 7 : selectedPeriod === 'month' ? 30 : 90;
+  const avgDaily = totalTasks > 0 ? (completedTasks / days).toFixed(1) : '0.0';
+
   return (
     <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-44">
       
