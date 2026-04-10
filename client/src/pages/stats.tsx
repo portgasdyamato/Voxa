@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useTaskStats } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { isUnauthorizedError } from '@/lib/authUtils';
@@ -54,6 +54,26 @@ export default function Stats() {
     { key: '3months', label: '90 Days' },
   ];
 
+  // Ref-based sliding pill — measures the active button's position
+  const periodRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const periodContainerRef = useRef<HTMLDivElement>(null);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  useEffect(() => {
+    const activeIndex = periods.findIndex(p => p.key === selectedPeriod);
+    const button = periodRefs.current[activeIndex];
+    const container = periodContainerRef.current;
+    if (button && container) {
+      const containerRect = container.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      setPillStyle({
+        left: buttonRect.left - containerRect.left,
+        width: buttonRect.width,
+        opacity: 1,
+      });
+    }
+  }, [selectedPeriod]);
+
   return (
     <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-44">
       
@@ -76,26 +96,27 @@ export default function Stats() {
         </div>
 
         {/* Period Toggle - Sliding Pill */}
-        <div className="relative flex items-center gap-1 p-1.5 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg">
-          {periods.map((p) => (
+        <div
+          ref={periodContainerRef}
+          className="relative flex items-center p-1.5 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg"
+        >
+          {/* Single pill that slides — never unmounts */}
+          <motion.div
+            className="absolute top-1.5 bottom-1.5 rounded-full bg-white/[0.1] border border-white/[0.2] shadow-inner pointer-events-none"
+            animate={{ left: pillStyle.left, width: pillStyle.width, opacity: pillStyle.opacity }}
+            transition={{ type: 'spring', stiffness: 400, damping: 35, mass: 0.8 }}
+          />
+          {periods.map((p, i) => (
             <button
               key={p.key}
+              ref={el => { periodRefs.current[i] = el; }}
               onClick={() => setSelectedPeriod(p.key)}
               className={cn(
-                'relative h-10 px-6 rounded-full text-sm font-medium transition-colors duration-200 z-10',
-                selectedPeriod === p.key
-                  ? 'text-white'
-                  : 'text-white/40 hover:text-white/70'
+                'relative h-10 px-6 rounded-full text-sm font-medium transition-colors duration-150 z-10',
+                selectedPeriod === p.key ? 'text-white' : 'text-white/40 hover:text-white/70'
               )}
             >
-              {selectedPeriod === p.key && (
-                <motion.div
-                  layoutId="perf-period-pill"
-                  className="absolute inset-0 bg-white/[0.1] border border-white/[0.2] rounded-full shadow-inner"
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">{p.label}</span>
+              {p.label}
             </button>
           ))}
         </div>

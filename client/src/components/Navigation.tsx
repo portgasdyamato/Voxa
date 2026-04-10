@@ -1,5 +1,5 @@
 import { useLocation } from 'wouter';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   BarChart3, Bell, LayoutGrid, Zap, Search, Mic, X, ArrowRight
 } from 'lucide-react';
@@ -40,6 +40,31 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
     setLocation(path);
     onTabChange(tab);
   };
+
+  // Ref-based sliding pill for bottom nav
+  const tabs = [
+    { id: 'home' as const, path: '/home', label: 'Workspace', icon: <LayoutGrid className="w-4 h-4" /> },
+    { id: 'stats' as const, path: '/stats', label: 'Performance', icon: <BarChart3 className="w-4 h-4" /> },
+  ];
+
+  const navButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const [navPillStyle, setNavPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  useEffect(() => {
+    const activeIndex = tabs.findIndex(t => t.id === activeTab);
+    const button = navButtonRefs.current[activeIndex];
+    const container = navContainerRef.current;
+    if (button && container) {
+      const containerRect = container.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      setNavPillStyle({
+        left: buttonRect.left - containerRect.left,
+        width: buttonRect.width,
+        opacity: 1,
+      });
+    }
+  }, [activeTab]);
 
   return (
     <>
@@ -155,55 +180,41 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
         </AnimatePresence>
       </header>
 
-      {/* Floating Tab Navigation - Precision Pill */}
+      {/* Floating Tab Navigation */}
       <AnimatePresence>
-        <motion.div 
+        <motion.div
           initial={{ y: 50, opacity: 0, x: "-50%" }}
           animate={{ y: 0, opacity: 1, x: "-50%" }}
-          className="fixed bottom-10 left-1/2 z-[100] p-1.5 rounded-full border border-white/[0.15] bg-white/[0.04] backdrop-blur-[40px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] flex items-center w-[calc(100%-2rem)] max-w-sm"
+          className="fixed bottom-8 left-1/2 z-[100] p-1.5 rounded-full border border-white/[0.15] bg-white/[0.04] backdrop-blur-[40px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] flex items-center w-[calc(100%-2rem)] max-w-sm"
         >
-          <div className="flex items-center gap-1 w-full relative">
-            <TabButton 
-               isActive={activeTab === 'home'} 
-               onClick={() => handleNavigation('/home', 'home')}
-               icon={<LayoutGrid className="w-4 h-4" />}
-               label="Workspace"
-            />
-            <TabButton 
-               isActive={activeTab === 'stats'} 
-               onClick={() => handleNavigation('/stats', 'stats')}
-               icon={<BarChart3 className="w-4 h-4" />}
-               label="Performance"
-            />
+          <div ref={navContainerRef} className="flex items-center w-full relative">
+            {/* Single pill that slides — never unmounts */}
+            <motion.div
+              className="absolute top-0 bottom-0 rounded-full bg-white/[0.1] border border-white/[0.2] shadow-inner pointer-events-none"
+              animate={{ left: navPillStyle.left, width: navPillStyle.width, opacity: navPillStyle.opacity }}
+              transition={{ type: 'spring', stiffness: 400, damping: 35, mass: 0.8 }}
+            >
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full" />
+            </motion.div>
+            {tabs.map((tab, i) => (
+              <button
+                key={tab.id}
+                ref={el => { navButtonRefs.current[i] = el; }}
+                onClick={() => handleNavigation(tab.path, tab.id)}
+                className={cn(
+                  "relative flex items-center justify-center gap-2 px-6 md:px-10 h-11 rounded-full flex-1 whitespace-nowrap transition-colors duration-150 z-10",
+                  activeTab === tab.id ? "text-white" : "text-white/40 hover:text-white/70"
+                )}
+              >
+                <div className={cn("transition-transform duration-200", activeTab === tab.id ? "scale-110" : "scale-100")}>
+                  {tab.icon}
+                </div>
+                <span className="text-sm font-medium">{tab.label}</span>
+              </button>
+            ))}
           </div>
         </motion.div>
       </AnimatePresence>
     </>
-  );
-}
-
-function TabButton({ isActive, onClick, icon, label }: { isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "relative flex items-center justify-center gap-2.5 px-6 md:px-10 h-11 rounded-full min-w-0 flex-1 whitespace-nowrap transition-colors duration-200",
-        isActive ? "text-white" : "text-white/40 hover:text-white/70"
-      )}
-    >
-      {isActive && (
-        <motion.div
-          layoutId="nav-pill"
-          className="absolute inset-0 bg-white/[0.1] border border-white/[0.2] rounded-full shadow-inner"
-          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-        >
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full" />
-        </motion.div>
-      )}
-      <div className="relative z-10 flex items-center gap-2">
-        <div className={cn("transition-transform duration-200", isActive ? "scale-110" : "scale-100")}>{icon}</div>
-        <span className="text-sm font-medium">{label}</span>
-      </div>
-    </button>
   );
 }
