@@ -64,38 +64,38 @@ export default function Stats() {
         transition={{ duration: 0.8 }}
         className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 lg:gap-12 mb-16 md:mb-24"
       >
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-white/40">Performance Overview</span>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 mb-2">
+            <Workflow className="w-5 h-5 text-white/[0.1]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Performance Protocol</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white select-none">Performance</h1>
+          <h1 className="text-[3rem] md:text-[5rem] xl:text-[6.5rem] font-black tracking-tight text-white leading-[0.9] select-none">Performance</h1>
           <p className="text-white/30 font-serif italic text-sm md:text-xl tracking-tight pl-2 mt-4 max-w-xl">
             Absolute throughput and operational efficiency metrics.
           </p>
         </div>
 
-        {/* Period Toggle - Minimalist Pill */}
-        <div className="flex items-center gap-1 p-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-3xl self-start lg:self-auto shadow-sm">
+        {/* Period Toggle - Sliding Pill */}
+        <div className="relative flex items-center gap-1 p-1.5 rounded-full border border-white/[0.12] bg-white/[0.03] backdrop-blur-[40px] self-start lg:self-auto shadow-lg">
           {periods.map((p) => (
             <button
               key={p.key}
               onClick={() => setSelectedPeriod(p.key)}
               className={cn(
-                'h-10 px-6 rounded-full text-sm font-medium transition-colors relative group overflow-hidden',
+                'relative h-10 px-6 rounded-full text-sm font-medium transition-colors duration-200 z-10',
                 selectedPeriod === p.key
-                  ? 'text-black'
-                  : 'text-white/40 hover:text-white'
+                  ? 'text-white'
+                  : 'text-white/40 hover:text-white/70'
               )}
             >
-              <span className="relative z-10">{p.label}</span>
               {selectedPeriod === p.key && (
-                 <motion.div 
-                   initial={{ y: 15, opacity: 0 }}
-                   animate={{ y: 0, opacity: 1 }}
-                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                   className="absolute inset-0 bg-white rounded-full z-0 shadow-sm"
-                 />
+                <motion.div
+                  layoutId="perf-period-pill"
+                  className="absolute inset-0 bg-white/[0.1] border border-white/[0.2] rounded-full shadow-inner"
+                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                /
               )}
+              <span className="relative z-10">{p.label}</span>
             </button>
           ))}
         </div>
@@ -150,8 +150,8 @@ export default function Stats() {
                 <TrendingUp className="w-6 h-6 text-blue-400 shadow-[0_0_15px_#3b82f6]" />
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-white tracking-tight">System Throughput</h2>
-                <p className="text-sm text-white/40 font-medium">Trend analysis</p>
+                <h2 className="text-2xl font-black text-white tracking-tight">System Throughput</h2>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-white/10 font-black">Neural trend analysis</p>
               </div>
             </div>
           </div>

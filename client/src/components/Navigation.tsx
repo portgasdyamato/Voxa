@@ -187,24 +187,23 @@ function TabButton({ isActive, onClick, icon, label }: { isActive: boolean; onCl
     <button
       onClick={onClick}
       className={cn(
-        "relative flex items-center justify-center gap-2 md:gap-3 px-6 md:px-12 h-10 rounded-full transition-colors min-w-0 flex-1 whitespace-nowrap group/tab",
-        isActive ? "text-black" : "text-white/40 hover:text-white"
+        "relative flex items-center justify-center gap-2.5 px-6 md:px-10 h-11 rounded-full min-w-0 flex-1 whitespace-nowrap transition-colors duration-200",
+        isActive ? "text-white" : "text-white/40 hover:text-white/70"
       )}
     >
+      {isActive && (
+        <motion.div
+          layoutId="nav-pill"
+          className="absolute inset-0 bg-white/[0.1] border border-white/[0.2] rounded-full shadow-inner"
+          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+        >
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full" />
+        </motion.div>
+      )}
       <div className="relative z-10 flex items-center gap-2">
-        <div className={cn("transition-colors", isActive ? "text-black" : "group-hover/tab:text-white text-white/40")}>{icon}</div>
+        <div className={cn("transition-transform duration-200", isActive ? "scale-110" : "scale-100")}>{icon}</div>
         <span className="text-sm font-medium">{label}</span>
       </div>
-      
-      {/* Slide-up Active Indicator */}
-      {isActive && (
-        <motion.div 
-          initial={{ y: 15, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="absolute inset-0 bg-white rounded-full z-0 shadow-sm"
-        />
-      )}
     </button>
   );
 }
