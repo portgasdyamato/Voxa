@@ -25,13 +25,16 @@ export default function Stats() {
 
   if (statsLoading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8">
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-          className="w-12 h-12 rounded-full border-2 border-white/5 border-t-white/40"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.6, 0.3]
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-16 h-16 rounded-[2rem] bg-white/[0.05] border border-white/10"
         />
-        <p className="text-[10px] uppercase tracking-[0.4em] font-black text-white/20 italic">Synchronizing Analytics...</p>
+        <p className="text-[10px] uppercase tracking-[0.5em] font-black text-white/10 italic">Synchronizing Analytics...</p>
       </div>
     );
   }
@@ -63,11 +66,11 @@ export default function Stats() {
       >
         <div className="space-y-4">
           <div className="flex items-center gap-4 mb-2">
-            <Workflow className="w-5 h-5 text-white/5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 italic">Performance Protocol</span>
+            <Workflow className="w-5 h-5 text-white/[0.1]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Performance Protocol</span>
           </div>
-          <h1 className="text-[3.5rem] md:text-[6rem] xl:text-[7.5rem] font-black tracking-tight text-white leading-[0.85] select-none">Performance</h1>
-          <p className="text-white/20 font-serif italic text-sm md:text-xl tracking-tight pl-2">
+          <h1 className="text-[3rem] md:text-[5rem] xl:text-[6.5rem] font-black tracking-tight text-white leading-[0.9] select-none">Performance</h1>
+          <p className="text-white/30 font-serif italic text-sm md:text-xl tracking-tight pl-2 mt-4 max-w-xl">
             Absolute throughput and operational efficiency metrics.
           </p>
         </div>

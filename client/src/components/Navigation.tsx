@@ -160,9 +160,9 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
         <motion.div 
           initial={{ y: 50, opacity: 0, x: "-50%" }}
           animate={{ y: 0, opacity: 1, x: "-50%" }}
-          className="fixed bottom-10 left-1/2 z-[100] p-1.5 rounded-full border border-white/[0.15] bg-white/[0.04] backdrop-blur-[40px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] overflow-hidden w-[calc(100%-1.5rem)] xs:w-[calc(100%-2rem)] max-w-sm md:w-auto"
+          className="fixed bottom-10 left-1/2 z-[100] p-1.5 rounded-full border border-white/[0.15] bg-white/[0.04] backdrop-blur-[40px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] flex items-center w-[calc(100%-2rem)] max-w-sm"
         >
-          <div className="flex items-center gap-1 w-full md:min-w-[400px]">
+          <div className="flex items-center gap-1 w-full relative">
             <TabButton 
                isActive={activeTab === 'home'} 
                onClick={() => handleNavigation('/home', 'home')}
@@ -187,7 +187,7 @@ function TabButton({ isActive, onClick, icon, label }: { isActive: boolean; onCl
     <button
       onClick={onClick}
       className={cn(
-        "relative flex items-center justify-center gap-2 md:gap-3 px-4 md:px-10 h-12 rounded-full transition-all duration-700 min-w-0 flex-1 whitespace-nowrap overflow-hidden group/tab",
+        "relative flex items-center justify-center gap-2 md:gap-3 px-6 md:px-12 h-12 rounded-full transition-all duration-700 min-w-0 flex-1 whitespace-nowrap group/tab",
         isActive ? "text-white" : "text-white/40 hover:text-white/80"
       )}
     >

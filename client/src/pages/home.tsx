@@ -58,13 +58,16 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
   if (tasksLoading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8">
         <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-full border-2 border-white/5 border-t-white/40"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.6, 0.3]
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-16 h-16 rounded-[2rem] bg-white/[0.05] border border-white/10"
         />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 italic">Synchronizing Workspace...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 italic">Synchronizing Workspace...</p>
       </div>
     );
   }
@@ -127,13 +130,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           <header className="flex flex-col gap-10 border-b border-white/[0.05] pb-12 w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 w-full">
               <div className="space-y-3 min-w-0 flex-1">
-                <div className="flex items-center gap-4 mb-2">
-                   <Workflow className="w-5 h-5 text-white/[0.05]" />
-                   <span className="text-[10px] font-black tracking-[0.5em] text-white/10 uppercase">System Active</span>
+                <div className="flex items-center gap-4 mb-3">
+                   <Workflow className="w-5 h-5 text-white/[0.1]" />
+                   <span className="text-[10px] font-black tracking-[0.5em] text-white/20 uppercase italic">System Active</span>
                 </div>
-                <h1 className="text-[3.5rem] md:text-[6rem] xl:text-[7.5rem] font-black tracking-tight text-white leading-[0.85] select-none">Workspace</h1>
-                <p className="text-white/20 font-serif italic text-sm md:text-xl tracking-tight pl-2">
-                   {activeTasks.length} operational systems ready for synchronization.
+                <h1 className="text-[3rem] md:text-[5rem] xl:text-[6.5rem] font-black tracking-tight text-white leading-[0.9] select-none">Workspace</h1>
+                <p className="text-white/30 font-serif italic text-sm md:text-xl tracking-tight pl-2 mt-4 max-w-xl">
+                   {activeTasks.length} operational systems ready for neural synchronization.
                 </p>
               </div>
 
@@ -217,34 +220,34 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
         {/* Dynamic Activity Wing - Bento Box Refinement */}
         <aside className="space-y-12 lg:sticky lg:top-32 hidden xl:block">
-           <div className="frosted-layer p-12 space-y-12">
-              <div className="flex items-center justify-between pb-8 border-b border-white/[0.05]">
-                <div className="space-y-2">
-                  <h4 className="font-black text-[12px] uppercase tracking-[0.5em] text-white/40 leading-none">Efficiency</h4>
-                  <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic leading-none">Crystalline Sync</p>
+           <div className="frosted-layer p-10 space-y-10">
+              <div className="flex items-center justify-between pb-6 border-b border-white/[0.05]">
+                <div className="space-y-1.5">
+                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-white/30 leading-none">Efficiency</h4>
+                  <p className="text-blue-400 text-[9px] font-black uppercase tracking-[0.2em] mt-1 italic leading-none">Crystalline Sync</p>
                 </div>
-                <div className="w-12 h-12 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-inner">
-                  <BarChart3 className="w-5 h-5 text-blue-400" />
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                  <BarChart3 className="w-4 h-4 text-blue-400" />
                 </div>
               </div>
               
-              <div className="space-y-10">
-                <div className="space-y-8">
+              <div className="space-y-8">
+                <div className="space-y-6">
                    <div className="flex items-end justify-between">
-                      <div className="text-[6rem] font-black tracking-[-0.05em] text-white leading-none select-none">{completionRate}%</div>
-                      <ArrowUpRight className="w-8 h-8 text-white/10" />
+                      <div className="text-7xl font-black tracking-[-0.05em] text-white leading-none select-none">{completionRate}%</div>
+                      <ArrowUpRight className="w-6 h-6 text-white/10" />
                    </div>
-                   <div className="h-2 w-full bg-white/[0.03] rounded-full overflow-hidden p-0.5">
+                   <div className="h-1.5 w-full bg-white/[0.03] rounded-full overflow-hidden p-0.5">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${completionRate}%` }}
                         transition={{ duration: 2, ease: "circOut" }}
-                        className="h-full bg-gradient-to-r from-blue-500 to-white/40 rounded-full shadow-[0_0_25px_rgba(59,130,246,0.4)]"
+                        className="h-full bg-gradient-to-r from-blue-500 to-white/40 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.3)]"
                       />
                    </div>
                 </div>
-                <p className="text-[10px] font-serif italic text-white/20 leading-relaxed text-center px-4 uppercase tracking-[0.1em]">
-                   Absolute throughput of your operating intelligence.
+                <p className="text-[9px] font-serif italic text-white/15 leading-relaxed text-center px-2 uppercase tracking-widest">
+                   System Throughput Analysis
                 </p>
               </div>
            </div>
