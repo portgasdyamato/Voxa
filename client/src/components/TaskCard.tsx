@@ -98,33 +98,33 @@ export function TaskCard({ task }: TaskCardProps) {
                 <div onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="text-white/10 hover:text-white transition-colors p-1"><MoreHorizontal className="w-4 h-4" /></button>
+                        <button className="text-white/10 hover:text-white transition-colors p-1 rounded-md hover:bg-white/5"><MoreHorizontal className="w-4 h-4" /></button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-[#0a0a0c]/98 border-white/10 rounded-xl p-1 shadow-2xl">
-                        <DropdownMenuItem onClick={() => deleteTask.mutate(task.id)} className="text-rose-500/80 focus:text-rose-500 focus:bg-rose-500/10 text-[10px] font-bold uppercase tracking-widest py-3 px-5 transition-colors cursor-pointer rounded-lg">Delete Task</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => deleteTask.mutate(task.id)} className="text-rose-500/90 focus:text-rose-500 focus:bg-rose-500/10 text-sm font-medium py-2 px-3 transition-colors cursor-pointer rounded-lg">Delete Task</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 {category && (
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-1 rounded-full" style={{ backgroundColor: category.color, boxShadow: `0 0 8px ${category.color}40` }} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">{category.name}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: category.color, boxShadow: `0 0 8px ${category.color}40` }} />
+                    <span className="text-xs font-medium text-white/40">{category.name}</span>
                   </div>
                 )}
                 
                 {task.dueDate && (
-                  <div className={cn("flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/15", isOverdue && !task.completed ? "text-rose-500/50" : "")}>
-                    <Calendar className="w-3.5 h-3.5 opacity-40" />
+                  <div className={cn("flex items-center gap-1.5 text-xs font-medium text-white/30", isOverdue && !task.completed ? "text-rose-500/80" : "")}>
+                    <Calendar className="w-3.5 h-3.5 opacity-60" />
                     <span>{format(new Date(task.dueDate), 'MMM dd • HH:mm')}</span>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
-                   <div className={cn("w-1 h-1 rounded-full bg-white/5")} />
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/15">{task.priority}</span>
+                <div className="flex items-center gap-1.5">
+                   <div className={cn("w-1.5 h-1.5 rounded-full bg-white/20")} />
+                   <span className="text-xs font-medium text-white/40 capitalize">{task.priority}</span>
                 </div>
               </div>
             </div>

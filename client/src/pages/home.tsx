@@ -76,14 +76,14 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
   return (
     <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-64">
-      <div className="grid lg:grid-cols-[280px_1fr_320px] gap-12 lg:gap-24 items-start w-full">
+      <div className="grid lg:grid-cols-[240px_1fr_280px] gap-12 lg:gap-20 items-start w-full">
         
         {/* Elite Sidebar - Bevel Frost Style */}
         <aside className="space-y-12 lg:sticky lg:top-32 hidden lg:block">
-          <div className="space-y-12">
-            <div className="space-y-6">
-              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/15 px-6 italic">Perspective</p>
-              <nav className="space-y-3">
+          <div className="space-y-10">
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-white/40 px-4">Views</p>
+              <nav className="space-y-1">
                 {[
                   { id: 'all', label: 'All Tasks', icon: Layers },
                   { id: 'today', label: 'Due Today', icon: Activity },
@@ -93,27 +93,24 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                     key={filter.id}
                     onClick={() => setSelectedFilter(filter.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-8 py-5 rounded-[1.5rem] text-[12px] font-black uppercase tracking-[0.2em] group relative transition-all duration-700 overflow-hidden",
+                      "w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
                       selectedFilter === filter.id 
-                        ? "bg-white/[0.08] text-white border border-white/[0.22] shadow-[0_20px_40px_rgba(0,0,0,0.6)]" 
-                        : "text-white/20 hover:text-white/60 hover:bg-white/[0.03]"
+                        ? "bg-white/10 text-white" 
+                        : "text-white/50 hover:text-white hover:bg-white/5"
                     )}
                   >
-                    <div className="flex items-center gap-5 relative z-10 italic">
-                      <filter.icon className={cn("w-4 h-4 transition-all duration-700", selectedFilter === filter.id ? "text-blue-400 scale-110" : "opacity-20 group-hover:opacity-100")} />
+                    <div className="flex items-center gap-3">
+                      <filter.icon className={cn("w-4 h-4", selectedFilter === filter.id ? "text-white" : "opacity-70")} />
                       <span>{filter.label}</span>
                     </div>
-                    {selectedFilter === filter.id && (
-                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                    )}
                   </button>
                 ))}
               </nav>
             </div>
 
-            <div className="space-y-8 pt-12 border-t border-white/[0.05]">
-              <div className="px-6">
-                <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/15 italic">Folders</p>
+            <div className="space-y-6 pt-8 border-t border-white/[0.05]">
+              <div className="px-4">
+                <p className="text-xs font-semibold text-white/40">Lists</p>
               </div>
               <CategoryFilter 
                 selectedCategory={selectedCategory} 
@@ -127,39 +124,35 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         </aside>
 
         <main className="space-y-16 md:space-y-24 w-full min-w-0">
-          <header className="relative w-full py-8 md:py-10 border-b border-white/[0.05]">
+          <header className="relative w-full py-6 md:py-8 border-b border-white/[0.08]">
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-12"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-6"
             >
               <div className="space-y-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] animate-pulse" />
-                  <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">System Live</span>
-                </div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white select-none">Workspace</h1>
-                <p className="text-white/20 text-xs tracking-tight">
-                   {activeTasks.length} active nodes synchronized.
+                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">Workspace</h1>
+                <p className="text-white/40 text-sm">
+                   {activeTasks.length} {activeTasks.length === 1 ? 'task' : 'tasks'} remaining
                 </p>
               </div>
 
               <motion.button 
-                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }} 
+                whileHover={{ scale: 1.02 }} 
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsModalOpen(true)}
-                className="h-11 px-8 rounded-xl border border-white/[0.15] bg-white/[0.04] backdrop-blur-3xl text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300"
+                className="h-10 px-6 rounded-full bg-white text-black flex items-center justify-center gap-2 shadow-sm transition-colors hover:bg-neutral-200"
               >
-                <Plus className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Add Task</span>
+                <Plus className="w-4 h-4" />
+                <span className="text-sm font-medium">New Task</span>
               </motion.button>
             </motion.div>
           </header>
 
-            {/* Mobile Filter Pill Bar - Premium Refinement */}
-            <div className="flex lg:hidden overflow-x-auto pb-4 gap-3 no-scrollbar scroll-smooth w-full px-2">
+            {/* Mobile Filter Pill Bar */}
+            <div className="flex lg:hidden overflow-x-auto pb-4 gap-2 no-scrollbar px-2">
               {[
-                { id: 'all', label: 'All', icon: Layers },
+                { id: 'all', label: 'All Tasks', icon: Layers },
                 { id: 'today', label: 'Today', icon: Activity },
                 { id: 'overdue', label: 'Priority', icon: Zap },
               ].map((filter) => (
@@ -170,13 +163,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                     setSelectedCategory(null);
                   }}
                   className={cn(
-                    "flex-shrink-0 flex items-center gap-3 px-6 h-12 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all duration-700 border",
+                    "flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors",
                     selectedFilter === filter.id && selectedCategory === null
-                      ? "bg-white/[0.1] text-white border-white/[0.2] shadow-xl" 
-                      : "bg-white/[0.02] text-white/30 border-white/5"
+                      ? "bg-white text-black shadow-sm" 
+                      : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                   )}
                 >
-                  <filter.icon className="w-4 h-4" />
+                  <filter.icon className="w-3.5 h-3.5" />
                   <span>{filter.label}</span>
                 </button>
               ))}
@@ -192,13 +185,12 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="py-48 flex flex-col items-center text-center space-y-12 frosted-layer border-dashed bg-transparent shadow-none"
+                  className="py-32 flex flex-col items-center text-center space-y-6 bg-[#0a0a0c]/40 rounded-2xl border border-white/[0.05]"
                 >
-                  <Compass className="w-20 h-20 text-white/[0.02] animate-pulse" />
-                  <div className="space-y-6 max-w-md relative z-10">
-                    <h3 className="text-4xl font-black text-white italic tracking-tight">Sync Complete</h3>
-                    <p className="text-white/10 text-[11px] font-black uppercase tracking-[0.5em] italic leading-loose">
-                      All systems operating at absolute peak efficiency.
+                  <div className="space-y-2 max-w-sm">
+                    <h3 className="text-xl font-medium text-white tracking-tight">No tasks found</h3>
+                    <p className="text-white/40 text-sm">
+                      You're all caught up for now.
                     </p>
                   </div>
                 </motion.div>
@@ -222,26 +214,31 @@ export default function Home({ searchQuery = '' }: HomeProps) {
         </main>
 
         {/* Dynamic Activity Wing - Bento Box Refinement */}
-        <aside className="space-y-8 lg:sticky lg:top-32 hidden xl:block">
-           <div className="frosted-layer p-8 space-y-6 border-white/[0.08]">
-              <div className="flex items-center justify-between pb-3 border-b border-white/[0.05]">
-                <h4 className="font-bold text-[9px] uppercase tracking-[0.3em] text-white/20">Efficiency</h4>
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500/30" />
+        <aside className="space-y-6 lg:sticky lg:top-32 hidden xl:block">
+           <div className="p-8 rounded-[1.5rem] bg-[#0a0a0c]/60 border border-white/[0.06] backdrop-blur-xl shadow-2xl">
+              <div className="flex items-center gap-3 mb-8 text-white/40">
+                <Activity className="w-4 h-4" />
+                <h4 className="font-medium text-xs tracking-wide">Efficiency</h4>
               </div>
               
-              <div className="space-y-4">
-                 <div className="flex items-center justify-center py-2">
-                    <div className="text-5xl font-bold tracking-tight text-white">{completionRate}<span className="text-xl text-white/20">%</span></div>
+              <div className="flex flex-col items-center justify-center py-4">
+                 <div className="relative flex items-center justify-center">
+                    <svg className="w-32 h-32 transform -rotate-90">
+                       <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/[0.03]" />
+                       <circle 
+                         cx="64" cy="64" r="56" 
+                         stroke="currentColor" strokeWidth="6" fill="transparent" 
+                         strokeDasharray="351.858" 
+                         strokeDashoffset={351.858 - (351.858 * completionRate) / 100} 
+                         className="text-white transition-all duration-1000 ease-out" 
+                         strokeLinecap="round"
+                       />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                       <span className="text-3xl font-semibold text-white tracking-tight">{completionRate}<span className="text-lg text-white/40 ml-0.5">%</span></span>
+                    </div>
                  </div>
-                 <div className="h-1 w-full bg-white/[0.02] rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${completionRate}%` }}
-                      transition={{ duration: 1.5, ease: "circOut" }}
-                      className="h-full bg-blue-500/60 shadow-[0_0_10px_#3b82f640]"
-                    />
-                 </div>
-                 <p className="text-[9px] text-white/10 text-center uppercase tracking-widest font-medium">Sync Rating</p>
+                 <p className="text-xs text-white/30 font-medium pt-6">Success Rate</p>
               </div>
            </div>
         </aside>
