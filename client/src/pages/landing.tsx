@@ -211,33 +211,35 @@ const RadarScan = () => (
   </div>
 );
 
-/* ─── Technical Metadata Strip ──────────────────── */
-const TechnicalMetadataStrip = () => (
-  <div className="relative w-full py-12 md:py-20 border-y border-white/[0.08] bg-black overflow-hidden group">
-    {/* Technical Grid Background */}
-    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
-    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/[0.01] via-transparent to-blue-500/[0.01]" />
+/* ─── Cinematic Bridge ──────────────────── */
+const CinematicBridge = () => (
+  <div className="relative w-full py-40 md:py-60 flex flex-col items-center justify-center overflow-hidden">
+    {/* Atmospheric Elements */}
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-80 bg-blue-600/[0.02] blur-[150px] rounded-full pointer-events-none" />
+    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent w-full" />
     
-    <div className="max-w-[1800px] mx-auto px-6 md:px-16 2xl:px-24 flex flex-wrap justify-center md:justify-between items-center gap-x-12 lg:gap-x-32 gap-y-10 relative z-10">
-      {[
-        { id: '01', label: 'Core V-Protocol', val: 'V4.0 ACTIVE', icon: Zap },
-        { id: '02', label: 'Security Layer', val: '256-BIT NATIVE', icon: ShieldCheck },
-        { id: '03', label: 'Processing', val: 'NEURAL-LINKED', icon: Cpu },
-        { id: '04', label: 'Availability', val: 'EDGE-DISTRIBUTED', icon: Server }
-      ].map((item, i) => (
-        <div key={`meta-st-${i}`} className="flex flex-col items-center md:items-start group/meta">
-          <div className="flex items-center gap-3 mb-3">
-             <span className="text-[10px] font-serif italic text-white/10">{item.id}</span>
-             <div className="h-px w-6 bg-white/5 group-hover/meta:w-10 group-hover/meta:bg-blue-500/30 transition-all duration-500" />
-             <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20 group-hover/meta:text-white/40 transition-colors">{item.label}</span>
-          </div>
-          <div className="flex items-center gap-3">
-             <item.icon className="w-3.5 h-3.5 text-white/10 group-hover/meta:text-blue-400/40 transition-colors" />
-             <span className="text-[12px] md:text-[13px] font-medium tracking-[0.1em] text-white/40 group-hover/meta:text-white/70 transition-colors">{item.val}</span>
-          </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1.5, ease: "easeOut" }}
+      className="relative z-10 flex flex-col items-center gap-10"
+    >
+      {/* Floating Bevel Emblem */}
+      <div className="w-20 h-20 rounded-full border border-white/[0.22] bg-white/[0.08] backdrop-blur-[40px] flex items-center justify-center relative group shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)]">
+        <div className="absolute inset-0 bg-white/5 rounded-full scale-110 group-hover:scale-125 transition-transform duration-1000" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
+        <Zap className="w-8 h-8 text-white/30 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-700" />
+      </div>
+
+      <div className="flex flex-col items-center gap-6 text-center">
+        <span className="text-[11px] md:text-[13px] font-black tracking-[1.2em] md:tracking-[1.5em] text-white/20 uppercase select-none pl-[1.5em]">Absolute Intelligence</span>
+        <div className="flex items-center gap-12 opacity-[0.08]">
+          <div className="w-[1px] h-12 bg-white" />
+          <div className="w-1.5 h-1.5 rounded-full bg-white" />
+          <div className="w-[1px] h-12 bg-white" />
         </div>
-      ))}
-    </div>
+      </div>
+    </motion.div>
   </div>
 );
 
@@ -444,9 +446,9 @@ export default function Landing() {
             </div>
         </section>
 
-        {/* ── Technical Metadata Strip ── */}
+        {/* ── Cinematic Bridge ── */}
         <section className="relative z-10">
-           <TechnicalMetadataStrip />
+           <CinematicBridge />
         </section>
 
         {/* ── Footer ── */}

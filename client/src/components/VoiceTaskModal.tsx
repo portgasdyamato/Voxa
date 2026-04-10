@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { 
   Plus, Search, SlidersHorizontal, Layers, Activity, Zap, 
-  ListTodo, History, LayoutGrid, Mic, Command, X, Calendar, Tag, AlertCircle, Quote, Radio, AudioLines, Clock
+  ListTodo, History, LayoutGrid, Mic, Command, X, Calendar, Tag, AlertCircle, Quote, Radio, AudioLines, Clock, Workflow, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -145,11 +145,14 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   if (!isSupported) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-sm rounded-2xl border border-white/[0.08] bg-[#0a0c10] p-6">
-          <DialogTitle className="text-white text-lg font-black">Voice Not Supported</DialogTitle>
-          <DialogDescription className="text-white/40 text-sm">
-            Voice input requires a browser with microphone support (e.g. Chrome).
-          </DialogDescription>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border border-white/[0.22] bg-[#010101] p-10 text-center space-y-8 shadow-[0_45px_100px_rgba(0,0,0,0.95)]">
+          <AlertCircle className="w-16 h-16 text-rose-500 mx-auto" />
+          <div className="space-y-4">
+             <DialogTitle className="text-white text-3xl font-black tracking-tight leading-none italic uppercase">Incompatible Protocol</DialogTitle>
+             <DialogDescription className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] italic leading-relaxed">
+               Voice input requires a high-fidelity browser environment with persistent microphone synchronization.
+             </DialogDescription>
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -157,97 +160,112 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] translate-y-[-50%]">
-        <DialogHeader className="px-6 pt-6 pb-5 border-b border-border bg-card flex-shrink-0 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-16 opacity-[0.02] pointer-events-none">
-            <Radio className="w-64 h-64 text-primary animate-pulse" />
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border border-white/[0.22] bg-[#010101] backdrop-blur-[40px] shadow-[0_45px_100px_rgba(0,0,0,0.95)] flex flex-col max-h-[90vh] translate-y-[-50%] rounded-[2.5rem]">
+         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+         <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />
+         
+        <DialogHeader className="px-10 pt-12 pb-10 border-b border-white/[0.05] flex-shrink-0 relative z-10 overflow-hidden">
+          <div className="absolute top-0 right-0 p-16 opacity-[0.03] pointer-events-none">
+            <Radio className="w-80 h-80 text-blue-400 rotate-12" />
           </div>
-          <div className="flex items-center gap-4 relative z-10">
+          <div className="flex items-center gap-6 relative z-10">
             <motion.div 
                animate={{ 
                  scale: isListening ? [1, 1.15, 1] : 1,
-                 opacity: isListening ? [0.7, 1, 0.7] : 1
+                 opacity: isListening ? [0.6, 1, 0.6] : 1
                }}
-               transition={{ duration: 1.5, repeat: Infinity }}
+               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                className={cn(
-                 "w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg transition-all duration-700 flex-shrink-0",
-                 isListening ? "bg-primary shadow-primary/30" : "bg-white/5 border border-white/10 text-white/30"
+                 "w-16 h-16 rounded-[1.75rem] flex items-center justify-center transition-all duration-700 flex-shrink-0 border",
+                 isListening ? "bg-blue-500/10 border-blue-500/30 text-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.3)]" : "bg-white/[0.05] border-white/10 text-white/10"
                )}
             >
-              <Mic className="w-5 h-5" />
+              <Mic className="w-8 h-8" />
             </motion.div>
-            <div>
-              <DialogTitle className="text-xl font-black tracking-tight text-foreground">
-                {isListening ? 'Listening...' : 'Processing...'}
+            <div className="space-y-1">
+              <DialogTitle className="text-[2rem] font-black tracking-tight text-white leading-none">
+                {isListening ? 'Synchronizing Voice' : 'Processing Input'}
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-muted-foreground mt-0.5">
-                {isListening ? "Speak clearly — say a task or command." : "Analyzing your voice input."}
+              <DialogDescription className="text-[10px] text-white/20 font-black uppercase tracking-[0.4em] italic leading-none">
+                {isListening ? "Awaiting operational voice command protocol" : "Analyzing neural voice signature"}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="px-10 py-12 space-y-10 overflow-y-auto flex-1 no-scrollbar relative z-10">
           {!showTranscription ? (
-            <div className="flex flex-col items-center py-8 gap-6">
-              <div className="relative flex items-center justify-center w-full h-32 mt-4">
+            <div className="flex flex-col items-center gap-12">
+              <div className="relative flex items-center justify-center w-full h-[300px]">
                 <AnimatePresence mode="wait">
                   {isListening ? (
-                    <motion.img 
+                    <motion.div 
                       key="talk"
-                      initial={{ opacity: 0, scale: 0.8 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      src={heroGif} 
-                      alt="Listening..." 
-                      className="w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] object-contain"
-                    />
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="relative w-full h-full flex items-center justify-center"
+                    >
+                      <img 
+                        src={heroGif} 
+                        alt="Listening..." 
+                        className="w-[450px] h-[450px] object-contain opacity-80 mix-blend-screen scale-110"
+                      />
+                      <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-[#010101] opacity-60" />
+                    </motion.div>
                   ) : (
-                    <motion.img 
+                    <motion.div 
                       key="stop"
-                      initial={{ opacity: 0, scale: 0.8 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      src={processGif} 
-                      alt="Processing..." 
-                      className="w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] object-contain opacity-80 mix-blend-screen"
-                    />
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="relative w-full h-full flex items-center justify-center"
+                    >
+                      <img 
+                        src={processGif} 
+                        alt="Processing..." 
+                        className="w-[450px] h-[450px] object-contain opacity-40 mix-blend-screen"
+                      />
+                      <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-[#010101] opacity-60" />
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-              <p className="text-white/30 text-sm font-semibold italic mt-6">
-                Listening — speak your task or command...
+              <p className="text-white/10 text-[11px] font-black uppercase tracking-[0.6em] italic text-center animate-pulse">
+                System Acknowledging Neural Input...
               </p>
             </div>
           ) : (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-5"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="space-y-10"
             >
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-1">Heard</Label>
-                <div className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] italic text-base font-bold text-white">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 px-4 italic">Neural Output</Label>
+                <div className="p-8 rounded-[1.75rem] bg-white/[0.04] border border-white/10 text-2xl font-black text-white italic tracking-tight leading-relaxed">
                    "{transcript}"
                 </div>
               </div>
 
               {parsedTaskName && (
-                <div className="p-5 rounded-2xl border border-primary/15 bg-primary/5 space-y-4">
-                  <div className="flex items-center gap-3 text-primary">
-                    <AudioLines className="w-5 h-5 animate-pulse" />
-                    <span className="text-[11px] font-black uppercase tracking-widest">Task Detected</span>
+                <div className="p-10 rounded-[2.5rem] border border-blue-500/20 bg-blue-500/[0.03] space-y-8 relative overflow-hidden group">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+                  <div className="flex items-center gap-4 text-blue-400">
+                    <Workflow className="w-5 h-5 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.5em] italic">Protocol Identified</span>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider">Will add:</p>
-                    <h3 className="text-2xl font-black text-white leading-tight">"{parsedTaskName}"</h3>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.4em]">Operational Payload:</p>
+                    <h3 className="text-[2.5rem] font-black text-white leading-none tracking-tight">"{parsedTaskName}"</h3>
                   </div>
                   {detectedDate && (
-                    <div className="flex items-center gap-3 pt-3 border-t border-primary/10">
-                       <div className="p-1.5 rounded-lg bg-primary/20">
-                          <Clock className="w-3.5 h-3.5 text-primary" />
+                    <div className="flex items-center gap-4 pt-8 border-t border-white/[0.05]">
+                       <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-inner">
+                          <Clock className="w-5 h-5 text-blue-400" />
                        </div>
-                       <span className="text-xs font-bold text-white/50">Due: {detectedDate}</span>
+                       <span className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-400 italic">Synchronized: {detectedDate}</span>
                     </div>
                   )}
                 </div>
@@ -256,13 +274,13 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-white/[0.06] bg-[#0a0a0a] flex gap-3 shrink-0">
+        <div className="px-10 py-10 border-t border-white/[0.05] bg-white/[0.02] flex gap-6 shrink-0 relative z-10">
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-11 rounded-xl font-bold text-sm text-white/40 hover:text-white hover:bg-white/[0.06] transition-all border border-white/[0.06]"
+            className="flex-1 h-14 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] italic text-white/20 hover:text-white hover:bg-white/[0.04] transition-all border border-white/[0.1]"
           >
-            Cancel
+            Abort
           </Button>
           <Button
             onClick={() => {
@@ -270,10 +288,11 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
                else handleExecuteCommand();
             }}
             disabled={!transcript && !isListening}
-            className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-white shadow-lg shadow-primary/30 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+            className="flex-[2] h-14 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] italic bg-white/[0.08] border border-white/[0.22] backdrop-blur-[40px] text-white hover:bg-white/[0.12] shadow-2xl disabled:opacity-20 transition-all flex items-center justify-center gap-4 group"
           >
-            {isListening ? 'Stop Recording' : 'Save Task'}
-            {!isListening && <Plus className="w-4 h-4" />}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            {isListening ? 'End Synch' : 'Commit Payload'}
+            {!isListening && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
           </Button>
         </div>
       </DialogContent>

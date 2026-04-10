@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigation } from "@/components/Navigation";
 import { VoiceTaskModal } from "@/components/VoiceTaskModal";
+import { CinematicBackground } from "@/components/CinematicBackground";
 import { useTasks } from "@/hooks/useTasks";
 import { useDeadlineNotifications } from "@/hooks/useDeadlineNotifications";
 import { Mic, Zap, Sparkles } from "lucide-react";
@@ -22,33 +23,34 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
   useDeadlineNotifications(tasks);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 overflow-x-hidden transition-colors duration-300">
-      <div className="mesh-gradient" />
+    <div className="relative min-h-screen bg-[#010101] text-[#f1f1f1] selection:bg-white/20 overflow-x-hidden">
+      <CinematicBackground />
+      
       <Navigation 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
-      <main className="relative z-10 w-full overflow-hidden">
+      
+      <main className="relative z-10 w-full pt-20">
         {children}
       </main>
       
-      {/* Floating Elite Assistant Trigger */}
+      {/* Floating Elite Assistant Trigger - Redesigned for Bevel Frost */}
       <div className="fixed bottom-32 right-6 md:bottom-12 md:right-12 z-[100]">
         <motion.button
-          whileHover={{ scale: 1.1, rotate: 6 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setVoiceModalOpen(true)}
-          className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[3rem] bg-primary text-primary-foreground flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(var(--primary),0.2)] hover:shadow-[0_40px_80px_-20px_rgba(var(--primary),0.3)] transition-all duration-700 group relative overflow-hidden group/btn"
+          className="w-16 h-16 md:w-24 md:h-24 rounded-[2rem] md:rounded-[3rem] border border-white/[0.22] bg-white/[0.08] backdrop-blur-[40px] text-white flex items-center justify-center shadow-[0_40px_80px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] group relative overflow-hidden group/btn"
         >
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-700" />
-          <div className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-1000 bg-gradient-to-tr from-transparent via-white/5 to-white/10" />
-          <Mic className="w-6 h-6 md:w-10 md:h-10 relative z-10 transition-transform duration-700 group-hover/btn:scale-110 drop-shadow-2xl" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+          <Mic className="w-6 h-6 md:w-10 md:h-10 relative z-10 transition-all duration-700 group-hover/btn:scale-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
           <motion.div 
-            animate={{ scale: [1, 1.4, 1], opacity: [0, 0.4, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute inset-0 rounded-full border border-white/20"
+            animate={{ scale: [1, 1.2, 1], opacity: [0, 0.2, 0] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute inset-0 rounded-full border border-white/10"
           />
         </motion.button>
       </div>
@@ -79,23 +81,20 @@ function Router() {
 
   if (isLoading) {
     return (
-       <div className="min-h-screen flex items-center justify-center bg-background selection:bg-primary/20">
+       <div className="min-h-screen flex items-center justify-center bg-[#010101]">
          <motion.div 
            animate={{ 
-             scale: [1, 1.1, 1],
-             rotate: [0, 5, -5, 0],
-             opacity: [0.3, 1, 0.3]
+             scale: [1, 1.05, 1],
+             opacity: [0.3, 0.8, 0.3]
            }}
-           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-           className="w-24 h-24 rounded-[3rem] bg-primary flex items-center justify-center shadow-3xl inner-glow"
+           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+           className="w-20 h-20 rounded-[2.5rem] bg-white/[0.05] border border-white/10 flex items-center justify-center shadow-2xl"
          >
-           <Zap className="w-10 h-10 text-primary-foreground fill-current shadow-2xl" />
+           <Zap className="w-8 h-8 text-white fill-white shadow-2xl" />
          </motion.div>
        </div>
     );
   }
-
-
 
   return (
     <Switch>

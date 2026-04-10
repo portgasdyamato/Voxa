@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   TrendingUp, CheckCircle, ArrowUpRight,
   Sparkles, Target, Activity, Trophy, Flame,
-  Calendar, Layers, BarChart3
+  Calendar, Layers, BarChart3, Workflow
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -25,15 +25,13 @@ export default function Stats() {
 
   if (statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-6">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-            className="w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary"
-          />
-          <p className="text-[10px] uppercase tracking-[0.4em] font-black text-muted-foreground">Loading analytics...</p>
-        </div>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+          className="w-12 h-12 rounded-full border-2 border-white/5 border-t-white/40"
+        />
+        <p className="text-[10px] uppercase tracking-[0.4em] font-black text-white/20 italic">Synchronizing Analytics...</p>
       </div>
     );
   }
@@ -44,7 +42,6 @@ export default function Stats() {
   const overdueTasks = stats?.overdueTasks || 0;
   const totalTasks = stats?.totalTasks || 0;
 
-  // Avg per day in the period
   const days = selectedPeriod === 'week' ? 7 : selectedPeriod === 'month' ? 30 : 90;
   const avgDaily = totalTasks > 0 ? (completedTasks / days).toFixed(1) : '0.0';
 
@@ -55,230 +52,200 @@ export default function Stats() {
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-16 pt-6 sm:pt-8 md:pt-10 pb-44">
+    <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-44">
       
-      {/* Header */}
+      {/* Header - Massive Typo Style */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:gap-8 mb-8 lg:mb-12"
+        transition={{ duration: 0.8 }}
+        className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 lg:gap-12 mb-16 md:mb-24"
       >
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Analytics</span>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 mb-2">
+            <Workflow className="w-5 h-5 text-white/5" />
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 italic">Performance Protocol</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-[-0.04em] text-foreground leading-none">Performance</h1>
-          <p className="text-muted-foreground text-xs md:text-sm font-medium mt-1">
-            Your productivity at a glance
+          <h1 className="text-[3.5rem] md:text-[6rem] xl:text-[7.5rem] font-black tracking-tight text-white leading-[0.85] select-none">Performance</h1>
+          <p className="text-white/20 font-serif italic text-sm md:text-xl tracking-tight pl-2">
+            Absolute throughput and operational efficiency metrics.
           </p>
         </div>
 
-        {/* Period Toggle */}
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] self-start lg:self-auto">
+        {/* Period Toggle - Bevel Frost Pill */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-full border border-white/[0.15] bg-white/[0.04] backdrop-blur-[40px] self-start lg:self-auto shadow-xl">
           {periods.map((p) => (
             <button
               key={p.key}
               onClick={() => setSelectedPeriod(p.key)}
               className={cn(
-                'h-10 px-6 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-400',
+                'h-12 px-8 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-700 relative group overflow-hidden',
                 selectedPeriod === p.key
-                  ? 'bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(59,130,246,0.4)]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  ? 'text-white bg-white/[0.08] border border-white/[0.22] shadow-inner'
+                  : 'text-white/25 hover:text-white/60 hover:bg-white/[0.02]'
               )}
             >
               {p.label}
+              {selectedPeriod === p.key && (
+                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              )}
             </button>
           ))}
         </div>
       </motion.div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
-        <KpiCard
-          delay={0.05}
-          label="Completed"
-          value={completedTasks}
-          icon={<CheckCircle className="w-5 h-5 text-emerald-400" />}
-          accent="#10b981"
-          sub={`${avgDaily}/day avg`}
-        />
+      {/* KPI Row - Bento Standards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-24">
         <KpiCard
           delay={0.1}
-          label="Success Rate"
-          value={`${completionRate}%`}
-          icon={<Target className="w-5 h-5 text-primary" />}
-          accent="#3b82f6"
-          sub="Goal attainment"
-          highlight={completionRate >= 70}
-        />
-        <KpiCard
-          delay={0.15}
-          label="In Progress"
-          value={pendingTasks}
-          icon={<Activity className="w-5 h-5 text-violet-400" />}
-          accent="#8b5cf6"
-          sub={`${overdueTasks} overdue`}
+          label="Completed"
+          value={completedTasks}
+          icon={<CheckCircle className="w-6 h-6 text-blue-400" />}
+          sub={`${avgDaily}/day avg throughput`}
         />
         <KpiCard
           delay={0.2}
-          label="Total Tasks"
+          label="Success Rate"
+          value={`${completionRate}%`}
+          icon={<Target className="w-6 h-6 text-blue-400" />}
+          sub="Goal attainment level"
+          highlight={completionRate >= 70}
+        />
+        <KpiCard
+          delay={0.3}
+          label="In Progress"
+          value={pendingTasks}
+          icon={<Activity className="w-6 h-6 text-white/20" />}
+          sub={`${overdueTasks} nodes waiting`}
+        />
+        <KpiCard
+          delay={0.4}
+          label="Total Systems"
           value={totalTasks}
-          icon={<Layers className="w-5 h-5 text-amber-400" />}
-          accent="#f59e0b"
-          sub={`${selectedPeriod === 'week' ? 'This week' : selectedPeriod === 'month' ? 'This month' : 'Last 90 days'}`}
+          icon={<Layers className="w-6 h-6 text-white/20" />}
+          sub={`Archive: ${selectedPeriod}`}
         />
       </div>
 
-      {/* Main 2-column layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* Main Analysis Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 md:gap-12">
         
         {/* Charts card — takes 2/3 */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.5 }}
-          className="xl:col-span-2 bento-card overflow-hidden group hover:border-white/[0.08] transition-all duration-700"
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 1 }}
+          className="xl:col-span-2 frosted-layer p-10 md:p-14 group"
         >
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <TrendingUp className="w-5 h-5 text-primary" />
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-6">
+              <div className="w-14 h-14 rounded-[1.5rem] bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-1000">
+                <TrendingUp className="w-6 h-6 text-blue-400 shadow-[0_0_15px_#3b82f6]" />
               </div>
-              <div>
-                <h2 className="text-xl font-black text-foreground">Productivity Trend</h2>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-black mt-0.5">Tasks over time</p>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-white tracking-tight">System Throughput</h2>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-white/10 font-black">Neural trend analysis</p>
               </div>
             </div>
           </div>
 
-          {stats ? (
-            <StatsCharts
-              data={stats}
-              period={selectedPeriod}
-              categories={categories || []}
-            />
-          ) : (
-            <div className="h-64 flex items-center justify-center text-muted-foreground/20 text-sm">No data available</div>
-          )}
+          <div className="mt-8">
+            {stats ? (
+              <StatsCharts
+                data={stats}
+                period={selectedPeriod}
+                categories={categories || []}
+              />
+            ) : (
+              <div className="h-80 flex items-center justify-center text-white/5 italic font-serif text-2xl">Awaiting synchronization...</div>
+            )}
+          </div>
         </motion.div>
 
-        {/* Sidebar cards — takes 1/3 */}
-        <div className="flex flex-col gap-6">
+        {/* Intelligence Sidebar */}
+        <div className="flex flex-col gap-8 md:gap-12">
           
-          {/* Streak / Insight Block */}
+          {/* Streak Block */}
           <motion.div
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="bento-card bg-gradient-to-br from-primary/10 via-transparent to-transparent border-primary/10 hover:border-primary/20 transition-all duration-700"
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 1 }}
+            className="frosted-layer p-10 md:p-12 border-blue-500/[0.05]"
           >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-6 mb-12">
+              <div className="w-14 h-14 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-inner">
+                <Trophy className="w-6 h-6 text-blue-400" />
               </div>
-              <div>
-                <h3 className="text-lg font-black text-foreground">Insights</h3>
-                <p className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">Performance score</p>
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-white tracking-tight">Efficiency Score</h3>
+                <p className="text-[10px] text-white/10 font-black uppercase tracking-[0.4em]">Protocol accuracy</p>
               </div>
             </div>
 
-            <div className="space-y-8">
-              {/* Score ring */}
-              <div className="flex items-center gap-6">
-                <div className="relative w-24 h-24 flex-shrink-0">
+            <div className="space-y-12">
+              <div className="flex flex-col items-center gap-8">
+                <div className="relative w-40 h-40">
                   <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" className="text-muted-foreground/5" strokeWidth="8"/>
-                    <circle
-                      cx="50" cy="50" r="38"
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" className="text-white/[0.04]" strokeWidth="4"/>
+                    <motion.circle
+                      initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
+                      whileInView={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - completionRate / 100) }}
+                      transition={{ duration: 2, ease: "circOut" }}
+                      cx="50" cy="50" r="42"
                       fill="none"
-                      stroke="#3b82f6"
-                      strokeWidth="8"
+                      stroke="white"
+                      strokeWidth="4"
                       strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 38}`}
-                      strokeDashoffset={`${2 * Math.PI * 38 * (1 - completionRate / 100)}`}
-                      style={{ transition: 'stroke-dashoffset 1.5s ease-out', filter: 'drop-shadow(0 0 6px #3b82f6)' }}
+                      strokeDasharray={`${2 * Math.PI * 42}`}
+                      className="opacity-40"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-black text-foreground leading-none">{completionRate}%</span>
+                    <span className="text-5xl font-black text-white leading-none tracking-tight">{completionRate}%</span>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    {completionRate >= 80 ? '🔥 Excellent' : completionRate >= 60 ? '✨ Good' : completionRate >= 40 ? '📈 Growing' : '🎯 Just started'}
+                
+                <div className="space-y-3 text-center">
+                  <p className="text-[11px] font-black uppercase tracking-[0.5em] text-blue-400 italic">
+                    {completionRate >= 80 ? 'Exceptional' : completionRate >= 60 ? 'Optimal' : completionRate >= 40 ? 'Synchronizing' : 'Initiating'}
                   </p>
-                  <p className="text-muted-foreground/80 text-xs font-medium leading-relaxed">
+                  <p className="text-white/20 text-[12px] font-serif italic italic leading-relaxed px-4">
                     {completionRate >= 80
-                      ? 'Outstanding performance this period.'
+                      ? 'The protocol is operating at peak intelligence levels.'
                       : completionRate >= 60
-                      ? 'Solid progress — keep it going!'
+                      ? 'Solid throughput — keep the neural flow active.'
                       : completionRate >= 40
-                      ? 'Building momentum nicely.'
-                      : 'Every task counts — you got this.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Mini stats */}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border">
-                <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Avg / Day</p>
-                  <p className="text-2xl font-black text-foreground">{avgDaily}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Overdue</p>
-                  <p className="text-2xl font-black text-foreground" style={{ color: overdueTasks > 0 ? '#f43f5e' : undefined }}>
-                    {overdueTasks}
+                      ? 'Synchronization is building momentum.'
+                      : 'Systems ready for first high-fidelity operation.'}
                   </p>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Quick Summary List */}
+          {/* Quick Summary Bento Box */}
           <motion.div
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="bento-card flex-1 hover:border-white/[0.08] transition-all duration-700"
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="frosted-layer p-10 md:p-12 flex-1"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Summary</h3>
+            <div className="flex items-center gap-4 mb-10">
+              <Sparkles className="w-4 h-4 text-white/10" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Metadata Archive</h3>
             </div>
-            <div className="space-y-5">
+            <div className="space-y-8">
               {[
-                { label: 'Period', value: selectedPeriod === 'week' ? '7 days' : selectedPeriod === 'month' ? '30 days' : '90 days' },
-                { label: 'Created', value: totalTasks },
-                { label: 'Finished', value: completedTasks },
-                { label: 'Remaining', value: pendingTasks },
+                { label: 'Active Period', value: selectedPeriod === 'week' ? '07 DAYS' : selectedPeriod === 'month' ? '30 DAYS' : '90 DAYS' },
+                { label: 'Nodes Created', value: totalTasks },
+                { label: 'Nodes Unified', value: completedTasks },
+                { label: 'Remaining Input', value: pendingTasks },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{item.label}</span>
-                  <span className="text-sm font-black text-foreground">{item.value}</span>
+                <div key={item.label} className="flex items-center justify-between border-b border-white/[0.04] pb-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/10">{item.label}</span>
+                  <span className="text-[15px] font-black text-white italic tracking-tight">{item.value}</span>
                 </div>
               ))}
-
-              {/* Progress bar */}
-              <div className="pt-4 border-t border-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Completion</span>
-                  <span className="text-[9px] font-black text-muted-foreground/80">{completionRate}%</span>
-                </div>
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${completionRate}%` }}
-                    transition={{ duration: 1.2, delay: 0.6, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', boxShadow: '0 0 12px rgba(59,130,246,0.3)' }}
-                  />
-                </div>
-              </div>
             </div>
           </motion.div>
         </div>
@@ -289,47 +256,40 @@ export default function Stats() {
 
 // --- Sub-component: KPI Card ---
 function KpiCard({
-  label, value, icon, accent, sub, delay = 0, highlight = false
+  label, value, icon, sub, delay = 0, highlight = false
 }: {
   label: string;
   value: string | number;
   icon: React.ReactNode;
-  accent: string;
   sub?: string;
   delay?: number;
   highlight?: boolean;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.45 }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.8, ease: "circOut" }}
       className={cn(
-        'bento-card group relative overflow-hidden p-4 md:p-6 hover:scale-[1.01] hover:border-white/[0.08] transition-all duration-500',
-        highlight && 'border-primary/20 hover:border-primary/30'
+        'frosted-layer group relative overflow-hidden p-8 md:p-10 hover:scale-[1.02] hover:bg-white/[0.12]',
+        highlight && 'border-white/40'
       )}
-      style={highlight ? { boxShadow: `0 0 30px ${accent}15` } : undefined}
     >
-      {/* Accent glow */}
-      <div
-        className="absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-[0.06] pointer-events-none group-hover:opacity-[0.1] transition-opacity duration-700"
-        style={{ background: `radial-gradient(circle at 100% 0%, ${accent}, transparent)` }}
-      />
-
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110"
-          style={{ backgroundColor: `${accent}15`, borderColor: `${accent}25` }}
-        >
+      {/* Subtle Light Reflection */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+      
+      <div className="flex items-start justify-between mb-8">
+        <div className="w-14 h-14 rounded-[1.25rem] bg-white/[0.03] border border-white/10 flex items-center justify-center transition-all duration-700 group-hover:scale-110 group-hover:bg-white/5">
           {icon}
         </div>
-        <ArrowUpRight className="w-4 h-4 text-foreground/5 group-hover:text-foreground/20 transition-colors" />
+        <ArrowUpRight className="w-5 h-5 text-white/5 group-hover:text-white/20 transition-all duration-700" />
       </div>
 
-      <div className="space-y-1">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground truncate">{label}</p>
-        <p className="text-3xl md:text-4xl font-black tracking-tight text-foreground leading-none whitespace-nowrap">{value}</p>
-        {sub && <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 pt-1 truncate">{sub}</p>}
+      <div className="space-y-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10 truncate">{label}</p>
+        <p className="text-4xl md:text-5xl font-black tracking-[-0.04em] text-white leading-none whitespace-nowrap">{value}</p>
+        {sub && <p className="text-[10px] font-black uppercase tracking-widest text-white/10 pt-2 truncate italic">{sub}</p>}
       </div>
     </motion.div>
   );

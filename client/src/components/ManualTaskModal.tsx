@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ReminderSettings } from '@/components/ReminderSettings';
-import { Calendar, Clock, Plus, Edit3, ArrowRight, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Plus, Edit3, ArrowRight, CheckCircle, Boxes, Zap, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -116,14 +116,14 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     try {
       if (isEditing) {
         await updateTask({ id: task.id, updates: payload });
-        toast({ title: 'Task updated successfully' });
+        toast({ title: 'Task synchronized' });
       } else {
         await createTask(payload);
-        toast({ title: 'Task added!' });
+        toast({ title: 'Task committed' });
       }
       onOpenChange(false);
     } catch (error) {
-      toast({ title: 'Something went wrong', description: 'Please try again.', variant: 'destructive' });
+      toast({ title: 'Sync failed', description: 'Internal protocol interrupt.', variant: 'destructive' });
     }
   };
 
@@ -141,85 +141,75 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] translate-y-[-50%]">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden border border-white/[0.22] bg-[#010101] backdrop-blur-[40px] shadow-[0_45px_100px_rgba(0,0,0,0.95)] flex flex-col max-h-[90vh] translate-y-[-50%] rounded-[2.5rem]">
+         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
+         <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />
         
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-5 border-b border-white/[0.06] flex-shrink-0">
-          <div className="flex items-center gap-4">
+        <DialogHeader className="px-10 pt-12 pb-10 border-b border-white/[0.05] flex-shrink-0 relative z-10">
+          <div className="flex items-center gap-6">
             <div className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
-              isEditing ? 'bg-amber-500/15 border border-amber-500/25' : 'bg-primary/15 border border-primary/25'
+              'w-16 h-16 rounded-[1.75rem] flex items-center justify-center flex-shrink-0 border',
+              isEditing ? 'bg-blue-500/10 border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.2)]' : 'bg-white/[0.05] border-white/10'
             )}>
-              {isEditing ? <Edit3 className="w-5 h-5 text-amber-400" /> : <Plus className="w-5 h-5 text-primary" />}
+              {isEditing ? <Edit3 className="w-8 h-8 text-blue-400" /> : <Boxes className="w-8 h-8 text-white/40" />}
             </div>
-            <div>
-              <DialogTitle className="text-xl font-black text-foreground tracking-tight">
-                {isEditing ? 'Edit Task' : 'New Task'}
+            <div className="space-y-1">
+              <DialogTitle className="text-[2rem] font-black text-white tracking-tight leading-none">
+                {isEditing ? 'Sync Node' : 'Initialize Node'}
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-muted-foreground font-medium mt-0.5">
-                {isEditing ? 'Update task details below' : 'Add the details for your new task'}
+              <DialogDescription className="text-[10px] text-white/20 font-black uppercase tracking-[0.4em] italic">
+                {isEditing ? 'Update internal task protocol' : 'Committing new system operational data'}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        {/* Scrollable body */}
-        <form onSubmit={(e) => { e.preventDefault(); handleSaveTask(); }} className="flex flex-col flex-1 overflow-hidden">
-          <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+        {/* Form Body */}
+        <form onSubmit={(e) => { e.preventDefault(); handleSaveTask(); }} className="flex flex-col flex-1 overflow-hidden relative z-10">
+          <div className="px-10 py-10 space-y-10 overflow-y-auto flex-1 no-scrollbar">
           
-          {/* Task name */}
-          <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Task name *</Label>
+          {/* Task title */}
+          <div className="space-y-4">
+            <Label className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 pl-4 italic">Operational Title</Label>
             <Input
               value={taskTitle}
               onChange={(e) => handleTaskTitleChange(e.target.value)}
-              placeholder="What do you need to do?"
-              className="h-12 rounded-xl border-border bg-muted/50 focus-visible:ring-primary/40 text-base font-semibold px-4 placeholder:text-muted-foreground/40"
+              placeholder="What system requires focus?"
+              className="h-16 rounded-[1.5rem] border-white/[0.12] bg-white/[0.04] focus-visible:ring-white/20 text-lg font-bold px-8 placeholder:text-white/10"
               autoFocus
             />
           </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Notes <span className="normal-case tracking-normal text-muted-foreground/60">(optional)</span></Label>
-            <textarea
-              value={taskDescription}
-              onChange={(e) => setTaskDescription(e.target.value)}
-              placeholder="Add any additional details..."
-              rows={3}
-              className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all resize-none placeholder:text-muted-foreground/40 text-foreground"
-            />
-          </div>
-
-          {/* Priority + Category row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Priority</Label>
+          {/* Priority + Category Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 pl-4 italic">Priority Level</Label>
               <Select value={manualPriority} onValueChange={setManualPriority}>
-                <SelectTrigger className="h-11 rounded-xl border-border bg-muted/50 text-sm font-semibold px-4">
-                  <SelectValue placeholder="Auto-detect" />
+                <SelectTrigger className="h-14 rounded-[1.5rem] border-white/[0.12] bg-white/[0.04] text-[11px] font-black uppercase tracking-widest px-8">
+                  <SelectValue placeholder="Neural Detection" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-border bg-popover p-1.5">
-                  <SelectItem value="none" className="rounded-lg py-2.5 text-sm font-medium">Auto-detect</SelectItem>
-                  <SelectItem value="low" className="rounded-lg py-2.5 text-sm font-medium text-emerald-400">Low</SelectItem>
-                  <SelectItem value="medium" className="rounded-lg py-2.5 text-sm font-medium text-amber-400">Medium</SelectItem>
-                  <SelectItem value="high" className="rounded-lg py-2.5 text-sm font-medium text-rose-400">High</SelectItem>
+                <SelectContent className="rounded-[1.5rem] border-white/10 bg-[#0a0a0c] p-2 overflow-hidden shadow-3xl">
+                  <SelectItem value="none" className="rounded-[1rem] py-3 text-[10px] font-black uppercase tracking-widest">Neural Detection</SelectItem>
+                  <SelectItem value="high" className="rounded-[1rem] py-3 text-[10px] font-black uppercase tracking-widest text-rose-500">Critical Priority</SelectItem>
+                  <SelectItem value="medium" className="rounded-[1rem] py-3 text-[10px] font-black uppercase tracking-widest text-blue-400">Standard Priority</SelectItem>
+                  <SelectItem value="low" className="rounded-[1rem] py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Minimal Priority</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Category</Label>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 pl-4 italic">Neural Layer</Label>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="h-11 rounded-xl border-border bg-muted/50 text-sm font-semibold px-4">
-                  <SelectValue placeholder="None" />
+                <SelectTrigger className="h-14 rounded-[1.5rem] border-white/[0.12] bg-white/[0.04] text-[11px] font-black uppercase tracking-widest px-8">
+                  <SelectValue placeholder="System Default" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-border bg-popover p-1.5 max-h-[220px]">
-                  <SelectItem value="none" className="rounded-lg py-2.5 text-sm font-medium">No category</SelectItem>
+                <SelectContent className="rounded-[1.5rem] border-white/10 bg-[#0a0a0c] p-2 max-h-[300px] overflow-y-auto no-scrollbar shadow-3xl">
+                  <SelectItem value="none" className="rounded-[1rem] py-3 text-[10px] font-black uppercase tracking-widest">System Default</SelectItem>
                   {categories?.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-lg py-2.5 text-sm font-medium">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                    <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-[1rem] py-3 text-[10px] font-black uppercase tracking-widest text-white/60">
+                      <div className="flex items-center gap-4">
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color, boxShadow: `0 0 10px ${cat.color}40` }} />
                         {cat.name}
                       </div>
                     </SelectItem>
@@ -229,36 +219,39 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
             </div>
           </div>
 
-          {/* Due date */}
-          <div className="space-y-2">
-            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Calendar className="w-3.5 h-3.5" /> Due date <span className="normal-case tracking-normal text-muted-foreground/60">(optional)</span>
+          {/* Time protocol */}
+          <div className="space-y-4">
+            <Label className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 pl-4 italic flex items-center gap-3">
+              <Clock className="w-3 h-3" /> Time Synchronization
             </Label>
             <Input
               type="datetime-local"
               value={deadlineInputValue}
               onChange={(e) => handleDeadlineChange(e.target.value)}
-              className="h-11 rounded-xl border-border bg-muted/50 text-sm font-semibold px-4"
+              className="h-14 rounded-[1.5rem] border-white/[0.12] bg-white/[0.04] text-[11px] font-black uppercase tracking-widest px-8 text-white/60"
             />
             <AnimatePresence>
               {selectedDeadline && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex items-center gap-4 px-6 py-4 rounded-[1.25rem] bg-blue-500/5 border border-blue-500/10"
                 >
-                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="text-xs font-semibold text-muted-foreground/60">Due {formatRelativeDate(selectedDeadline)}</span>
+                  <CheckCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Due {formatRelativeDate(selectedDeadline)}</span>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Reminders — only show if deadline set */}
+          {/* Reminder Logic */}
           {selectedDeadline && (
-            <div className="space-y-3 pt-2 border-t border-border">
-              <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Reminder</Label>
+            <div className="space-y-6 pt-10 border-t border-white/[0.05]">
+              <div className="flex items-center gap-3 text-white/10 mb-4 px-4">
+                 <Zap className="w-4 h-4" />
+                 <span className="text-[10px] font-black uppercase tracking-[0.5em] italic">Telemetry Alert</span>
+              </div>
               <ReminderSettings
                 reminderEnabled={reminderEnabled}
                 reminderType={reminderType}
@@ -271,29 +264,30 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
           )}
         </div>
 
-          <div className="px-6 py-4 border-t border-border bg-muted/10 flex gap-3 flex-shrink-0">
+          <div className="px-10 py-10 border-t border-white/[0.05] bg-white/[0.02] flex gap-6 flex-shrink-0">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-11 rounded-xl font-bold text-sm text-muted-foreground/40 hover:text-foreground hover:bg-muted transition-all border border-border"
+              className="flex-1 h-14 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] italic text-white/20 hover:text-white hover:bg-white/[0.04] transition-all border border-white/[0.1]"
             >
-              Cancel
+              Abort
             </Button>
             <Button
               type="submit"
               disabled={isPending || !taskTitle.trim()}
-              className="flex-[2] h-11 rounded-xl font-black text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              className="flex-[2] h-14 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] italic bg-white/[0.08] border border-white/[0.22] backdrop-blur-[40px] text-white hover:bg-white/[0.12] shadow-2xl disabled:opacity-20 transition-all flex items-center justify-center gap-4 group"
             >
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
               {isPending ? (
                 <>
-                  <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  Saving...
+                  <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  Syncing...
                 </>
               ) : (
                 <>
-                  {isEditing ? 'Save Changes' : 'Add Task'}
-                  <ArrowRight className="w-4 h-4" />
+                  {isEditing ? 'Sync Protocol' : 'Commit Node'}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </Button>

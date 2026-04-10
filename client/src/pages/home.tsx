@@ -6,7 +6,7 @@ import { ManualTaskModal } from '@/components/ManualTaskModal';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryManager } from '@/components/CategoryManager';
 import { 
-  Plus, History, Activity, Zap, Layers, Compass, BarChart3, ArrowUpRight
+  Plus, History, Activity, Zap, Layers, Compass, BarChart3, ArrowUpRight, Workflow
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -58,12 +58,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
 
   if (tasksLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
         <motion.div 
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent"
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 rounded-full border-2 border-white/5 border-t-white/40"
         />
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 italic">Synchronizing Workspace...</p>
       </div>
     );
   }
@@ -71,15 +72,15 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-3 sm:px-6 md:px-8 lg:px-16 pt-12 sm:pt-16 pb-64 overflow-x-hidden">
-      <div className="grid lg:grid-cols-[240px_1fr_300px] gap-8 lg:gap-20 items-start w-full">
+    <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-64">
+      <div className="grid lg:grid-cols-[280px_1fr_320px] gap-12 lg:gap-24 items-start w-full">
         
-        {/* Workspace Sidebar */}
-        <aside className="space-y-12 lg:sticky lg:top-28 hidden lg:block">
-          <div className="space-y-10">
-            <div className="space-y-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground px-4 italic leading-none">Perspective</p>
-              <nav className="space-y-2">
+        {/* Elite Sidebar - Bevel Frost Style */}
+        <aside className="space-y-12 lg:sticky lg:top-32 hidden lg:block">
+          <div className="space-y-12">
+            <div className="space-y-6">
+              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/15 px-6 italic">Perspective</p>
+              <nav className="space-y-3">
                 {[
                   { id: 'all', label: 'All Tasks', icon: Layers },
                   { id: 'today', label: 'Due Today', icon: Activity },
@@ -89,43 +90,50 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                     key={filter.id}
                     onClick={() => setSelectedFilter(filter.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] group relative overflow-hidden transition-all duration-500",
+                      "w-full flex items-center justify-between px-8 py-5 rounded-[1.5rem] text-[12px] font-black uppercase tracking-[0.2em] group relative transition-all duration-700 overflow-hidden",
                       selectedFilter === filter.id 
-                        ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/20" 
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "bg-white/[0.08] text-white border border-white/[0.22] shadow-[0_20px_40px_rgba(0,0,0,0.6)]" 
+                        : "text-white/20 hover:text-white/60 hover:bg-white/[0.03]"
                     )}
                   >
-                    <div className="flex items-center gap-4 relative z-10 italic">
-                      <filter.icon className={cn("w-4 h-4 transition-transform", selectedFilter === filter.id ? "scale-110" : "opacity-30 group-hover:opacity-100")} />
+                    <div className="flex items-center gap-5 relative z-10 italic">
+                      <filter.icon className={cn("w-4 h-4 transition-all duration-700", selectedFilter === filter.id ? "text-blue-400 scale-110" : "opacity-20 group-hover:opacity-100")} />
                       <span>{filter.label}</span>
                     </div>
+                    {selectedFilter === filter.id && (
+                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                    )}
                   </button>
                 ))}
               </nav>
             </div>
 
-            <div className="space-y-6 pt-10 border-t border-white/[0.03]">
-              <div className="px-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground italic leading-none">Folders</p>
+            <div className="space-y-8 pt-12 border-t border-white/[0.05]">
+              <div className="px-6">
+                <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/15 italic">Folders</p>
               </div>
               <CategoryFilter 
                 selectedCategory={selectedCategory} 
                 onCategoryChange={setSelectedCategory} 
               />
-              <div className="px-1 pt-4">
+              <div className="px-2 pt-6">
                 <CategoryManager />
               </div>
             </div>
           </div>
         </aside>
 
-        <main className="space-y-12 sm:space-y-16 w-full min-w-0">
-          <header className="flex flex-col gap-6 border-b border-white/[0.03] pb-8 w-full">
-            <div className="flex items-center justify-between gap-4 w-full">
-              <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground leading-none truncate">Workspace</h1>
-                <p className="text-muted-foreground font-black text-[9px] md:text-sm uppercase tracking-[0.2em] italic truncate">
-                   {activeTasks.length} Systems Active
+        <main className="space-y-16 md:space-y-24 w-full min-w-0">
+          <header className="flex flex-col gap-10 border-b border-white/[0.05] pb-12 w-full">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 w-full">
+              <div className="space-y-3 min-w-0 flex-1">
+                <div className="flex items-center gap-4 mb-2">
+                   <Workflow className="w-5 h-5 text-white/[0.05]" />
+                   <span className="text-[10px] font-black tracking-[0.5em] text-white/10 uppercase">System Active</span>
+                </div>
+                <h1 className="text-[3.5rem] md:text-[6rem] xl:text-[7.5rem] font-black tracking-tight text-white leading-[0.85] select-none">Workspace</h1>
+                <p className="text-white/20 font-serif italic text-sm md:text-xl tracking-tight pl-2">
+                   {activeTasks.length} operational systems ready for synchronization.
                 </p>
               </div>
 
@@ -133,15 +141,16 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsModalOpen(true)}
-                className="h-9 md:h-16 px-4 md:px-10 rounded-lg md:rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 shadow-lg shadow-primary/20 group relative overflow-hidden active:scale-95 transition-all shrink-0"
+                className="h-16 md:h-20 px-10 md:px-14 rounded-[1.5rem] md:rounded-[2.25rem] border border-white/[0.22] bg-white/[0.08] backdrop-blur-[40px] text-white flex items-center justify-center gap-4 shadow-[0_45px_80px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] group relative overflow-hidden active:scale-95 transition-all shrink-0"
               >
-                <Plus className="w-3.5 h-3.5 md:w-6 md:h-6 relative z-10" />
-                <span className="text-[8px] md:text-[11px] font-black uppercase tracking-[0.1em] relative z-10 italic">New Task</span>
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                <Plus className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:scale-110 transition-transform duration-700" />
+                <span className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.2em] italic">Commit Task</span>
               </motion.button>
             </div>
 
-            {/* Mobile Filter Pill Bar */}
-            <div className="flex lg:hidden overflow-x-auto pb-4 gap-2 no-scrollbar scroll-smooth w-full">
+            {/* Mobile Filter Pill Bar - Premium Refinement */}
+            <div className="flex lg:hidden overflow-x-auto pb-4 gap-3 no-scrollbar scroll-smooth w-full px-2">
               {[
                 { id: 'all', label: 'All', icon: Layers },
                 { id: 'today', label: 'Today', icon: Activity },
@@ -154,42 +163,20 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                     setSelectedCategory(null);
                   }}
                   className={cn(
-                    "flex-shrink-0 flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border",
+                    "flex-shrink-0 flex items-center gap-3 px-6 h-12 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all duration-700 border",
                     selectedFilter === filter.id && selectedCategory === null
-                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
-                      : "bg-muted/50 text-muted-foreground border-border/50"
+                      ? "bg-white/[0.1] text-white border-white/[0.2] shadow-xl" 
+                      : "bg-white/[0.02] text-white/30 border-white/5"
                   )}
                 >
-                  <filter.icon className="w-3.5 h-3.5" />
+                  <filter.icon className="w-4 h-4" />
                   <span>{filter.label}</span>
                 </button>
               ))}
-              
-              <div className="w-[1px] h-6 bg-border self-center flex-shrink-0 mx-1" />
-
-              {categories?.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCategory(cat.id);
-                    setSelectedFilter('all');
-                  }}
-                  className={cn(
-                    "flex-shrink-0 flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 border",
-                    selectedCategory === cat.id 
-                      ? "bg-primary/20 text-primary border-primary shadow-xl" 
-                      : "bg-muted/50 text-muted-foreground border-border/50"
-                  )}
-                >
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                  <span>{cat.name}</span>
-                </button>
-              ))}
             </div>
-            
           </header>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-6 md:gap-8">
             <AnimatePresence mode="popLayout" initial={false}>
               {activeTasks.length > 0 ? (
                 activeTasks.map((task, idx) => (
@@ -199,13 +186,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="py-40 flex flex-col items-center text-center space-y-10 frosted-layer border-dashed bg-transparent shadow-none"
+                  className="py-48 flex flex-col items-center text-center space-y-12 frosted-layer border-dashed bg-transparent shadow-none"
                 >
-                  <Compass className="w-16 h-16 text-foreground/5 animate-pulse" />
-                  <div className="space-y-4 max-w-sm relative z-10">
-                    <h3 className="text-3xl font-black text-foreground italic">Workspace Clear</h3>
-                    <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.4em] italic leading-relaxed">
-                      All systems optimal. Create a new task to resume.
+                  <Compass className="w-20 h-20 text-white/[0.02] animate-pulse" />
+                  <div className="space-y-6 max-w-md relative z-10">
+                    <h3 className="text-4xl font-black text-white italic tracking-tight">Sync Complete</h3>
+                    <p className="text-white/10 text-[11px] font-black uppercase tracking-[0.5em] italic leading-loose">
+                      All systems operating at absolute peak efficiency.
                     </p>
                   </div>
                 </motion.div>
@@ -214,13 +201,13 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           </div>
 
           {completedTasks.length > 0 && (
-            <section className="space-y-10 pt-20 border-t border-white/[0.05]">
-              <div className="flex items-center gap-6 px-6">
-                 <History className="w-6 h-6 text-foreground" />
-                 <h3 className="text-3xl font-black tracking-tight text-foreground italic">Archived</h3>
+            <section className="space-y-16 md:space-y-20 pt-24 border-t border-white/[0.05]">
+              <div className="flex items-center gap-8 px-8">
+                 <History className="w-8 h-8 text-white/10" />
+                 <h3 className="text-4xl font-black tracking-tight text-white/20 italic select-none">Archived Protocol</h3>
               </div>
-              <div className="grid grid-cols-1 gap-4 opacity-40 hover:opacity-100 transition-all duration-[1000ms] grayscale hover:grayscale-0">
-                {completedTasks.slice(0, 10).map((task) => (
+              <div className="grid grid-cols-1 gap-6 opacity-40 hover:opacity-100 transition-all duration-[1000ms] grayscale hover:grayscale-0">
+                {completedTasks.slice(0, 5).map((task) => (
                   <TaskCard key={task.id} task={task} />
                 ))}
               </div>
@@ -228,34 +215,37 @@ export default function Home({ searchQuery = '' }: HomeProps) {
           )}
         </main>
 
-        {/* Dynamic Activity Wing */}
-        <aside className="space-y-12 lg:sticky lg:top-28 hidden xl:block">
-           <div className="frosted-layer p-10 space-y-10">
-              <div className="flex items-center justify-between pb-6 border-b border-white/[0.03]">
-                <div className="space-y-1">
-                  <h4 className="font-black text-[11px] uppercase tracking-[0.4em] text-foreground leading-none">Efficiency</h4>
-                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic leading-none">Synchronized</p>
+        {/* Dynamic Activity Wing - Bento Box Refinement */}
+        <aside className="space-y-12 lg:sticky lg:top-32 hidden xl:block">
+           <div className="frosted-layer p-12 space-y-12">
+              <div className="flex items-center justify-between pb-8 border-b border-white/[0.05]">
+                <div className="space-y-2">
+                  <h4 className="font-black text-[12px] uppercase tracking-[0.5em] text-white/40 leading-none">Efficiency</h4>
+                  <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic leading-none">Crystalline Sync</p>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                  <BarChart3 className="w-5 h-5 text-emerald-500" />
+                <div className="w-12 h-12 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-inner">
+                  <BarChart3 className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
               
-              <div className="space-y-8">
-                <div className="space-y-6">
+              <div className="space-y-10">
+                <div className="space-y-8">
                    <div className="flex items-end justify-between">
-                      <div className="text-7xl font-black tracking-[-0.1em] text-foreground leading-none">{completionRate}%</div>
-                      <ArrowUpRight className="w-8 h-8 text-emerald-500/20" />
+                      <div className="text-[6rem] font-black tracking-[-0.05em] text-white leading-none select-none">{completionRate}%</div>
+                      <ArrowUpRight className="w-8 h-8 text-white/10" />
                    </div>
-                   <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden p-0.5">
+                   <div className="h-2 w-full bg-white/[0.03] rounded-full overflow-hidden p-0.5">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${completionRate}%` }}
-                        transition={{ duration: 1.5, ease: "circOut" }}
-                        className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+                        transition={{ duration: 2, ease: "circOut" }}
+                        className="h-full bg-gradient-to-r from-blue-500 to-white/40 rounded-full shadow-[0_0_25px_rgba(59,130,246,0.4)]"
                       />
                    </div>
                 </div>
+                <p className="text-[10px] font-serif italic text-white/20 leading-relaxed text-center px-4 uppercase tracking-[0.1em]">
+                   Absolute throughput of your operating intelligence.
+                </p>
               </div>
            </div>
         </aside>
