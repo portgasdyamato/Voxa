@@ -15,7 +15,8 @@ export function WakeWordWidget() {
   
   const isProcessingRef = useRef(false);
   const recognitionRef = useRef<any>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const cancelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const { toast } = useToast();
   const { data: tasks } = useTasks();
@@ -61,36 +62,31 @@ export function WakeWordWidget() {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.lang = 'en-US';
 
     recognition.onresult = (event: any) => {
-      let interim = '';
-      let final = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          final += event.results[i][0].transcript;
-        } else {
-          interim += event.results[i][0].transcript;
-        }
+      let fullTranscript = '';
+      
+      // Iterate from 0 to capture the entirety of the current continuous session
+      for (let i = 0; i < event.results.length; i++) {
+        fullTranscript += event.results[i][0].transcript;
       }
 
-      const currentSpeech = (final + interim).toLowerCase().trim();
+      const currentSpeech = fullTranscript.toLowerCase().trim();
       if (currentSpeech) setLastHeardDebug(currentSpeech);
 
-      // Detect wake word variations
-      if (!isProcessingRef.current && /(voxa|vox|vauxhall|boxa|foxa|oksa|baxa)/i.test(currentSpeech)) {
+      // Detect wake word variations (super broad)
+      const wakeWordRegex = /(vox|box|fox|vaux|alexa|assistant|computer|jarvis)/i;
+      
+      if (!isProcessingRef.current && wakeWordRegex.test(currentSpeech)) {
          setIsActive(true);
          isProcessingRef.current = true;
       }
 
       if (isProcessingRef.current) {
-         // Find everything spoken after the wake word if the wake word is in the current string
          let commandText = currentSpeech;
-         if (/(voxa|vox|vauxhall|boxa|foxa|oksa|baxa)/i.test(commandText)) {
-            commandText = commandText.replace(/.*?(voxa|vox|vauxhall|boxa|foxa|oksa|baxa)\s*/i, '').trim();
+         if (wakeWordRegex.test(commandText)) {
+            commandText = commandText.replace(/.*?(vox|box|fox|vaux|alexa|assistant|computer|jarvis)\s*/i, '').trim();
          }
          
          if (commandText) {
@@ -99,10 +95,25 @@ export function WakeWordWidget() {
              setInterimText('Listening for your command...');
          }
 
-         // If the user stopped talking, execute it (only if it has enough words/chars)
-         if (event.results[event.results.length - 1].isFinal && commandText.length >= 3) {
-            handleExecute(commandText);
-            isProcessingRef.current = false;
+         // If the user stopped talking, execute it
+         if (event.results[event.results.length - 1].isFinal) {
+            if (commandText.length >= 3) {
+                handleExecute(commandText);
+                isProcessingRef.current = false;
+            } else {
+                // If they paused just after the wake word, leave it active!
+                // It will catch the continuation in the next engine restart.
+                
+                // Add a timeout fallback in case they walk away
+                if (cancelTimeoutRef.current) clearTimeout(cancelTimeoutRef.current);
+                cancelTimeoutRef.current = setTimeout(() => {
+                   if (isProcessingRef.current) {
+                      isProcessingRef.current = false;
+                      setIsActive(false);
+                      setInterimText('Listening...');
+                   }
+                }, 8000);
+            }
          }
       }
     };
@@ -119,7 +130,7 @@ export function WakeWordWidget() {
     recognition.onend = () => {
       recognitionRef.current = null;
       if (localStorage.getItem('voxa_ambient_enabled') === 'true') {
-        timeoutRef.current = setTimeout(() => {
+        restartTimeoutRef.current = setTimeout(() => {
            startListening();
         }, 500);
       }
@@ -149,7 +160,8 @@ export function WakeWordWidget() {
           recognitionRef.current.abort();
           recognitionRef.current = null;
        }
-       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+       if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
+       if (cancelTimeoutRef.current) clearTimeout(cancelTimeoutRef.current);
     }
   };
 
@@ -158,7 +170,8 @@ export function WakeWordWidget() {
        startListening();
     }
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
+      if (cancelTimeoutRef.current) clearTimeout(cancelTimeoutRef.current);
       if (recognitionRef.current) {
          recognitionRef.current.onend = null;
          recognitionRef.current.abort();
