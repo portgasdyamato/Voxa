@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, X } from 'lucide-react';
+import { Activity, X, Mic, Power } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateTask, useUpdateTask, useDeleteTask, useTasks } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
@@ -9,6 +9,9 @@ import { executeVoiceCommand } from '@/lib/voiceCommandExecutor';
 export function WakeWordWidget() {
   const [isActive, setIsActive] = useState(false);
   const [interimText, setInterimText] = useState('Listening...');
+  const [ambientEnabled, setAmbientEnabled] = useState(() => localStorage.getItem('voxa_ambient_enabled') === 'true');
+  const [micError, setMicError] = useState(false);
+  
   const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -101,27 +104,53 @@ export function WakeWordWidget() {
     recognition.onerror = (event: any) => {
        if (event.error === 'not-allowed') {
            console.error("Microphone access denied.");
+           setMicError(true);
+           setAmbientEnabled(false);
+           localStorage.setItem('voxa_ambient_enabled', 'false');
        }
     };
 
     recognition.onend = () => {
       recognitionRef.current = null;
-      // Restart the recognition to keep it alive acting as a background listener
-      timeoutRef.current = setTimeout(() => {
-         startListening();
-      }, 500);
+      if (localStorage.getItem('voxa_ambient_enabled') === 'true') {
+        timeoutRef.current = setTimeout(() => {
+           startListening();
+        }, 500);
+      }
     };
 
     try {
       recognition.start();
       recognitionRef.current = recognition;
+      setMicError(false);
     } catch (e) {
       console.error("Web Speech API start error", e);
     }
   }, [handleExecute]);
 
+  // Handle explicit toggle (User gesture required for some browsers)
+  const toggleAmbient = () => {
+    const newState = !ambientEnabled;
+    setAmbientEnabled(newState);
+    localStorage.setItem('voxa_ambient_enabled', newState.toString());
+    
+    if (newState) {
+       setMicError(false);
+       startListening();
+    } else {
+       if (recognitionRef.current) {
+          recognitionRef.current.onend = null;
+          recognitionRef.current.abort();
+          recognitionRef.current = null;
+       }
+       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }
+  };
+
   useEffect(() => {
-    startListening();
+    if (ambientEnabled) {
+       startListening();
+    }
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (recognitionRef.current) {
@@ -129,7 +158,7 @@ export function WakeWordWidget() {
          recognitionRef.current.abort();
       }
     };
-  }, [startListening]);
+  }, [ambientEnabled, startListening]);
 
   return (
     <AnimatePresence>
@@ -170,5 +199,26 @@ export function WakeWordWidget() {
         </motion.div>
       )}
     </AnimatePresence>
+    
+    {/* Persistent Ambient Status Toggle */}
+    <div className="fixed bottom-6 left-6 z-[90] pointer-events-auto">
+       <button
+         onClick={toggleAmbient}
+         className={`group relative flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all duration-500 shadow-2xl backdrop-blur-xl ${
+           ambientEnabled && !micError
+             ? "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+             : "bg-white/[0.04] border-white/10 text-white/50 hover:text-white"
+         }`}
+       >
+         <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+           ambientEnabled && !micError ? "bg-blue-500 shadow-[0_0_10px_#3b82f6] animate-pulse" : micError ? "bg-red-500" : "bg-white/20"
+         }`} />
+         <span className="text-[11px] font-bold tracking-wider uppercase">
+            {ambientEnabled && !micError ? "Ambient On" : "Ambient Off"}
+         </span>
+         {!ambientEnabled && <Power className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100" />}
+       </button>
+    </div>
+    </>
   );
 }

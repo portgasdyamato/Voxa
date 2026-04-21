@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, LogOut, Moon, Sun, Monitor } from 'lucide-react';
+import { Settings, LogOut, Moon, Sun, Monitor, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import {
@@ -71,7 +71,31 @@ export function ProfileDropdown() {
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="mx-2 opacity-10" />
-            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest opacity-20 px-3 py-2">Appearance</DropdownMenuLabel>
+            
+            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest opacity-20 px-3 pt-2 pb-1">Notifications</DropdownMenuLabel>
+            <div 
+              className="rounded-xl flex items-center justify-between py-2 px-3 hover:bg-muted transition-all cursor-pointer group"
+              onClick={(e) => {
+                e.preventDefault();
+                const current = localStorage.getItem('voxa_alarm_sound') !== 'false';
+                localStorage.setItem('voxa_alarm_sound', (!current).toString());
+                // Force a tiny visual update by toggling class or relying on next render, 
+                // but since it's direct DOM string, we just update it.
+                const el = document.getElementById('alarm-sound-status');
+                if (el) el.textContent = !current ? 'On' : 'Off';
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <Bell className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+                <span className="text-sm font-semibold opacity-70 group-hover:opacity-100">Ringing Alarm Sound</span>
+              </div>
+              <span id="alarm-sound-status" className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                {typeof window !== 'undefined' && localStorage.getItem('voxa_alarm_sound') === 'false' ? 'Off' : 'On'}
+              </span>
+            </div>
+
+            <DropdownMenuSeparator className="mx-2 opacity-10" />
+            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest opacity-20 px-3 pt-2 pb-1">Appearance</DropdownMenuLabel>
             
             <div className="grid grid-cols-3 gap-1 p-1">
               {[

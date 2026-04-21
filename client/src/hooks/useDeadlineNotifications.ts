@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+const ALARM_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
+
 export function useDeadlineNotifications(tasks: any[]) {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const { toast } = useToast();
@@ -15,6 +17,20 @@ export function useDeadlineNotifications(tasks: any[]) {
   }, []);
 
   const showNotification = useCallback((task: any, title: string, body: string) => {
+    // Check alarm preference
+    const alarmSoundEnabled = localStorage.getItem('voxa_alarm_sound') !== 'false';
+    
+    // Play ringing alarm sound if enabled
+    if (alarmSoundEnabled) {
+      try {
+        const audio = new Audio(ALARM_SOUND_URL);
+        audio.volume = 0.5; // Set volume to 50%
+        audio.play().catch(e => console.warn('Audio playback prevented by browser policy:', e));
+      } catch (e) {
+        console.warn('Audio object initialization failed:', e);
+      }
+    }
+
     // Show toast for immediate UI feedback (Always works)
     toast({
       title,
@@ -55,11 +71,14 @@ export function useDeadlineNotifications(tasks: any[]) {
         let body = "";
 
         if (task.reminderType === 'default') {
-          // Trigger within 2 hours of deadline
-          if (diffMinutes <= 120 && diffMinutes > -5) {
-            notificationKey = `${task.id}-default-${dueDate.getHours()}`;
-            shouldNotify = true;
-            body = `"${task.title}" is due soon!`;
+          // Trigger exactly 50, 30, and 10 minutes before deadline
+          const intervals = [50, 30, 10];
+          const reachedInterval = intervals.find(mins => diffMinutes <= mins && diffMinutes > mins - 1);
+          
+          if (reachedInterval !== undefined) {
+             notificationKey = `${task.id}-default-${reachedInterval}`;
+             shouldNotify = true;
+             body = `"${task.title}" is due in ${reachedInterval} minutes!`;
           }
         } 
         else if (task.reminderType === 'morning') {
