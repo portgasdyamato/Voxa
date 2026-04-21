@@ -75,8 +75,8 @@ export function WakeWordWidget() {
       const currentSpeech = fullTranscript.toLowerCase().trim();
       if (currentSpeech) setLastHeardDebug(currentSpeech);
 
-      // Detect wake word variations (super broad)
-      const wakeWordRegex = /(vox|box|fox|vaux|alexa|assistant|computer|jarvis)/i;
+      // Detect wake word variations (super broad, covering all common phonetics)
+      const wakeWordRegex = /(vox|box|fox|vaux|alexa|assistant|computer|jarvis|vasa|vodk|walk|foxy|volk|waka|baka)/i;
       
       if (!isProcessingRef.current && wakeWordRegex.test(currentSpeech)) {
          setIsActive(true);
@@ -86,7 +86,7 @@ export function WakeWordWidget() {
       if (isProcessingRef.current) {
          let commandText = currentSpeech;
          if (wakeWordRegex.test(commandText)) {
-            commandText = commandText.replace(/.*?(vox|box|fox|vaux|alexa|assistant|computer|jarvis)\s*/i, '').trim();
+            commandText = commandText.replace(/.*?(vox|box|fox|vaux|alexa|assistant|computer|jarvis|vasa|vodk|walk|foxy|volk|waka|baka)\s*/i, '').trim();
          }
          
          if (commandText) {
