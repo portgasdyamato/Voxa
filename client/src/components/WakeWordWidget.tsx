@@ -9,9 +9,11 @@ import { executeVoiceCommand } from '@/lib/voiceCommandExecutor';
 export function WakeWordWidget() {
   const [isActive, setIsActive] = useState(false);
   const [interimText, setInterimText] = useState('Listening...');
+  const [lastHeardDebug, setLastHeardDebug] = useState('');
   const [ambientEnabled, setAmbientEnabled] = useState(() => localStorage.getItem('voxa_ambient_enabled') === 'true');
   const [micError, setMicError] = useState(false);
   
+  const isProcessingRef = useRef(false);
   const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -60,7 +62,8 @@ export function WakeWordWidget() {
     recognition.continuous = true;
     recognition.interimResults = true;
     
-    let isProcessingCommand = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
     recognition.onresult = (event: any) => {
       let interim = '';
@@ -74,18 +77,21 @@ export function WakeWordWidget() {
         }
       }
 
-      const currentSpeech = (final + interim).toLowerCase();
+      const currentSpeech = (final + interim).toLowerCase().trim();
+      if (currentSpeech) setLastHeardDebug(currentSpeech);
 
       // Detect wake word variations
-      if (!isProcessingCommand && /voxa|vox|vauxhall|boxa/i.test(currentSpeech)) {
+      if (!isProcessingRef.current && /(voxa|vox|vauxhall|boxa|foxa|oksa|baxa)/i.test(currentSpeech)) {
          setIsActive(true);
-         isProcessingCommand = true;
+         isProcessingRef.current = true;
       }
 
-      if (isProcessingCommand) {
-         // Find everything spoken after the wake word
-         const match = currentSpeech.match(/(?:voxa|vox|vauxhall|boxa)\s+(.*)/i);
-         let commandText = match ? match[1] : '';
+      if (isProcessingRef.current) {
+         // Find everything spoken after the wake word if the wake word is in the current string
+         let commandText = currentSpeech;
+         if (/(voxa|vox|vauxhall|boxa|foxa|oksa|baxa)/i.test(commandText)) {
+            commandText = commandText.replace(/.*?(voxa|vox|vauxhall|boxa|foxa|oksa|baxa)\s*/i, '').trim();
+         }
          
          if (commandText) {
              setInterimText(commandText);
@@ -93,10 +99,10 @@ export function WakeWordWidget() {
              setInterimText('Listening for your command...');
          }
 
-         // If the user stopped talking, execute it
-         if (event.results[event.results.length - 1].isFinal && commandText.trim().length > 2) {
+         // If the user stopped talking, execute it (only if it has enough words/chars)
+         if (event.results[event.results.length - 1].isFinal && commandText.length >= 3) {
             handleExecute(commandText);
-            isProcessingCommand = false;
+            isProcessingRef.current = false;
          }
       }
     };
@@ -211,13 +217,18 @@ export function WakeWordWidget() {
              : "bg-white/[0.04] border-white/10 text-white/50 hover:text-white"
          }`}
        >
-         <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+         <div className={`w-2 h-2 rounded-full transition-all duration-500 shrink-0 ${
            ambientEnabled && !micError ? "bg-blue-500 shadow-[0_0_10px_#3b82f6] animate-pulse" : micError ? "bg-red-500" : "bg-white/20"
          }`} />
-         <span className="text-[11px] font-bold tracking-wider uppercase">
-            {ambientEnabled && !micError ? "Ambient On" : "Ambient Off"}
-         </span>
-         {!ambientEnabled && <Power className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100" />}
+         <div className="flex flex-col items-start min-w-[70px] max-w-[150px] truncate">
+           <span className="text-[11px] font-bold tracking-wider uppercase">
+              {ambientEnabled && !micError ? "Ambient On" : "Ambient Off"}
+           </span>
+           {ambientEnabled && !micError && lastHeardDebug && (
+             <span className="text-[9px] font-medium text-blue-400/80 truncate w-full uppercase tracking-widest">{lastHeardDebug}</span>
+           )}
+         </div>
+         {!ambientEnabled && <Power className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 shrink-0" />}
        </button>
     </div>
     </>
