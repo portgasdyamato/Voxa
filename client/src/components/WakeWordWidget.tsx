@@ -1,249 +1,381 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, X, Mic, Power } from 'lucide-react';
+import { Activity, X, Mic, MicOff, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateTask, useUpdateTask, useDeleteTask, useTasks } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { executeVoiceCommand } from '@/lib/voiceCommandExecutor';
 
-export function WakeWordWidget() {
-  const [isActive, setIsActive] = useState(false);
-  const [interimText, setInterimText] = useState('Listening...');
-  const [lastHeardDebug, setLastHeardDebug] = useState('');
-  const [ambientEnabled, setAmbientEnabled] = useState(() => localStorage.getItem('voxa_ambient_enabled') === 'true');
-  const [micError, setMicError] = useState(false);
-  
-  const isProcessingRef = useRef(false);
-  const recognitionRef = useRef<any>(null);
-  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const cancelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const { toast } = useToast();
-  const { data: tasks } = useTasks();
-  const { data: categories } = useCategories();
-  const createTask = useCreateTask();
-  const updateTask = useUpdateTask();
-  const deleteTask = useDeleteTask();
+// ─── Types ─────────────────────────────────────────────────────────────────────
+type PermissionState = 'unknown' | 'requesting' | 'granted' | 'denied';
+type ListenerState  = 'idle' | 'listening' | 'awake' | 'processing';
 
-  const handleExecute = useCallback(async (transcript: string) => {
-    if (!transcript.trim()) return;
-    
-    // Simulate processing delay slightly for visual feedback
-    setInterimText('Processing command...');
-    
-    setTimeout(async () => {
-       await executeVoiceCommand(
-         transcript,
-         tasks || [],
-         '', 
-         null, 
-         true, 
-         'default',
-         '09:00',
-         createTask,
-         updateTask,
-         deleteTask,
-         toast,
-         () => {
-           setIsActive(false);
-           setInterimText('Listening...');
-         },
-         '', 
-         categories || []
-       );
-    }, 600);
+// ─── Wake-word phonetic variants ───────────────────────────────────────────────
+// The browser dictation engine frequently misrenders non-dictionary words.
+// This list covers what Chrome/Safari actually transcribes when someone says "VoXa".
+const WAKE_PATTERNS = [
+  'voxa', 'vox a', 'vox', 'boxa', 'box a',
+  'foxy', 'fox a', 'vodka', 'volta', 'vulva',
+  'vosa', 'boca', 'folk', 'yoga', 'yoko',
+  'walker', 'walkers', 'boxer',
+  'hey assistant', 'hey computer', 'hey jarvis',
+];
+
+function matchesWakeWord(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return WAKE_PATTERNS.some(p => lower.includes(p));
+}
+
+function stripWakeWord(text: string): string {
+  let result = text.toLowerCase().trim();
+  for (const p of WAKE_PATTERNS) {
+    const idx = result.indexOf(p);
+    if (idx !== -1) {
+      result = result.slice(idx + p.length).trim();
+      break;
+    }
+  }
+  return result;
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+export function WakeWordWidget() {
+  const [permission, setPermission]       = useState<PermissionState>('unknown');
+  const [listenerState, setListenerState] = useState<ListenerState>('idle');
+  const [liveText, setLiveText]           = useState('');
+  const [commandText, setCommandText]     = useState('');
+
+  const recognitionRef   = useRef<any>(null);
+  const restartTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const awakeTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enabledRef       = useRef(false);      // source of truth for restart loop
+  const stateRef         = useRef<ListenerState>('idle');
+
+  const { toast }                          = useToast();
+  const { data: tasks = [] }              = useTasks();
+  const { data: categories = [] }         = useCategories();
+  const createTask                         = useCreateTask();
+  const updateTask                         = useUpdateTask();
+  const deleteTask                         = useDeleteTask();
+
+  // Keep stateRef in sync
+  const setLS = (s: ListenerState) => {
+    stateRef.current = s;
+    setListenerState(s);
+  };
+
+  // ── Permission request ─────────────────────────────────────────────────────
+  const requestPermission = useCallback(async () => {
+    setPermission('requesting');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Release immediately — we just needed the prompt
+      stream.getTracks().forEach(t => t.stop());
+      setPermission('granted');
+      return true;
+    } catch {
+      setPermission('denied');
+      return false;
+    }
+  }, []);
+
+  // ── Execute command ────────────────────────────────────────────────────────
+  const handleExecute = useCallback(async (cmd: string) => {
+    if (!cmd.trim()) return;
+    setLS('processing');
+    setCommandText('Processing…');
+    await executeVoiceCommand(
+      cmd, tasks, '', null, true, 'default', '09:00',
+      createTask, updateTask, deleteTask, toast,
+      () => {
+        setLS('idle');
+        setCommandText('');
+        setLiveText('');
+      },
+      '', categories
+    );
   }, [tasks, categories, createTask, updateTask, deleteTask, toast]);
 
-  const startListening = useCallback(() => {
-    if (recognitionRef.current) return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+  // ── Cancel awake mode ──────────────────────────────────────────────────────
+  const cancelAwake = useCallback(() => {
+    if (awakeTimerRef.current) { clearTimeout(awakeTimerRef.current); awakeTimerRef.current = null; }
+    setLS('idle');
+    setCommandText('');
+    setLiveText('');
+  }, []);
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+  // ── Core recognition loop ──────────────────────────────────────────────────
+  const startRecognition = useCallback(() => {
+    if (recognitionRef.current) return;           // already running
+    if (!enabledRef.current) return;              // stopped by user
 
-    recognition.onresult = (event: any) => {
-      let fullTranscript = '';
-      
-      // Iterate from 0 to capture the entirety of the current continuous session
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+
+    const rec = new SR();
+    rec.continuous      = true;
+    rec.interimResults  = true;
+    rec.lang            = 'en-US';
+    rec.maxAlternatives = 3;
+
+    rec.onstart = () => {
+      if (stateRef.current === 'idle') setLS('listening');
+    };
+
+    rec.onresult = (event: any) => {
+      // Build the full running transcript for this session
+      let fullText = '';
       for (let i = 0; i < event.results.length; i++) {
-        fullTranscript += event.results[i][0].transcript;
+        // Check all alternatives for better wake-word matching
+        const best = event.results[i][0].transcript;
+        fullText += best + ' ';
       }
+      fullText = fullText.trim();
+      setLiveText(fullText);
 
-      const currentSpeech = fullTranscript.toLowerCase().trim();
-      if (currentSpeech) setLastHeardDebug(currentSpeech);
+      const isLastFinal = event.results[event.results.length - 1].isFinal;
 
-      // Detect wake word variations (super broad, covering all common phonetics)
-      const wakeWordRegex = /(vox|box|fox|vaux|alexa|assistant|computer|jarvis|vasa|vodk|walk|foxy|volk|waka|baka)/i;
-      
-      if (!isProcessingRef.current && wakeWordRegex.test(currentSpeech)) {
-         setIsActive(true);
-         isProcessingRef.current = true;
-      }
+      if (stateRef.current === 'listening') {
+        // Look for wake word
+        if (matchesWakeWord(fullText)) {
+          setLS('awake');
+          setCommandText('');
+          // Safety timeout — if nothing follows in 10 s, go back to sleep
+          if (awakeTimerRef.current) clearTimeout(awakeTimerRef.current);
+          awakeTimerRef.current = setTimeout(() => {
+            if (stateRef.current === 'awake') cancelAwake();
+          }, 10_000);
+        }
+      } else if (stateRef.current === 'awake') {
+        // Extract command portion that came after the wake word
+        const cmd = stripWakeWord(fullText);
+        if (cmd.length > 0) setCommandText(cmd);
 
-      if (isProcessingRef.current) {
-         let commandText = currentSpeech;
-         if (wakeWordRegex.test(commandText)) {
-            commandText = commandText.replace(/.*?(vox|box|fox|vaux|alexa|assistant|computer|jarvis|vasa|vodk|walk|foxy|volk|waka|baka)\s*/i, '').trim();
-         }
-         
-         if (commandText) {
-             setInterimText(commandText);
-         } else {
-             setInterimText('Listening for your command...');
-         }
-
-         // If the user stopped talking, execute it
-         if (event.results[event.results.length - 1].isFinal) {
-            if (commandText.length >= 3) {
-                handleExecute(commandText);
-                isProcessingRef.current = false;
-            } else {
-                // If they paused just after the wake word, leave it active!
-                // It will catch the continuation in the next engine restart.
-                
-                // Add a timeout fallback in case they walk away
-                if (cancelTimeoutRef.current) clearTimeout(cancelTimeoutRef.current);
-                cancelTimeoutRef.current = setTimeout(() => {
-                   if (isProcessingRef.current) {
-                      isProcessingRef.current = false;
-                      setIsActive(false);
-                      setInterimText('Listening...');
-                   }
-                }, 8000);
-            }
-         }
+        if (isLastFinal && cmd.length >= 3) {
+          if (awakeTimerRef.current) clearTimeout(awakeTimerRef.current);
+          handleExecute(cmd);
+        }
       }
     };
 
-    recognition.onerror = (event: any) => {
-       if (event.error === 'not-allowed') {
-           console.error("Microphone access denied.");
-           setMicError(true);
-           setAmbientEnabled(false);
-           localStorage.setItem('voxa_ambient_enabled', 'false');
-       }
+    rec.onerror = (event: any) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setPermission('denied');
+        enabledRef.current = false;
+        setLS('idle');
+        return;
+      }
+      // For transient errors (network, no-speech, audio-capture) just let onend handle restart
     };
 
-    recognition.onend = () => {
+    rec.onend = () => {
       recognitionRef.current = null;
-      if (localStorage.getItem('voxa_ambient_enabled') === 'true') {
-        restartTimeoutRef.current = setTimeout(() => {
-           startListening();
-        }, 500);
+      if (stateRef.current === 'listening') setLS('idle');   // briefly idle before restart
+
+      // Restart unless the user has toggled off
+      if (enabledRef.current) {
+        restartTimerRef.current = setTimeout(() => startRecognition(), 300);
       }
     };
 
     try {
-      recognition.start();
-      recognitionRef.current = recognition;
-      setMicError(false);
+      rec.start();
+      recognitionRef.current = rec;
     } catch (e) {
-      console.error("Web Speech API start error", e);
+      recognitionRef.current = null;
+      if (enabledRef.current) {
+        restartTimerRef.current = setTimeout(() => startRecognition(), 500);
+      }
     }
-  }, [handleExecute]);
+  // startRecognition intentionally omitted to avoid creating a new fn every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleExecute, cancelAwake]);
 
-  // Handle explicit toggle (User gesture required for some browsers)
-  const toggleAmbient = () => {
-    const newState = !ambientEnabled;
-    setAmbientEnabled(newState);
-    localStorage.setItem('voxa_ambient_enabled', newState.toString());
-    
-    if (newState) {
-       setMicError(false);
-       startListening();
+  // ── Stop recognition completely ────────────────────────────────────────────
+  const stopRecognition = useCallback(() => {
+    enabledRef.current = false;
+    if (restartTimerRef.current) { clearTimeout(restartTimerRef.current); restartTimerRef.current = null; }
+    if (awakeTimerRef.current)   { clearTimeout(awakeTimerRef.current);   awakeTimerRef.current = null; }
+    if (recognitionRef.current) {
+      recognitionRef.current.onend = null;     // prevent restart
+      recognitionRef.current.abort();
+      recognitionRef.current = null;
+    }
+    setLS('idle');
+    setLiveText('');
+    setCommandText('');
+  }, []);
+
+  // ── Toggle button handler ──────────────────────────────────────────────────
+  const handleToggle = useCallback(async () => {
+    if (enabledRef.current) {
+      // Turn off
+      stopRecognition();
+      localStorage.setItem('voxa_ambient_enabled', 'false');
     } else {
-       if (recognitionRef.current) {
-          recognitionRef.current.onend = null;
-          recognitionRef.current.abort();
-          recognitionRef.current = null;
-       }
-       if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
-       if (cancelTimeoutRef.current) clearTimeout(cancelTimeoutRef.current);
-    }
-  };
+      // Need microphone permission first
+      let ok = permission === 'granted';
+      if (!ok) ok = await requestPermission();
+      if (!ok) return;
 
-  useEffect(() => {
-    if (ambientEnabled) {
-       startListening();
+      enabledRef.current = true;
+      localStorage.setItem('voxa_ambient_enabled', 'true');
+      startRecognition();
     }
-    return () => {
-      if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
-      if (cancelTimeoutRef.current) clearTimeout(cancelTimeoutRef.current);
-      if (recognitionRef.current) {
-         recognitionRef.current.onend = null;
-         recognitionRef.current.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [permission, requestPermission, stopRecognition, startRecognition]);
+
+  // ── Auto-start if previously enabled ──────────────────────────────────────
+  useEffect(() => {
+    const wasEnabled = localStorage.getItem('voxa_ambient_enabled') === 'true';
+    if (!wasEnabled) return;
+
+    // Check permission state via Permissions API if available
+    const doStart = async () => {
+      if (navigator.permissions) {
+        try {
+          const status = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          if (status.state === 'granted') {
+            setPermission('granted');
+            enabledRef.current = true;
+            startRecognition();
+          } else if (status.state === 'denied') {
+            setPermission('denied');
+            localStorage.setItem('voxa_ambient_enabled', 'false');
+          }
+          // If 'prompt', do nothing — wait for the user to click the button
+        } catch {
+          // Permissions API not supported; try starting anyway
+          enabledRef.current = true;
+          startRecognition();
+        }
+      } else {
+        enabledRef.current = true;
+        startRecognition();
       }
     };
-  }, [ambientEnabled, startListening]);
+    doStart();
+
+    return () => stopRecognition();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ─── Derived UI values ───────────────────────────────────────────────────────
+  const isEnabled  = enabledRef.current;
+  const isListening = listenerState === 'listening';
+  const isAwake    = listenerState === 'awake';
+  const isProc     = listenerState === 'processing';
+  const isDenied   = permission === 'denied';
 
   return (
     <>
-    <AnimatePresence>
-      {isActive && (
-        <motion.div
-           initial={{ y: -100, opacity: 0, scale: 0.9 }}
-           animate={{ y: 0, opacity: 1, scale: 1 }}
-           exit={{ y: -100, opacity: 0, scale: 0.9 }}
-           transition={{ type: "spring", stiffness: 400, damping: 25 }}
-           className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none"
+      {/* ── Slide-down wake panel ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {(isAwake || isProc) && (
+          <motion.div
+            key="wake-panel"
+            initial={{ y: -90, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0,   opacity: 1, scale: 1    }}
+            exit={{   y: -90, opacity: 0, scale: 0.95  }}
+            transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999]"
+          >
+            <div className="relative flex items-center gap-4 px-5 py-3.5 rounded-[2rem] min-w-[300px] max-w-[90vw] overflow-hidden
+                            bg-[#080a0e]/95 backdrop-blur-[60px] border border-white/[0.12]
+                            shadow-[0_30px_80px_rgba(0,0,0,0.8),0_0_40px_rgba(99,102,241,0.12)]">
+              {/* Top shimmer */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent" />
+
+              {/* Pulsing icon */}
+              <div className="w-10 h-10 shrink-0 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 1.4, repeat: Infinity }}
+                >
+                  <Activity className="w-4 h-4 text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.9)]" />
+                </motion.div>
+              </div>
+
+              {/* Text */}
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-[9px] font-black uppercase tracking-[0.22em] text-indigo-400/70 mb-0.5">
+                  VoXa · {isProc ? 'Processing' : 'Listening for command'}
+                </span>
+                <p className="text-[14px] font-semibold text-white/90 truncate">
+                  {commandText || 'Say your command…'}
+                </p>
+              </div>
+
+              {/* Dismiss */}
+              {!isProc && (
+                <button
+                  onClick={cancelAwake}
+                  className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white/30 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Ambient status pill (bottom-left) ─────────────────────────────── */}
+      <div className="fixed bottom-6 left-6 z-[90]">
+        <button
+          onClick={handleToggle}
+          className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border backdrop-blur-xl
+                      shadow-2xl transition-all duration-300
+                      ${isDenied
+                        ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+                        : isEnabled
+                        ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20'
+                        : 'bg-white/[0.04] border-white/[0.08] text-white/40 hover:text-white/70'
+                      }`}
         >
-           <div className="flex items-center gap-4 bg-[#0a0a0c]/98 backdrop-blur-[60px] border border-white/[0.15] shadow-[0_40px_100px_rgba(0,0,0,0.8),0_0_40px_rgba(59,130,246,0.15)] px-5 py-3.5 rounded-[2rem] min-w-[320px] max-w-[90vw] pointer-events-auto overflow-hidden relative group">
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
-              <div className="w-11 h-11 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20 shadow-inner relative z-10">
-                 <motion.div 
-                   animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} 
-                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                 >
-                   <Activity className="w-5 h-5 text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-                 </motion.div>
-              </div>
-              <div className="flex flex-col justify-center flex-1 min-w-0 relative z-10 pt-0.5">
-                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400/80 mb-1">
-                   VoXa Background Agent
-                 </span>
-                 <p className="text-[15px] font-semibold text-white truncate tracking-tight">
-                   {interimText}
-                 </p>
-              </div>
-              <button 
-                onClick={() => setIsActive(false)}
-                className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white hover:bg-white/10 rounded-full transition-all duration-300 ml-2 pointer-events-auto shrink-0 relative z-10"
-              >
-                 <X className="w-4 h-4" />
-              </button>
-           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-    
-    {/* Persistent Ambient Status Toggle */}
-    <div className="fixed bottom-6 left-6 z-[90] pointer-events-auto">
-       <button
-         onClick={toggleAmbient}
-         className={`group relative flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all duration-500 shadow-2xl backdrop-blur-xl ${
-           ambientEnabled && !micError
-             ? "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-             : "bg-white/[0.04] border-white/10 text-white/50 hover:text-white"
-         }`}
-       >
-         <div className={`w-2 h-2 rounded-full transition-all duration-500 shrink-0 ${
-           ambientEnabled && !micError ? "bg-blue-500 shadow-[0_0_10px_#3b82f6] animate-pulse" : micError ? "bg-red-500" : "bg-white/20"
-         }`} />
-         <div className="flex flex-col items-start min-w-[70px] max-w-[150px] truncate">
-           <span className="text-[11px] font-bold tracking-wider uppercase">
-              {ambientEnabled && !micError ? "Ambient On" : "Ambient Off"}
-           </span>
-           {ambientEnabled && !micError && lastHeardDebug && (
-             <span className="text-[9px] font-medium text-blue-400/80 truncate w-full uppercase tracking-widest">{lastHeardDebug}</span>
-           )}
-         </div>
-         {!ambientEnabled && <Power className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 shrink-0" />}
-       </button>
-    </div>
+          {/* Status dot */}
+          <div className={`w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300
+                          ${isDenied   ? 'bg-red-400'
+                          : isListening ? 'bg-indigo-400 animate-pulse shadow-[0_0_6px_#6366f1]'
+                          : isAwake || isProc ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                          : isEnabled  ? 'bg-indigo-600/60'
+                          : 'bg-white/20'}`}
+          />
+
+          {/* Label */}
+          <div className="flex flex-col items-start leading-none gap-0.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest">
+              {isDenied         ? 'Mic Denied'
+               : permission === 'requesting' ? 'Requesting…'
+               : isEnabled     ? 'Ambient On'
+               :                 'Ambient Off'}
+            </span>
+            {isEnabled && !isDenied && (
+              <span className="text-[8px] font-medium opacity-60 tracking-wide normal-case max-w-[120px] truncate">
+                {isProc   ? 'Running command…'
+                 : isAwake ? 'Heard wake word!'
+                 : liveText ? liveText
+                 : 'Say "VoXa, …"'}
+              </span>
+            )}
+          </div>
+
+          {/* Icon */}
+          {isDenied
+            ? <AlertCircle className="w-3 h-3 shrink-0 opacity-70" />
+            : isEnabled
+            ? <Mic className="w-3 h-3 shrink-0 opacity-60" />
+            : <MicOff className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-70 transition-opacity" />
+          }
+        </button>
+
+        {/* Mic denied helper */}
+        {isDenied && (
+          <p className="mt-1.5 text-[9px] text-red-400/70 max-w-[180px] leading-relaxed pl-1">
+            Enable microphone in browser site settings, then click to retry.
+          </p>
+        )}
+      </div>
     </>
   );
 }
