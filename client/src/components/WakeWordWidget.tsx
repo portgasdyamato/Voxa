@@ -161,6 +161,7 @@ export function WakeWordWidget() {
   }, [ambientEnabled, startListening]);
 
   return (
+    <>
     <AnimatePresence>
       {isActive && (
         <motion.div
