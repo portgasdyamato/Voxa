@@ -14,6 +14,7 @@ import { useDeadlineNotifications } from "@/hooks/useDeadlineNotifications";
 import { Mic, Zap, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import NotFound from "@/pages/not-found";
+import { WakeWordWidget } from "@/components/WakeWordWidget";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Stats from "@/pages/stats";
@@ -59,6 +60,8 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
         open={voiceModalOpen}
         onOpenChange={setVoiceModalOpen}
       />
+      
+      <WakeWordWidget />
     </div>
   );
 }
