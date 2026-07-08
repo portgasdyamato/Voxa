@@ -1,5 +1,5 @@
 import { NodeViewWrapper } from '@tiptap/react';
-import { Trash2, Play, Pause, Volume2 } from 'lucide-react';
+import { Trash2, Play, Pause, GripVertical } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 export default function AudioNodeView({ node, deleteNode }: any) {
@@ -52,17 +52,25 @@ export default function AudioNodeView({ node, deleteNode }: any) {
 
   return (
     <NodeViewWrapper 
-      className="audio-node-view relative my-4 rounded-full border border-white/10 bg-[#1A1A1A] p-2 pr-4 flex items-center gap-3 overflow-hidden shadow-lg select-none outline-none focus:outline-none focus:ring-0"
-      style={{ resize: 'horizontal', minWidth: '280px', maxWidth: '100%', width: '320px', display: 'flex' }}
+      className="audio-node-view relative my-4 block"
+      style={{ textAlign: node.attrs.textAlign || 'left' }}
     >
-      <audio ref={audioRef} src={node.attrs.src} className="hidden" />
-      
-      <button 
-        onClick={togglePlay}
-        className="w-10 h-10 shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"
+      <div
+        className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-[#1A1A1A] p-2 pr-4 overflow-hidden shadow-lg select-none"
+        style={{ resize: 'horizontal', minWidth: '320px', maxWidth: '100%', width: '320px' }}
       >
-        {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
-      </button>
+        <div data-drag-handle className="cursor-grab text-white/20 hover:text-white/60 pl-1 -mr-1 flex items-center justify-center shrink-0">
+          <GripVertical className="w-4 h-4" />
+        </div>
+
+        <audio ref={audioRef} src={node.attrs.src} className="hidden" />
+        
+        <button 
+          onClick={togglePlay}
+          className="w-10 h-10 shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"
+        >
+          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
+        </button>
 
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between text-xs text-white/60 mb-1">
@@ -87,6 +95,7 @@ export default function AudioNodeView({ node, deleteNode }: any) {
       >
         <Trash2 className="w-4 h-4" />
       </button>
+      </div>
     </NodeViewWrapper>
   );
 }
