@@ -4,7 +4,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Folder, Plus, FileText, Pin, MoreVertical, Search, 
-  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo
+  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -28,6 +28,7 @@ import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { toast } = useToast();
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -220,10 +221,17 @@ export default function NotesPage() {
       `}</style>
       
       {/* Sidebar */}
-      <div className="w-80 border-r border-white/10 bg-white/[0.02] flex flex-col">
-        <div className="p-6 pb-4">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 320, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            className="border-r border-white/10 bg-white/[0.02] flex flex-col overflow-hidden shrink-0"
+          >
+            <div className="p-6 pb-4 w-80">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
               Notes
             </h1>
             <Button 
@@ -344,10 +352,12 @@ export default function NotesPage() {
             </motion.div>
           ))}
         </div>
-      </div>
+        </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Editor Area */}
-      <div className="flex-1 flex flex-col relative bg-transparent">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col relative overflow-hidden bg-black/20">
         {selectedNoteId ? (
           <>
             <div className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-transparent sticky top-0 z-10">
@@ -387,10 +397,20 @@ export default function NotesPage() {
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto hide-scrollbar p-8 max-w-4xl mx-auto w-full prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-blue-400">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar p-8 max-w-4xl mx-auto w-full prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-blue-400 break-words whitespace-pre-wrap">
               
               {/* Toolbar */}
-              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5">
+              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5 flex-wrap">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="text-white/40 hover:text-white hover:bg-white/10 mr-2"
+                  title="Toggle Sidebar"
+                >
+                  <PanelLeft className="w-5 h-5" />
+                </Button>
+                
                 <Button
                   variant="outline"
                   size="sm"

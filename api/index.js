@@ -809,10 +809,26 @@ async function handler(req, res) {
     if (url.pathname === "/api/ai/format" && req.method === "POST") {
       const { content, action } = req.body;
       let newContent = content;
+      
+      const rawText = (content || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+      const sentences = rawText.match(/[^.!?]+[.!?]+/g) || (rawText ? [rawText] : ["No text provided"]);
+
       if (action === "summarize") {
-        newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>Here is a quick summary of your notes.<ul><li>Action item extracted</li><li>Key point highlighted</li></ul></div>` + content;
+        const summaryPoints = sentences.slice(0, 3).map(s => `<li>${s.trim()}</li>`).join('');
+        newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/><ul>${summaryPoints}</ul></div>` + content;
       } else if (action === "polish") {
-        newContent = `<p>✨ <em>Polished Note:</em></p>` + content;
+        const polished = sentences.map(s => {
+          let t = s.trim();
+          return t.charAt(0).toUpperCase() + t.slice(1) + (t.match(/[.!?]$/) ? '' : '.');
+        }).join(' ');
+        newContent = `<p>✨ <em>Polished Note:</em></p><p>${polished}</p>`;
+      } else if (action === "task") {
+        const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s.trim()}</p></li>`).join('');
+        newContent = `
+          <ul data-type="taskList">
+            ${tasks}
+          </ul>
+        ` + content;
       }
       res.status(200).json({ content: newContent });
       return;
