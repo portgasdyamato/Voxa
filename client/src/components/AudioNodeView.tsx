@@ -57,7 +57,7 @@ export default function AudioNodeView({ node, deleteNode }: any) {
     >
       <div
         className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-[#1A1A1A] p-2 pr-4 overflow-hidden shadow-lg select-none"
-        style={{ resize: 'horizontal', minWidth: '320px', maxWidth: '100%', width: '320px' }}
+        style={{ resize: 'horizontal', minWidth: '320px', maxWidth: '100%', width: '320px', transform: 'translateZ(0)' }}
       >
         <div data-drag-handle className="cursor-grab text-white/20 hover:text-white/60 pl-1 -mr-1 flex items-center justify-center shrink-0">
           <GripVertical className="w-4 h-4" />
