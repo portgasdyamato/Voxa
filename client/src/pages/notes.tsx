@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
@@ -26,6 +27,7 @@ import ImageResize from 'tiptap-extension-resize-image';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -307,6 +309,20 @@ export default function NotesPage() {
                       <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation();
+                          const isCurrentlyPinned = note.isPinned;
+                          updateNoteMutation.mutate({ id: note.id, updates: { isPinned: !isCurrentlyPinned } });
+                          toast({
+                            title: !isCurrentlyPinned ? "Note pinned" : "Note unpinned",
+                            description: !isCurrentlyPinned ? "This note will appear at the top." : "Note removed from pins.",
+                          });
+                        }}
+                        className="hover:bg-white/10 cursor-pointer"
+                      >
+                        <Pin className="w-4 h-4 mr-2" /> {note.isPinned ? "Unpin" : "Pin"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setNoteToDelete(note.id);
                         }}
                         className="text-red-400 hover:bg-red-500/10 cursor-pointer"
@@ -341,8 +357,15 @@ export default function NotesPage() {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  onClick={() => updateNoteMutation.mutate({ id: selectedNoteId, updates: { isPinned: !selectedNote?.isPinned }})}
-                  className={`text-white/40 hover:text-white ${selectedNote?.isPinned ? 'text-blue-400 hover:text-blue-300' : ''}`}
+                  onClick={() => {
+                    const isCurrentlyPinned = selectedNote?.isPinned;
+                    updateNoteMutation.mutate({ id: selectedNoteId, updates: { isPinned: !isCurrentlyPinned }});
+                    toast({
+                      title: !isCurrentlyPinned ? "Note pinned" : "Note unpinned",
+                      description: !isCurrentlyPinned ? "This note will appear at the top." : "Note removed from pins.",
+                    });
+                  }}
+                  className={`hover:bg-white/10 text-white/40 hover:text-white ${selectedNote?.isPinned ? 'text-blue-400 hover:text-blue-300' : ''}`}
                 >
                   <Pin className="w-5 h-5" />
                 </Button>
@@ -352,7 +375,7 @@ export default function NotesPage() {
                   onClick={() => {
                     setNoteToDelete(selectedNoteId);
                   }}
-                  className="text-white/40 hover:text-red-400"
+                  className="text-white/40 hover:text-red-400 hover:bg-red-500/10"
                 >
                   <Trash2 className="w-5 h-5" />
                 </Button>
