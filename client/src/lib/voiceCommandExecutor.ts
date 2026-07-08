@@ -26,7 +26,7 @@ export async function executeVoiceCommand(
     return;
   }
 
-  const command = parseVoiceCommand(transcript);
+  const command = parseVoiceCommand(transcript, categories || [], tasks || []);
 
   try {
     switch (command.type) {
@@ -248,6 +248,16 @@ export async function executeVoiceCommand(
       }
 
       case 'set_filter': {
+        if (command.categoryId !== undefined) {
+          window.dispatchEvent(new CustomEvent('voxa-set-category', { detail: command.categoryId }));
+          const catName = categories?.find(c => c.id === command.categoryId)?.name || 'Category';
+          toast({
+            title: "Filtering",
+            description: `Showing ${catName} tasks`,
+          });
+          break;
+        }
+
         if (!command.filterId) return;
         window.dispatchEvent(new CustomEvent('voxa-set-filter', { detail: command.filterId }));
         let filterName = 'All tasks';

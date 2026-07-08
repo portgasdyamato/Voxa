@@ -10,34 +10,6 @@ import { executeVoiceCommand } from '@/lib/voiceCommandExecutor';
 type PermissionState = 'unknown' | 'requesting' | 'granted' | 'denied';
 type ListenerState  = 'idle' | 'listening' | 'awake' | 'processing';
 
-// ─── Wake-word phonetic variants ───────────────────────────────────────────────
-// The browser dictation engine frequently misrenders non-dictionary words.
-// This list covers what Chrome/Safari actually transcribes when someone says "VoXa".
-const WAKE_PATTERNS = [
-  'voxa', 'vox a', 'vox', 'boxa', 'box a',
-  'foxy', 'fox a', 'vodka', 'volta', 'vulva',
-  'vosa', 'boca', 'folk', 'yoga', 'yoko',
-  'walker', 'walkers', 'boxer',
-  'hey assistant', 'hey computer', 'hey jarvis',
-];
-
-function matchesWakeWord(text: string): boolean {
-  const lower = text.toLowerCase().trim();
-  return WAKE_PATTERNS.some(p => lower.includes(p));
-}
-
-function stripWakeWord(text: string): string {
-  let result = text.toLowerCase().trim();
-  for (const p of WAKE_PATTERNS) {
-    const idx = result.indexOf(p);
-    if (idx !== -1) {
-      result = result.slice(idx + p.length).trim();
-      break;
-    }
-  }
-  return result;
-}
-
 // ─── Component ─────────────────────────────────────────────────────────────────
 export function WakeWordWidget() {
   const [permission, setPermission]       = useState<PermissionState>('unknown');
@@ -135,26 +107,9 @@ export function WakeWordWidget() {
 
       const isLastFinal = event.results[event.results.length - 1].isFinal;
 
-      if (stateRef.current === 'listening') {
-        // Look for wake word
-        if (matchesWakeWord(fullText)) {
-          setLS('awake');
-          setCommandText('');
-          // Safety timeout — if nothing follows in 10 s, go back to sleep
-          if (awakeTimerRef.current) clearTimeout(awakeTimerRef.current);
-          awakeTimerRef.current = setTimeout(() => {
-            if (stateRef.current === 'awake') cancelAwake();
-          }, 10_000);
-        }
-      } else if (stateRef.current === 'awake') {
-        // Extract command portion that came after the wake word
-        const cmd = stripWakeWord(fullText);
-        if (cmd.length > 0) setCommandText(cmd);
-
-        if (isLastFinal && cmd.length >= 3) {
-          if (awakeTimerRef.current) clearTimeout(awakeTimerRef.current);
-          handleExecute(cmd);
-        }
+      if (isLastFinal && fullText.length >= 2) {
+        setCommandText(fullText);
+        handleExecute(fullText);
       }
     };
 
@@ -353,9 +308,8 @@ export function WakeWordWidget() {
             {isEnabled && !isDenied && (
               <span className="text-[8px] font-medium opacity-60 tracking-wide normal-case max-w-[120px] truncate">
                 {isProc   ? 'Running command…'
-                 : isAwake ? 'Heard wake word!'
                  : liveText ? liveText
-                 : 'Say "VoXa, …"'}
+                 : 'Listening to everything…'}
               </span>
             )}
           </div>

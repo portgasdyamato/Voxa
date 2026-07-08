@@ -27,281 +27,112 @@ export interface VoiceCommand {
   destination?: string;
   modalName?: string;
   filterId?: string;
+  categoryId?: number;
   searchQuery?: string;
   confidence: 'high' | 'medium' | 'low';
   originalText: string;
 }
 
-export function parseVoiceCommand(speech: string): VoiceCommand {
+export function parseVoiceCommand(speech: string, categories: any[] = [], tasks: any[] = []): VoiceCommand {
   const lowerSpeech = speech.toLowerCase().trim();
   
-  // Command patterns for different operations
-  const commandPatterns = {
-    // Add task patterns
-    add: [
-      /^(?:add|create|new|make|save|remind me to|i need to|don'?t forget to|schedule)\s+(?:a\s+)?(?:task|todo|item)?\s*(.+)/i,
-      /^(?:add|create|new|make)\s+(.+)/i,
-    ],
-    
-    // Delete task patterns
-    delete: [
-      /^(?:delete|remove|cancel|erase|get rid of)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i,
-      /^(?:delete|remove|cancel)\s+(.+)/i,
-    ],
-    
-    // Complete task patterns
-    complete: [
-      /^(?:complete|finish|done|mark as done|mark as complete|i (?:finished|completed))\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i,
-      /^(?:complete|finish|done)\s+(.+)/i,
-    ],
-    
-    // Uncomplete task patterns
-    uncomplete: [
-      /^(?:uncomplete|unfinish|mark as incomplete|mark as not done|reopen)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i,
-    ],
-    
-    // Update task patterns
-    update: [
-      /^(?:update|change|modify|edit|postpone|reschedule)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+?)\s+to\s+(.+)/i,
-      /^(?:rename|change the name of)\s+(?:the\s+)?(?:task|todo|item)?\s*(.+?)\s+to\s+(.+)/i,
-    ],
-    
-    // List tasks patterns
-    list: [
-      /^(?:show|list|display|what are|tell me)\s+(?:all\s+)?(?:my\s+)?(?:tasks|todos|items)/i,
-      /^(?:what do i have to do|what'?s on my list)/i,
-    ],
-    
-    // Clear completed tasks
-    clearCompleted: [
-      /^(?:clear|delete|remove)\s+(?:all\s+)?(?:completed|finished|done)\s+(?:tasks|todos|items)/i,
-    ],
-    
-    // Navigation
-    navigate: [
-      /^(?:go|navigate|take me|open)\s+(?:to\s+)?(?:the\s+)?(home|dashboard|workspace|tasks|analytics|stats|statistics)/i,
-      /^(?:show|view)\s+(?:me\s+)?(?:the\s+)?(analytics|stats|statistics|dashboard)/i,
-    ],
-    
-    // UI Modals
-    openModal: [
-      /^(?:open|show)\s+(?:the\s+)?(?:new\s+task|task\s+creation)\s+(?:popup|modal|dialog|window)/i,
-      /^(?:create\s+a\s+task\s+manually|add\s+task\s+manually)/i,
-    ],
-    
-    // Filtering
-    setFilter: [
-      /^(?:show|filter|view)\s+(?:by\s+)?(?:only\s+)?(all|today|overdue)\s+(?:tasks|todos)?/i,
-      /^(?:show\s+me)\s+(all|today'?s|overdue)\s+(?:tasks|todos)?/i,
-    ],
-    
-    // Search
-    search: [
-      /^(?:search|find|look\s+for)\s+(?:for\s+)?(.+)/i,
-    ],
-  };
-  
-  // Check for add command
-  for (const pattern of commandPatterns.add) {
-    const match = speech.match(pattern);
-    if (match) {
-      const taskText = match[1]?.trim();
-      if (taskText && taskText.length > 1) {
-        // Use existing parseTaskFromSpeech for detailed parsing
-        const parsed = parseTaskFromSpeech(speech);
-        
-        return {
-          type: 'add',
-          taskName: parsed.taskName,
-          updates: {
-            title: parsed.taskName,
-            priority: parsed.priority,
-            deadline: parsed.deadline,
-          },
-          confidence: parsed.confidence,
-          originalText: speech,
-        };
-      }
+  // 1. Check for Navigation
+  if (/^(go|navigate|take me|open)\s+(to\s+)?(the\s+)?(home|dashboard|workspace|tasks|analytics|stats|statistics)/i.test(lowerSpeech) || 
+      /^(show|view)\s+(me\s+)?(the\s+)?(analytics|stats|statistics|dashboard)/i.test(lowerSpeech)) {
+    let route = '/home';
+    if (/(analytics|stats|statistics)/i.test(lowerSpeech)) route = '/stats';
+    return { type: 'navigate', destination: route, confidence: 'high', originalText: speech };
+  }
+
+  // 2. Check for Open Modal
+  if (/^(open|show)\s+(the\s+)?(new\s+task|task\s+creation)\s+(popup|modal|dialog|window)/i.test(lowerSpeech) ||
+      /^(create\s+a\s+task\s+manually|add\s+task\s+manually)/i.test(lowerSpeech)) {
+    return { type: 'open_modal', modalName: 'new_task', confidence: 'high', originalText: speech };
+  }
+
+  // 3. Check for Filtering (including "search for today's task")
+  // First, check if it's asking for a specific category
+  let matchedCategory = categories.find(c => lowerSpeech.includes(c.name.toLowerCase()));
+  if ((lowerSpeech.includes('show') || lowerSpeech.includes('filter') || lowerSpeech.includes('search') || lowerSpeech.includes('find') || lowerSpeech.includes('view') || lowerSpeech.includes('what')) && matchedCategory) {
+    return { type: 'set_filter', categoryId: matchedCategory.id, confidence: 'high', originalText: speech };
+  }
+
+  // Next, check for built-in filters
+  if (/today|overdue|priority|all tasks/i.test(lowerSpeech)) {
+    if (/(show|filter|search|find|view|what)/i.test(lowerSpeech) || lowerSpeech.includes('today')) {
+      let filterId = 'all';
+      if (lowerSpeech.includes('today')) filterId = 'today';
+      if (lowerSpeech.includes('overdue') || lowerSpeech.includes('priority')) filterId = 'overdue';
+      return { type: 'set_filter', filterId, confidence: 'high', originalText: speech };
     }
   }
-  
-  // Check for delete command
-  for (const pattern of commandPatterns.delete) {
-    const match = speech.match(pattern);
-    if (match) {
-      const identifier = match[1]?.trim();
-      if (identifier && identifier.length > 1) {
-        return {
-          type: 'delete',
-          taskIdentifier: identifier,
-          confidence: 'high',
-          originalText: speech,
-        };
+
+  // 4. Check for Update (very flexible)
+  if (/(update|change|modify|edit|reschedule|move|make it)/i.test(lowerSpeech)) {
+    // Try to find if any existing task is mentioned in the speech
+    let targetTask = null;
+    // Sort by length descending to match longest task names first
+    const sortedTasks = [...tasks].sort((a, b) => b.title.length - a.title.length);
+    for (const t of sortedTasks) {
+      if (lowerSpeech.includes(t.title.toLowerCase())) {
+        targetTask = t;
+        break;
       }
     }
-  }
-  
-  // Check for complete command
-  for (const pattern of commandPatterns.complete) {
-    const match = speech.match(pattern);
-    if (match) {
-      const identifier = match[1]?.trim();
-      if (identifier && identifier.length > 1) {
-        return {
-          type: 'complete',
-          taskIdentifier: identifier,
-          confidence: 'high',
-          originalText: speech,
-        };
-      }
-    }
-  }
-  
-  // Check for uncomplete command
-  for (const pattern of commandPatterns.uncomplete) {
-    const match = speech.match(pattern);
-    if (match) {
-      const identifier = match[1]?.trim();
-      if (identifier && identifier.length > 1) {
-        return {
-          type: 'uncomplete',
-          taskIdentifier: identifier,
-          confidence: 'high',
-          originalText: speech,
-        };
-      }
-    }
-  }
-  
-  // Check for update command
-  for (const pattern of commandPatterns.update) {
-    const match = speech.match(pattern);
-    if (match) {
-      const identifier = match[1]?.trim();
-      const newValue = match[2]?.trim();
-      
-      if (identifier && newValue && identifier.length > 1 && newValue.length > 1) {
-        const dateTimeResult = detectDateTimeFromText(newValue);
-        
-        // If newValue is a date/time, update deadline
-        if (dateTimeResult.detectedDate && (dateTimeResult.confidence === 'high' || dateTimeResult.confidence === 'medium')) {
-          return {
-            type: 'update',
-            taskIdentifier: identifier,
-            updates: {
-              deadline: dateTimeResult.detectedDate,
-            },
-            confidence: 'high',
-            originalText: speech,
-          };
-        }
-        
-        // Otherwise, assume it's a rename
+    
+    // If a task was identified, or it strongly looks like an update
+    if (targetTask) {
+      const dateTimeResult = detectDateTimeFromText(speech);
+      if (dateTimeResult.detectedDate) {
         return {
           type: 'update',
-          taskIdentifier: identifier,
-          updates: {
-            title: newValue,
-          },
+          taskIdentifier: targetTask.title,
+          updates: { deadline: dateTimeResult.detectedDate },
           confidence: 'high',
-          originalText: speech,
+          originalText: speech
         };
       }
-    }
-  }
-  
-  // Check for list command
-  for (const pattern of commandPatterns.list) {
-    const match = speech.match(pattern);
-    if (match) {
-      return {
-        type: 'list',
-        confidence: 'high',
-        originalText: speech,
-      };
-    }
-  }
-  
-  // Check for clear completed command
-  for (const pattern of commandPatterns.clearCompleted) {
-    const match = speech.match(pattern);
-    if (match) {
-      return {
-        type: 'clear_completed',
-        confidence: 'high',
-        originalText: speech,
-      };
-    }
-  }
-
-  // Check for navigate
-  for (const pattern of commandPatterns.navigate) {
-    const match = speech.match(pattern);
-    if (match) {
-      const dest = match[1]?.toLowerCase();
-      let route = '/home';
-      if (['analytics', 'stats', 'statistics'].includes(dest)) {
-        route = '/stats';
-      }
-      return {
-        type: 'navigate',
-        destination: route,
-        confidence: 'high',
-        originalText: speech,
-      };
-    }
-  }
-
-  // Check for openModal
-  for (const pattern of commandPatterns.openModal) {
-    const match = speech.match(pattern);
-    if (match) {
-      return {
-        type: 'open_modal',
-        modalName: 'new_task',
-        confidence: 'high',
-        originalText: speech,
-      };
-    }
-  }
-
-  // Check for setFilter
-  for (const pattern of commandPatterns.setFilter) {
-    const match = speech.match(pattern);
-    if (match) {
-      let filterRaw = match[1]?.toLowerCase().replace("'s", "");
-      let filterId = 'all';
-      if (filterRaw.includes('today')) filterId = 'today';
-      if (filterRaw.includes('overdue')) filterId = 'overdue';
-      return {
-        type: 'set_filter',
-        filterId,
-        confidence: 'high',
-        originalText: speech,
-      };
-    }
-  }
-
-  // Check for search
-  for (const pattern of commandPatterns.search) {
-    const match = speech.match(pattern);
-    if (match) {
-      const query = match[1]?.trim();
-      if (query) {
-        return {
-          type: 'search',
-          searchQuery: query,
-          confidence: 'high',
-          originalText: speech,
-        };
+    } else {
+      // Fallback regex for "update X to Y"
+      const updateMatch = lowerSpeech.match(/^(?:update|change|modify|edit)\s+(?:the\s+task\s+)?(.+?)\s+(?:to|instead of|for)\s+(.+)/i);
+      if (updateMatch) {
+        const identifier = updateMatch[1].trim();
+        const newValue = updateMatch[2].trim();
+        const dateTimeResult = detectDateTimeFromText(newValue);
+        if (dateTimeResult.detectedDate) {
+          return { type: 'update', taskIdentifier: identifier, updates: { deadline: dateTimeResult.detectedDate }, confidence: 'high', originalText: speech };
+        }
+        return { type: 'update', taskIdentifier: identifier, updates: { title: newValue }, confidence: 'high', originalText: speech };
       }
     }
   }
-  
-  // If no pattern matched, default to add command
-  // This maintains backward compatibility
+
+  // 5. Check for Delete/Complete/Uncomplete
+  const deleteMatch = lowerSpeech.match(/^(?:delete|remove|cancel|erase|get rid of)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i);
+  if (deleteMatch) return { type: 'delete', taskIdentifier: deleteMatch[1].trim(), confidence: 'high', originalText: speech };
+
+  const completeMatch = lowerSpeech.match(/^(?:complete|finish|done|mark as done|mark as complete|i (?:finished|completed))\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i);
+  if (completeMatch) return { type: 'complete', taskIdentifier: completeMatch[1].trim(), confidence: 'high', originalText: speech };
+
+  const uncompleteMatch = lowerSpeech.match(/^(?:uncomplete|unfinish|mark as incomplete|mark as not done|reopen)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i);
+  if (uncompleteMatch) return { type: 'uncomplete', taskIdentifier: uncompleteMatch[1].trim(), confidence: 'high', originalText: speech };
+
+  // 6. Check for Clear Completed & List
+  if (/^(?:clear|delete|remove)\s+(?:all\s+)?(?:completed|finished|done)\s+(?:tasks|todos|items)/i.test(lowerSpeech)) {
+    return { type: 'clear_completed', confidence: 'high', originalText: speech };
+  }
+  if (/^(?:show|list|display|what are|tell me)\s+(?:all\s+)?(?:my\s+)?(?:tasks|todos|items)/i.test(lowerSpeech) || /^(?:what do i have to do|what'?s on my list)/i.test(lowerSpeech)) {
+    return { type: 'list', confidence: 'high', originalText: speech };
+  }
+
+  // 7. Check for explicit Search (only if it didn't match a filter above)
+  const searchMatch = lowerSpeech.match(/^(?:search|find|look\s+for)\s+(?:for\s+)?(.+)/i);
+  if (searchMatch) {
+    return { type: 'search', searchQuery: searchMatch[1].trim(), confidence: 'high', originalText: speech };
+  }
+
+  // 8. Fallback to Add Task
   const parsed = parseTaskFromSpeech(speech);
-  
   return {
     type: 'add',
     taskName: parsed.taskName,
@@ -310,7 +141,7 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
       priority: parsed.priority,
       deadline: parsed.deadline,
     },
-    confidence: 'low',
+    confidence: 'low', // Changed to low because it's a fallback
     originalText: speech,
   };
 }

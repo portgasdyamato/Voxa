@@ -66,7 +66,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   useEffect(() => {
     if (!isListening && transcript) {
       setShowTranscription(true);
-      const command = parseVoiceCommand(transcript);
+      const command = parseVoiceCommand(transcript, categories || [], tasks || []);
       
       let finalCategoryId = '';
       let finalDeadline: Date | null = null;
