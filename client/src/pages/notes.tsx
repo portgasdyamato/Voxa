@@ -750,7 +750,11 @@ export default function NotesPage() {
                   background-repeat: no-repeat;
                   background-position: center;
                   color: rgba(255, 255, 255, 0.4);
-                  transition: background-color 0.2s, color 0.2s;
+                  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+                }
+                .drag-handle.hide {
+                  opacity: 0;
+                  pointer-events: none;
                 }
                 .drag-handle:hover {
                   background-color: rgba(255, 255, 255, 0.1);
