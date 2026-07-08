@@ -695,6 +695,8 @@ async function handler(req, res) {
         guests: e.guests || null,
       }).returning();
 
+      let emailLogs = [];
+
       // Dispatch emails via Resend
       if (e.guests && e.guests.length > 0 && process.env.RESEND_API_KEY) {
         const resend = new Resend(process.env.RESEND_API_KEY);
@@ -715,7 +717,7 @@ async function handler(req, res) {
         const { error, value } = ics.createEvent(icsEvent);
         
         if (error) {
-          console.error('ICS creation error:', error);
+          emailLogs.push({ error: 'ICS creation error', details: error });
         } else {
           const attachments = [{
             filename: 'invite.ics',
@@ -725,7 +727,7 @@ async function handler(req, res) {
           
           for (const guest of e.guests) {
             try {
-              await resend.emails.send({
+              const resData = await resend.emails.send({
                 from: 'onboarding@resend.dev',
                 to: guest.email,
                 subject: `Invitation: ${e.title}`,
@@ -744,17 +746,17 @@ async function handler(req, res) {
                 `,
                 attachments
               });
-              console.log(`[VoXa API] Sent calendar invite to ${guest.email}`);
+              emailLogs.push({ email: guest.email, success: true, resData });
             } catch (err) {
-              console.error(`[VoXa API] Failed to send email to ${guest.email}:`, err);
+              emailLogs.push({ email: guest.email, success: false, error: err.message });
             }
           }
         }
       } else if (e.guests && e.guests.length > 0) {
-        console.log('[VoXa API] Guests were invited, but RESEND_API_KEY is not set. Skipping emails.');
+        emailLogs.push({ error: 'RESEND_API_KEY is not set. Skipping emails.' });
       }
 
-      res.status(201).json(newEvent[0]);
+      res.status(201).json({ ...newEvent[0], _emailLogs: emailLogs });
       return;
     }
 
