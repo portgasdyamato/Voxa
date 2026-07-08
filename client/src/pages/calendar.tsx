@@ -14,9 +14,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CalendarPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ start: Date, end: Date } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -55,11 +57,37 @@ export default function CalendarPage() {
     mutationFn: async (newEvent: any) => {
       await apiRequest('POST', '/api/events', newEvent);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/events'] });
       setIsModalOpen(false);
       form.reset();
+      
+      if (variables.guests && variables.guests.length > 0) {
+        toast({
+          title: "Event created & Invites sent!",
+          description: `Successfully emailed ${variables.guests.length} guest(s).`,
+        });
+      } else {
+        toast({
+          title: "Event created",
+          description: "Your new event has been saved.",
+        });
+      }
       setGuests([]);
+    }
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest('DELETE', `/api/events/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+      setSelectedEvent(null);
+      toast({
+        title: "Event cancelled",
+        description: "The event has been deleted and guests notified.",
+      });
     }
   });
 
@@ -348,6 +376,21 @@ export default function CalendarPage() {
                     </div>
                   </div>
                 )}
+
+                <div className="pt-4 border-t border-white/5 flex justify-end">
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => {
+                      if (window.confirm("Are you sure you want to cancel this event?")) {
+                        deleteEventMutation.mutate(parseInt(selectedEvent.id));
+                      }
+                    }}
+                    className="bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded-xl"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Cancel Event
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
