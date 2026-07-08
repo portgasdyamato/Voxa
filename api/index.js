@@ -867,83 +867,75 @@ async function handler(req, res) {
       return;
     }
 
-    // --- AI Mock Endpoint ---
+    // --- AI Endpoint ---
     if (url.pathname === "/api/ai/format" && req.method === "POST") {
       const { content, action } = req.body;
       let newContent = content;
       
-      const groqKey = process.env.GROQ_API_KEY;
-      const openaiKey = process.env.OPENAI_API_KEY;
-      
-      if (!groqKey && !openaiKey) {
-        newContent = `
-          <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin: 1rem 0;">
-            <strong>⚠️ AI Not Configured</strong><br/>
-            <p>To enable real AI summarizing, polishing, and task extraction, please add your <code>GROQ_API_KEY</code> or <code>OPENAI_API_KEY</code> to your environment variables.</p>
-          </div>
-        ` + content;
-        return res.status(200).json({ content: newContent });
-      }
+      const rawText = (content || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
 
-      // Extract raw text for the AI prompt
-      const rawText = (content || '').replace(/<[^>]*>?/gm, '\n').replace(/\n+/g, '\n').trim();
-      
-      let systemPrompt = "You are a helpful assistant.";
-      if (action === "summarize") {
-        systemPrompt = "You are an AI assistant. Summarize the user's text into 3 concise bullet points. Output ONLY HTML: an <ul> with <li> elements.";
-      } else if (action === "polish") {
-        systemPrompt = "You are an AI assistant. Polish the user's text to fix grammar, improve flow, and make it sound professional. Output ONLY HTML: wrapping paragraphs in <p> tags. Do not output anything else.";
-      } else if (action === "task") {
-        systemPrompt = "You are an AI assistant. Extract actionable tasks from the user's text. Output ONLY HTML: an <ul data-type=\"taskList\"> with <li data-type=\"taskItem\" data-checked=\"false\"><p>task</p></li> elements.";
+      if (!process.env.GROQ_API_KEY) {
+        console.warn("GROQ_API_KEY not set. Using fallback mock.");
+        const sentences = rawText.match(/[^.!?]+[.!?]+/g) || (rawText ? [rawText] : ["No text provided"]);
+        if (action === "summarize") {
+          const summaryPoints = sentences.slice(0, 3).map(s => `<li>${s.trim()}</li>`).join('');
+          newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/><ul>${summaryPoints}</ul></div>` + content;
+        } else if (action === "polish") {
+          const polished = sentences.map(s => {
+            let t = s.trim();
+            return t.charAt(0).toUpperCase() + t.slice(1) + (t.match(/[.!?]$/) ? '' : '.');
+          }).join(' ');
+          newContent = `<p>✨ <em>Polished Note:</em></p><p>${polished}</p>`;
+        } else if (action === "task") {
+          const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s.trim()}</p></li>`).join('');
+          newContent = `
+            <ul data-type="taskList">
+              ${tasks}
+            </ul>
+          ` + content;
+        }
+        res.status(200).json({ content: newContent });
+        return;
       }
 
       try {
-        const apiUrl = groqKey ? "https://api.groq.com/openai/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
-        const apiKey = groqKey || openaiKey;
-        const apiModel = groqKey ? "llama3-8b-8192" : "gpt-4o-mini";
-
-        const aiResponse = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: apiModel,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: rawText || "No text provided." }
-            ],
-            temperature: 0.5
-          })
-        });
-
-        if (!aiResponse.ok) {
-          const errorText = await aiResponse.text();
-          throw new Error(`API error: ${errorText}`);
-        }
-
-        const data = await aiResponse.json();
-        const aiHtml = data.choices[0]?.message?.content || "";
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        let prompt = "";
+        let systemPrompt = "You are a helpful AI formatting assistant. You must ONLY output the requested HTML, nothing else. Do not wrap it in markdown code blocks. Just raw HTML.";
 
         if (action === "summarize") {
-          newContent = `<h2>🤖 AI Summary</h2>${aiHtml}<hr>` + content;
+          prompt = `Summarize the following text into 3 concise bullet points. Output ONLY a <ul> tag containing the <li> elements.\n\nText: ${rawText}`;
         } else if (action === "polish") {
-          newContent = `<h2>✨ Polished Note</h2>${aiHtml}<hr>`;
+          prompt = `Fix any grammar errors and polish the vocabulary of the following text to make it sound professional but keep the original meaning. Output ONLY a <p> tag containing the polished text.\n\nText: ${rawText}`;
         } else if (action === "task") {
-          newContent = `<h2>📋 Extracted Tasks</h2>${aiHtml}<hr>` + content;
+          prompt = `Extract all actionable tasks from the following text. Output ONLY a <ul data-type="taskList"> containing <li data-type="taskItem" data-checked="false"><p>Task text</p></li> elements.\n\nText: ${rawText}`;
         }
+        
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          model: "llama3-8b-8192",
+          temperature: 0.2,
+        });
+        
+        let aiHtml = chatCompletion.choices[0]?.message?.content || "";
+        // Clean up markdown formatting if present
+        aiHtml = aiHtml.replace(/```html/g, '').replace(/```/g, '').trim();
 
+        if (action === "summarize") {
+          newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>${aiHtml}</div>` + content;
+        } else if (action === "polish") {
+          newContent = `<p>✨ <em>Polished Note:</em></p>${aiHtml}`;
+        } else if (action === "task") {
+          newContent = aiHtml + content;
+        }
+        
         res.status(200).json({ content: newContent });
-      } catch (e) {
-        console.error("AI API Error:", e);
-        newContent = `
-          <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin: 1rem 0;">
-            <strong>⚠️ AI Error</strong><br/>
-            <p>Failed to process AI request. Please check your API key and quota.</p>
-          </div>
-        ` + content;
-        res.status(200).json({ content: newContent });
+      } catch (error) {
+        console.error("Groq AI Error:", error);
+        res.status(500).json({ error: "Failed to process AI request" });
       }
       return;
     }

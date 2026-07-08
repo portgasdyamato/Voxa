@@ -14,11 +14,11 @@ import {
 import { createInsertSchema } from 'drizzle-zod';
 import { relations } from 'drizzle-orm';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import ws from 'ws';
 import { Resend } from 'resend';
 import * as ics from 'ics';
+import Groq from 'groq-sdk';
 
 dotenv.config();
 
@@ -487,33 +487,75 @@ app.delete('/api/notes/:id', async (req, res) => {
   res.json({ success: true });
 });
 
-// --- AI Mock Endpoint ---
+// --- AI Endpoint ---
 app.post("/api/ai/format", async (req, res) => {
   const { content, action } = req.body;
   let newContent = content;
   
-  // Extract pure text for mock processing
   const rawText = (content || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
-  const sentences = rawText.match(/[^.!?]+[.!?]+/g) || (rawText ? [rawText] : ["No text provided"]);
 
-  if (action === "summarize") {
-    const summaryPoints = sentences.slice(0, 3).map(s => `<li>${s.trim()}</li>`).join('');
-    newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/><ul>${summaryPoints}</ul></div>` + content;
-  } else if (action === "polish") {
-    const polished = sentences.map(s => {
-      let t = s.trim();
-      return t.charAt(0).toUpperCase() + t.slice(1) + (t.match(/[.!?]$/) ? '' : '.');
-    }).join(' ');
-    newContent = `<p>✨ <em>Polished Note:</em></p><p>${polished}</p>`;
-  } else if (action === "task") {
-    const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s.trim()}</p></li>`).join('');
-    newContent = `
-      <ul data-type="taskList">
-        ${tasks}
-      </ul>
-    ` + content;
+  if (!process.env.GROQ_API_KEY) {
+    console.warn("GROQ_API_KEY not set. Using fallback mock.");
+    const sentences = rawText.match(/[^.!?]+[.!?]+/g) || (rawText ? [rawText] : ["No text provided"]);
+    if (action === "summarize") {
+      const summaryPoints = sentences.slice(0, 3).map(s => `<li>${s.trim()}</li>`).join('');
+      newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/><ul>${summaryPoints}</ul></div>` + content;
+    } else if (action === "polish") {
+      const polished = sentences.map(s => {
+        let t = s.trim();
+        return t.charAt(0).toUpperCase() + t.slice(1) + (t.match(/[.!?]$/) ? '' : '.');
+      }).join(' ');
+      newContent = `<p>✨ <em>Polished Note:</em></p><p>${polished}</p>`;
+    } else if (action === "task") {
+      const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s.trim()}</p></li>`).join('');
+      newContent = `
+        <ul data-type="taskList">
+          ${tasks}
+        </ul>
+      ` + content;
+    }
+    return res.status(200).json({ content: newContent });
   }
-  res.status(200).json({ content: newContent });
+
+  try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    let prompt = "";
+    let systemPrompt = "You are a helpful AI formatting assistant. You must ONLY output the requested HTML, nothing else. Do not wrap it in markdown code blocks. Just raw HTML.";
+
+    if (action === "summarize") {
+      prompt = `Summarize the following text into 3 concise bullet points. Output ONLY a <ul> tag containing the <li> elements.\n\nText: ${rawText}`;
+    } else if (action === "polish") {
+      prompt = `Fix any grammar errors and polish the vocabulary of the following text to make it sound professional but keep the original meaning. Output ONLY a <p> tag containing the polished text.\n\nText: ${rawText}`;
+    } else if (action === "task") {
+      prompt = `Extract all actionable tasks from the following text. Output ONLY a <ul data-type="taskList"> containing <li data-type="taskItem" data-checked="false"><p>Task text</p></li> elements.\n\nText: ${rawText}`;
+    }
+    
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      model: "llama3-8b-8192",
+      temperature: 0.2,
+    });
+    
+    let aiHtml = chatCompletion.choices[0]?.message?.content || "";
+    // Clean up markdown formatting if present
+    aiHtml = aiHtml.replace(/```html/g, '').replace(/```/g, '').trim();
+
+    if (action === "summarize") {
+      newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>${aiHtml}</div>` + content;
+    } else if (action === "polish") {
+      newContent = `<p>✨ <em>Polished Note:</em></p>${aiHtml}`;
+    } else if (action === "task") {
+      newContent = aiHtml + content;
+    }
+    
+    res.status(200).json({ content: newContent });
+  } catch (error) {
+    console.error("Groq AI Error:", error);
+    res.status(500).json({ error: "Failed to process AI request" });
+  }
 });
 
 // --- Folders Routes ---
