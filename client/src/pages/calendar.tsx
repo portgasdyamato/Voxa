@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -256,7 +257,8 @@ export default function CalendarPage() {
       </motion.div>
 
       {/* Event Details Modal */}
-      <AnimatePresence>
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
         {selectedEvent && (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -314,10 +316,13 @@ export default function CalendarPage() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
 
       {/* Event Creation Modal */}
-      <AnimatePresence>
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
         {isModalOpen && (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -425,7 +430,9 @@ export default function CalendarPage() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </div>
   );
 }
