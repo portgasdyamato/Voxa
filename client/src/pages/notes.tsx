@@ -24,6 +24,7 @@ import TaskList from '@tiptap/extension-task-list';
 import FontFamily from '@tiptap/extension-font-family';
 import { TextStyle } from '@tiptap/extension-text-style';
 import ImageResize from 'tiptap-extension-resize-image';
+import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
@@ -175,6 +176,10 @@ export default function NotesPage() {
 
   const editor = useEditor({
     extensions: [
+      GlobalDragHandle.configure({
+        dragHandleWidth: 20,
+        scrollTreshold: 100,
+      }),
       StarterKit,
       AudioExtension,
       ImageResize.configure({
@@ -572,6 +577,32 @@ export default function NotesPage() {
                 }
                 .ProseMirror ul[data-type="taskList"] li > div {
                   flex: 1;
+                }
+                
+                /* Drag and drop styling */
+                .drag-handle {
+                  cursor: grab;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 24px;
+                  height: 24px;
+                  border-radius: 4px;
+                  color: rgba(255, 255, 255, 0.4);
+                  transition: background 0.2s, color 0.2s;
+                }
+                .drag-handle:hover {
+                  background: rgba(255, 255, 255, 0.1);
+                  color: rgba(255, 255, 255, 0.8);
+                }
+                .ProseMirror-selectednode {
+                  outline: 2px solid rgba(59, 130, 246, 0.5); /* blue-500 */
+                  border-radius: 0.5rem;
+                  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+                  transition: all 0.2s ease;
+                }
+                .ProseMirror-selectednode audio {
+                  opacity: 0.8;
                 }
               `}</style>
             </div>
