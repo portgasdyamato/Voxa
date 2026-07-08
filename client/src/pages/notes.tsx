@@ -682,15 +682,11 @@ export default function NotesPage() {
                   background: rgba(255, 255, 255, 0.1);
                   color: rgba(255, 255, 255, 0.8);
                 }
-                .ProseMirror-selectednode {
+                .ProseMirror-selectednode img {
                   outline: 2px solid rgba(59, 130, 246, 0.5); /* blue-500 */
                   border-radius: 0.5rem;
                   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
                   transition: all 0.2s ease;
-                }
-                .audio-node-view.ProseMirror-selectednode {
-                  outline: none;
-                  box-shadow: none;
                 }
                 .ProseMirror-selectednode audio {
                   opacity: 0.8;
