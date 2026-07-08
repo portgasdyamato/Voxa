@@ -22,6 +22,7 @@ export default function CalendarPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ start: Date, end: Date } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [eventToDelete, setEventToDelete] = useState<any>(null);
   
   // Guest invites state
   const [guests, setGuests] = useState<{email: string, name: string}[]>([]);
@@ -381,9 +382,7 @@ export default function CalendarPage() {
                   <Button 
                     variant="destructive" 
                     onClick={() => {
-                      if (window.confirm("Are you sure you want to cancel this event?")) {
-                        deleteEventMutation.mutate(parseInt(selectedEvent.id));
-                      }
+                      setEventToDelete(selectedEvent);
                     }}
                     className="bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded-xl"
                   >
@@ -511,6 +510,52 @@ export default function CalendarPage() {
         )}
       </AnimatePresence>,
       document.body
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+        {eventToDelete && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6"
+            >
+              <h2 className="text-xl font-semibold text-white mb-2">Cancel Event?</h2>
+              <p className="text-white/60 mb-6">Are you sure you want to cancel <span className="text-white">"{eventToDelete.title}"</span>? This action cannot be undone.</p>
+              
+              <div className="flex items-center justify-end gap-3">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setEventToDelete(null)}
+                  className="text-white/60 hover:text-white"
+                >
+                  Keep Event
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => {
+                    deleteEventMutation.mutate(parseInt(eventToDelete.id));
+                    setEventToDelete(null);
+                    setSelectedEvent(null);
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Yes, Cancel It
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   );
