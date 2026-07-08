@@ -4,8 +4,9 @@ import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Folder, Plus, FileText, Pin, MoreVertical, Search, 
-  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft, List, ListOrdered, AlignLeft, AlignCenter, AlignRight
+  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Eye, Edit3
 } from 'lucide-react';
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -47,6 +48,9 @@ export default function NotesPage() {
 
   // Delete state
   const [noteToDelete, setNoteToDelete] = useState<number | null>(null);
+
+  // Preview state
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   // Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
@@ -213,6 +217,12 @@ export default function NotesPage() {
       }
     },
   }, [selectedNoteId]); // Recreate editor when selected note changes
+
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!isPreviewMode);
+    }
+  }, [isPreviewMode, editor]);
 
   return (
     <div className="flex h-[calc(100vh-240px)] min-h-[600px] overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in duration-700">
@@ -396,9 +406,20 @@ export default function NotesPage() {
                   onChange={(e) => updateNoteMutation.mutate({ id: selectedNoteId, updates: { title: e.target.value }})}
                   className="bg-transparent border-none text-2xl font-semibold text-white focus:outline-none focus:ring-0 p-0 placeholder:text-white/20"
                   placeholder="Note Title"
+                  readOnly={isPreviewMode}
                 />
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsPreviewMode(!isPreviewMode)}
+                  className={`hover:bg-white/10 ${isPreviewMode ? 'text-blue-400 hover:text-blue-300' : 'text-white/40 hover:text-white'}`}
+                  title={isPreviewMode ? "Switch to Edit Mode" : "Switch to Preview Mode"}
+                >
+                  {isPreviewMode ? <Edit3 className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </Button>
+                <div className="w-px h-6 bg-white/10 mx-1" />
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -427,10 +448,12 @@ export default function NotesPage() {
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar p-8 max-w-4xl mx-auto w-full prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-blue-400 break-words whitespace-pre-wrap">
+            <div className={`flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar p-8 max-w-4xl mx-auto w-full prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-blue-400 break-words whitespace-pre-wrap ${isPreviewMode ? 'preview-mode' : ''}`}>
               
-              {/* Toolbar */}
-              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5 flex-wrap">
+              {!isPreviewMode && (
+                <>
+                  {/* Toolbar */}
+                  <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5 flex-wrap">
                 <Button
                   variant="outline"
                   size="sm"
@@ -654,10 +677,24 @@ export default function NotesPage() {
                   AI: Extract Tasks
                 </Button>
               </div>
+              </>
+              )}
 
               <EditorContent editor={editor} className="min-h-[500px]" />
               
               <style>{`
+                .ProseMirror {
+                  outline: none;
+                  min-height: calc(100vh - 400px);
+                  padding-bottom: 4rem;
+                }
+                .preview-mode .ProseMirror {
+                  min-height: auto;
+                  padding-bottom: 2rem;
+                }
+                .preview-mode .drag-handle {
+                  display: none !important;
+                }
                 .ProseMirror:focus { outline: none; }
                 .ProseMirror p.is-editor-empty:first-child::before {
                   content: attr(data-placeholder);
