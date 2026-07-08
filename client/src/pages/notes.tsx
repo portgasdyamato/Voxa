@@ -16,6 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
+import FontFamily from '@tiptap/extension-font-family';
+import TextStyle from '@tiptap/extension-text-style';
+import ImageResize from 'tiptap-extension-resize-image';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
@@ -168,10 +175,16 @@ export default function NotesPage() {
     extensions: [
       StarterKit,
       AudioExtension,
-      Image.configure({
+      ImageResize.configure({
         inline: true,
         allowBase64: true,
       }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      TextStyle,
+      FontFamily,
       Placeholder.configure({
         placeholder: 'Start typing your thoughts...',
       }),
@@ -407,6 +420,47 @@ export default function NotesPage() {
                 <div className="w-px h-6 bg-white/10 mx-2" />
 
                 {/* Formatting Buttons */}
+                <Select 
+                  onValueChange={(value) => editor?.chain().focus().setFontFamily(value).run()}
+                >
+                  <SelectTrigger className="w-[120px] h-8 bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Font" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#121214] border-white/10 text-white">
+                    <SelectItem value="Inter">Inter</SelectItem>
+                    <SelectItem value="serif">Serif</SelectItem>
+                    <SelectItem value="monospace">Monospace</SelectItem>
+                    <SelectItem value="Comic Sans MS, Comic Sans">Comic Sans</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select 
+                  onValueChange={(value) => {
+                    if (value === 'p') editor?.chain().focus().setParagraph().run();
+                    else editor?.chain().focus().toggleHeading({ level: parseInt(value) as any }).run();
+                  }}
+                >
+                  <SelectTrigger className="w-[120px] h-8 bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Style" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#121214] border-white/10 text-white">
+                    <SelectItem value="p">Paragraph</SelectItem>
+                    <SelectItem value="1">Heading 1</SelectItem>
+                    <SelectItem value="2">Heading 2</SelectItem>
+                    <SelectItem value="3">Heading 3</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => editor?.chain().focus().toggleTaskList().run()}
+                  className={`bg-white/5 border-white/10 text-white hover:bg-white/10 ${editor?.isActive('taskList') ? 'bg-white/20' : ''}`}
+                >
+                  <ListTodo className="w-4 h-4 mr-2" />
+                  Checklist
+                </Button>
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -453,26 +507,12 @@ export default function NotesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={async () => {
-                    const taskTitle = window.prompt("Task Title:", selectedNote?.title || "New Task from Note");
-                    if (taskTitle) {
-                      try {
-                        await apiRequest('POST', '/api/tasks', {
-                          title: taskTitle,
-                          completed: false,
-                          priority: 'medium'
-                        });
-                        queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-                        alert('Task created successfully!');
-                      } catch (e) {
-                        console.error("Failed to create task", e);
-                      }
-                    }
-                  }}
+                  onClick={() => handleAIAction('task')}
+                  disabled={isProcessingAI}
                   className="bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20"
                 >
                   <ListTodo className="w-4 h-4 mr-2" />
-                  Convert to Task
+                  AI: Extract Tasks
                 </Button>
               </div>
 
@@ -492,6 +532,23 @@ export default function NotesPage() {
                   max-width: 100%;
                   height: auto;
                   margin: 1rem 0;
+                }
+                .ProseMirror ul[data-type="taskList"] {
+                  list-style: none;
+                  padding: 0;
+                }
+                .ProseMirror ul[data-type="taskList"] li {
+                  display: flex;
+                  align-items: flex-start;
+                  margin-bottom: 0.5rem;
+                }
+                .ProseMirror ul[data-type="taskList"] li > label {
+                  margin-right: 0.5rem;
+                  margin-top: 0.2rem;
+                  user-select: none;
+                }
+                .ProseMirror ul[data-type="taskList"] li > div {
+                  flex: 1;
                 }
               `}</style>
             </div>

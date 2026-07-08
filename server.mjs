@@ -425,13 +425,22 @@ app.delete('/api/notes/:id', async (req, res) => {
   res.json({ success: true });
 });
 
+// --- AI Mock Endpoint ---
 app.post("/api/ai/format", async (req, res) => {
   const { content, action } = req.body;
   let newContent = content;
   if (action === "summarize") {
-    newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>Here is a quick summary of your notes.<ul><li>Action item extracted</li><li>Key point highlighted</li></ul></div>` + content;
+    newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/><ul><li>Action item extracted</li><li>Key point highlighted</li></ul></div>` + content;
   } else if (action === "polish") {
     newContent = `<p>✨ <em>Polished Note:</em></p>` + content;
+  } else if (action === "task") {
+    newContent = `
+      <ul data-type="taskList">
+        <li data-type="taskItem" data-checked="false"><p>Action item 1 from your notes</p></li>
+        <li data-type="taskItem" data-checked="false"><p>Action item 2 from your notes</p></li>
+        <li data-type="taskItem" data-checked="false"><p>Review documentation</p></li>
+      </ul>
+    ` + content;
   }
   res.status(200).json({ content: newContent });
 });

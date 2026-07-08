@@ -4,6 +4,7 @@ export const AudioExtension = Node.create({
   name: 'audio',
   group: 'block',
   atom: true,
+  draggable: true,
 
   addAttributes() {
     return {
