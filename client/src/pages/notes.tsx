@@ -4,7 +4,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Folder, Plus, FileText, Pin, MoreVertical, Search, 
-  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft
+  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft, List, ListOrdered
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -523,6 +523,26 @@ export default function NotesPage() {
                 >
                   <ListTodo className="w-4 h-4 mr-2" />
                   Checklist
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                  className={`bg-white/5 border-white/10 text-white hover:bg-white/10 ${editor?.isActive('bulletList') ? 'bg-white/20' : ''}`}
+                  title="Bullet List"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                  className={`bg-white/5 border-white/10 text-white hover:bg-white/10 ${editor?.isActive('orderedList') ? 'bg-white/20' : ''}`}
+                  title="Numbered List"
+                >
+                  <ListOrdered className="w-4 h-4" />
                 </Button>
 
                 <Button
