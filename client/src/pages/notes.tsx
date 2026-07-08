@@ -296,8 +296,8 @@ export default function NotesPage() {
               onClick={() => setSelectedNoteId(note.id)}
               className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
                 selectedNoteId === note.id 
-                  ? 'bg-blue-500/10 border-blue-500/30' 
-                  : 'bg-white/5 border-transparent hover:border-white/10'
+                  ? 'bg-white/10 border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' 
+                  : 'bg-white/5 border-transparent hover:border-white/10 hover:bg-white/[0.07]'
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
