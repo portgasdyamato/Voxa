@@ -366,14 +366,14 @@ app.post('/api/events', async (req, res) => {
     } else {
       const attachments = [{
         filename: 'invite.ics',
-        content: Buffer.from(value).toString('base64'),
+        content: value,
         type: 'text/calendar'
       }];
       
       for (const guest of e.guests) {
         try {
           await resend.emails.send({
-            from: 'VoXa Calendar <onboarding@resend.dev>',
+            from: 'onboarding@resend.dev',
             to: guest.email,
             subject: `Invitation: ${e.title}`,
             html: `
