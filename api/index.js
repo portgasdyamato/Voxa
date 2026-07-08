@@ -810,11 +810,14 @@ async function handler(req, res) {
       const { content, action } = req.body;
       let newContent = content;
       
-      if (!process.env.OPENAI_API_KEY) {
+      const groqKey = process.env.GROQ_API_KEY;
+      const openaiKey = process.env.OPENAI_API_KEY;
+      
+      if (!groqKey && !openaiKey) {
         newContent = `
           <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin: 1rem 0;">
             <strong>⚠️ AI Not Configured</strong><br/>
-            <p>To enable real AI summarizing, polishing, and task extraction, please add your <code>OPENAI_API_KEY</code> to your environment variables.</p>
+            <p>To enable real AI summarizing, polishing, and task extraction, please add your <code>GROQ_API_KEY</code> or <code>OPENAI_API_KEY</code> to your environment variables.</p>
           </div>
         ` + content;
         return res.status(200).json({ content: newContent });
@@ -833,14 +836,18 @@ async function handler(req, res) {
       }
 
       try {
-        const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        const apiUrl = groqKey ? "https://api.groq.com/openai/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
+        const apiKey = groqKey || openaiKey;
+        const apiModel = groqKey ? "llama3-8b-8192" : "gpt-4o-mini";
+
+        const aiResponse = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+            "Authorization": `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: "gpt-4o-mini",
+            model: apiModel,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: rawText || "No text provided." }
@@ -850,7 +857,8 @@ async function handler(req, res) {
         });
 
         if (!aiResponse.ok) {
-          throw new Error("OpenAI API error");
+          const errorText = await aiResponse.text();
+          throw new Error(`API error: ${errorText}`);
         }
 
         const data = await aiResponse.json();
@@ -866,11 +874,11 @@ async function handler(req, res) {
 
         res.status(200).json({ content: newContent });
       } catch (e) {
-        console.error("OpenAI Error:", e);
+        console.error("AI API Error:", e);
         newContent = `
           <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin: 1rem 0;">
             <strong>⚠️ AI Error</strong><br/>
-            <p>Failed to process AI request. Please check your API key.</p>
+            <p>Failed to process AI request. Please check your API key and quota.</p>
           </div>
         ` + content;
         res.status(200).json({ content: newContent });
