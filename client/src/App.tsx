@@ -19,8 +19,6 @@ import { AlarmModal } from "@/components/AlarmModal";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Stats from "@/pages/stats";
-import CalendarPage from "@/pages/calendar";
-import NotesPage from "@/pages/notes";
 
 function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
   const { data: tasks = [] } = useTasks();
@@ -73,7 +71,7 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<'home' | 'stats' | 'calendar' | 'notes'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -83,10 +81,6 @@ function Router() {
       setActiveTab('home');
     } else if (location === '/stats' || location.startsWith('/stats?')) {
       setActiveTab('stats');
-    } else if (location === '/calendar' || location.startsWith('/calendar?')) {
-      setActiveTab('calendar');
-    } else if (location === '/notes' || location.startsWith('/notes?')) {
-      setActiveTab('notes');
     }
   }, [location]);
 
@@ -164,24 +158,6 @@ function Router() {
             voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
          >
             <Stats />
-         </ProtectedLayout>
-      </Route>
-      <Route path="/calendar">
-         <ProtectedLayout
-            activeTab={activeTab} setActiveTab={setActiveTab}
-            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-            voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
-         >
-            <CalendarPage />
-         </ProtectedLayout>
-      </Route>
-      <Route path="/notes">
-         <ProtectedLayout
-            activeTab={activeTab} setActiveTab={setActiveTab}
-            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-            voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
-         >
-            <NotesPage />
          </ProtectedLayout>
       </Route>
       <Route component={NotFound} />

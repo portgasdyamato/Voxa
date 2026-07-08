@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Folder, Plus, FileText, Pin, MoreVertical, Search, 
-  Trash2, FileEdit, Tag
+  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -35,7 +35,7 @@ export default function NotesPage() {
       return res.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+      queryClient.setQueryData(['/api/notes'], (old: any) => [data, ...(old || [])]);
       setSelectedNoteId(data.id);
     }
   });

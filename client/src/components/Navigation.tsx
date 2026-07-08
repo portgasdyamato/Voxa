@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface NavigationProps {
-  activeTab: 'home' | 'stats' | 'calendar' | 'notes';
-  onTabChange: (tab: 'home' | 'stats' | 'calendar' | 'notes') => void;
+  activeTab: 'home' | 'stats';
+  onTabChange: (tab: 'home' | 'stats') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -43,7 +43,7 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
     .slice(0, 3);
 
-  const handleNavigation = (path: string, tab: 'home' | 'stats' | 'calendar' | 'notes') => {
+  const handleNavigation = (path: string, tab: 'home' | 'stats') => {
     setLocation(path);
     onTabChange(tab);
   };
@@ -51,8 +51,6 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
   // Ref-based sliding pill for bottom nav
   const tabs = [
     { id: 'home' as const, path: '/home', label: 'Workspace', icon: <LayoutGrid className="w-4 h-4" /> },
-    { id: 'calendar' as const, path: '/calendar', label: 'Calendar', icon: <CalendarIcon className="w-4 h-4" /> },
-    { id: 'notes' as const, path: '/notes', label: 'Notes', icon: <FileText className="w-4 h-4" /> },
     { id: 'stats' as const, path: '/stats', label: 'Performance', icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
