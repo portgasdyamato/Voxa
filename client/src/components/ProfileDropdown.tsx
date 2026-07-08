@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, LogOut, Moon, Sun, Monitor, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,6 +19,20 @@ export function ProfileDropdown() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [, forceRender] = useState({});
+
+  useEffect(() => {
+    const handleOpenProfile = () => setShowEditProfile(true);
+    const handleToggleSound = () => forceRender({});
+
+    window.addEventListener('voxa-open-profile-settings', handleOpenProfile);
+    window.addEventListener('voxa-toggle-sound', handleToggleSound);
+    
+    return () => {
+      window.removeEventListener('voxa-open-profile-settings', handleOpenProfile);
+      window.removeEventListener('voxa-toggle-sound', handleToggleSound);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();

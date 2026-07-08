@@ -21,15 +21,7 @@ export function useDeadlineNotifications(tasks: any[]) {
     const alarmSoundEnabled = localStorage.getItem('voxa_alarm_sound') !== 'false';
     
     // Play ringing alarm sound if enabled
-    if (alarmSoundEnabled) {
-      try {
-        const audio = new Audio(ALARM_SOUND_URL);
-        audio.volume = 0.5; // Set volume to 50%
-        audio.play().catch(e => console.warn('Audio playback prevented by browser policy:', e));
-      } catch (e) {
-        console.warn('Audio object initialization failed:', e);
-      }
-    }
+    // Audio playback is now handled by the AlarmModal component.
 
     // Show toast for immediate UI feedback (Always works)
     toast({
@@ -71,8 +63,8 @@ export function useDeadlineNotifications(tasks: any[]) {
         let body = "";
 
         if (task.reminderType === 'default') {
-          // Trigger exactly 50, 30, and 10 minutes before deadline
-          const intervals = [50, 30, 10];
+          // Trigger exactly 30, 15, and 5 minutes before deadline
+          const intervals = [30, 15, 5];
           const reachedInterval = intervals.find(mins => diffMinutes <= mins && diffMinutes > mins - 1);
           
           if (reachedInterval !== undefined) {
@@ -102,6 +94,12 @@ export function useDeadlineNotifications(tasks: any[]) {
 
         if (shouldNotify && !notifiedTasksRef.current[notificationKey]) {
           notifiedTasksRef.current[notificationKey] = nowTs;
+          // Dispatch custom event for the AlarmModal
+          window.dispatchEvent(new CustomEvent('voxa-alarm-trigger', { 
+            detail: { task, title, body } 
+          }));
+          
+          // Also show the toast and browser notification as backup
           showNotification(task, title, body);
         }
       });

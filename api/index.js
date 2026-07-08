@@ -65,9 +65,49 @@ var categories = pgTable("categories", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
 });
+var events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  allDay: boolean("all_day").notNull().default(false),
+  location: text("location"),
+  meetingLink: text("meeting_link"),
+  recurringPattern: varchar("recurring_pattern", { enum: ["none", "daily", "weekly", "monthly", "yearly"] }).default("none"),
+  reminders: jsonb("reminders"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+var folders = pgTable("folders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 100 }).notNull(),
+  parentId: integer("parent_id"),
+  color: varchar("color", { length: 7 }).default("#6B7280"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+var notes = pgTable("notes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  folderId: integer("folder_id").references(() => folders.id, { onDelete: "set null" }),
+  title: varchar("title", { length: 255 }).notNull().default("Untitled Note"),
+  content: text("content"),
+  isPinned: boolean("is_pinned").notNull().default(false),
+  color: varchar("color", { length: 7 }),
+  tags: jsonb("tags"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
 var usersRelations = relations(users, ({ many }) => ({
   tasks: many(tasks),
-  categories: many(categories)
+  categories: many(categories),
+  events: many(events),
+  folders: many(folders),
+  notes: many(notes)
 }));
 var tasksRelations = relations(tasks, ({ one }) => ({
   user: one(users, {
@@ -114,7 +154,7 @@ var updateCategorySchema = createInsertSchema(categories).omit({
 // api/index.ts
 neonConfig.fetchConnectionCache = true;
 var pool = new Pool({ connectionString: process.env.DATABASE_URL });
-var db = drizzle(pool, { schema: { tasks, categories, users } });
+var db = drizzle(pool, { schema: { tasks, categories, users, events, folders, notes } });
 async function handler(req, res) {
   try {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -612,6 +652,139 @@ async function handler(req, res) {
       res.status(200).json(userProfile[0]);
       return;
     }
+    
+    // --- Events Routes ---
+    if (url.pathname === "/api/events" && req.method === "GET") {
+      const userEvents = await db.select().from(events).where(eq(events.userId, currentUserId)).orderBy(desc(events.startTime));
+      res.status(200).json(userEvents);
+      return;
+    }
+
+    if (url.pathname === "/api/events" && req.method === "POST") {
+      const e = req.body;
+      const newEvent = await db.insert(events).values({
+        userId: currentUserId, 
+        title: e.title, 
+        description: e.description || null,
+        startTime: new Date(e.startTime),
+        endTime: new Date(e.endTime),
+        allDay: e.allDay || false,
+        categoryId: e.categoryId || null,
+        location: e.location || null,
+        meetingLink: e.meetingLink || null,
+        recurringPattern: e.recurringPattern || 'none',
+        reminders: e.reminders || null,
+      }).returning();
+      res.status(201).json(newEvent[0]);
+      return;
+    }
+
+    if (url.pathname.startsWith("/api/events/") && (req.method === "PATCH" || req.method === "PUT")) {
+      const eventId = parseInt(url.pathname.split("/")[3]);
+      let updates = req.body;
+      if (typeof updates === 'string') updates = JSON.parse(updates);
+      if (updates.startTime) updates.startTime = new Date(updates.startTime);
+      if (updates.endTime) updates.endTime = new Date(updates.endTime);
+      updates.updatedAt = new Date();
+
+      const updated = await db.update(events).set(updates)
+        .where(and(eq(events.id, eventId), eq(events.userId, currentUserId))).returning();
+      if (!updated.length) return res.status(404).json({ error: 'Event not found' });
+      res.status(200).json(updated[0]);
+      return;
+    }
+
+    if (url.pathname.startsWith("/api/events/") && req.method === "DELETE") {
+      const eventId = parseInt(url.pathname.split("/")[3]);
+      const deleted = await db.delete(events)
+        .where(and(eq(events.id, eventId), eq(events.userId, currentUserId))).returning();
+      if (!deleted.length) return res.status(404).json({ error: 'Event not found' });
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // --- Folders Routes ---
+    if (url.pathname === "/api/folders" && req.method === "GET") {
+      const userFolders = await db.select().from(folders).where(eq(folders.userId, currentUserId)).orderBy(desc(folders.createdAt));
+      res.status(200).json(userFolders);
+      return;
+    }
+    if (url.pathname === "/api/folders" && req.method === "POST") {
+      const f = req.body;
+      const newFolder = await db.insert(folders).values({
+        userId: currentUserId,
+        name: f.name,
+        parentId: f.parentId || null,
+        color: f.color || '#6B7280'
+      }).returning();
+      res.status(201).json(newFolder[0]);
+      return;
+    }
+    if (url.pathname.startsWith("/api/folders/") && (req.method === "PATCH" || req.method === "PUT")) {
+      const folderId = parseInt(url.pathname.split("/")[3]);
+      const updates = { ...req.body, updatedAt: new Date() };
+      const updated = await db.update(folders).set(updates).where(and(eq(folders.id, folderId), eq(folders.userId, currentUserId))).returning();
+      if (!updated.length) return res.status(404).json({ error: 'Folder not found' });
+      res.status(200).json(updated[0]);
+      return;
+    }
+    if (url.pathname.startsWith("/api/folders/") && req.method === "DELETE") {
+      const folderId = parseInt(url.pathname.split("/")[3]);
+      const deleted = await db.delete(folders).where(and(eq(folders.id, folderId), eq(folders.userId, currentUserId))).returning();
+      if (!deleted.length) return res.status(404).json({ error: 'Folder not found' });
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // --- Notes Routes ---
+    if (url.pathname === "/api/notes" && req.method === "GET") {
+      const userNotes = await db.select().from(notes).where(eq(notes.userId, currentUserId)).orderBy(desc(notes.updatedAt));
+      res.status(200).json(userNotes);
+      return;
+    }
+    if (url.pathname === "/api/notes" && req.method === "POST") {
+      const n = req.body;
+      const newNote = await db.insert(notes).values({
+        userId: currentUserId,
+        title: n.title || 'Untitled Note',
+        content: n.content || '',
+        folderId: n.folderId || null,
+        isPinned: n.isPinned || false,
+        color: n.color || null,
+        tags: n.tags || []
+      }).returning();
+      res.status(201).json(newNote[0]);
+      return;
+    }
+    if (url.pathname.startsWith("/api/notes/") && (req.method === "PATCH" || req.method === "PUT")) {
+      const noteId = parseInt(url.pathname.split("/")[3]);
+      const updates = { ...req.body, updatedAt: new Date() };
+      const updated = await db.update(notes).set(updates).where(and(eq(notes.id, noteId), eq(notes.userId, currentUserId))).returning();
+      if (!updated.length) return res.status(404).json({ error: 'Note not found' });
+      res.status(200).json(updated[0]);
+      return;
+    }
+    if (url.pathname.startsWith("/api/notes/") && req.method === "DELETE") {
+      const noteId = parseInt(url.pathname.split("/")[3]);
+      const deleted = await db.delete(notes).where(and(eq(notes.id, noteId), eq(notes.userId, currentUserId))).returning();
+      if (!deleted.length) return res.status(404).json({ error: 'Note not found' });
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // --- AI Mock Endpoint ---
+    if (url.pathname === "/api/ai/format" && req.method === "POST") {
+      const { content, action } = req.body;
+      let newContent = content;
+      if (action === "summarize") {
+        newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>Here is a quick summary of your notes.<ul><li>Action item extracted</li><li>Key point highlighted</li></ul></div>` + content;
+      } else if (action === "polish") {
+        newContent = `<p>✨ <em>Polished Note:</em></p>` + content;
+      }
+      res.status(200).json({ content: newContent });
+      return;
+    }
+
     res.status(404).json({ error: `Endpoint not found: ${req.method} ${url.pathname}` });
   } catch (error) {
     console.error("Handler error:", error);

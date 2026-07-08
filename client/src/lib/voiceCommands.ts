@@ -12,17 +12,32 @@ export type VoiceCommandType =
   | 'open_modal'
   | 'set_filter'
   | 'search'
+  | 'toggle_sound'
+  | 'schedule_event'
+  | 'create_note'
   | 'unknown';
 
 export interface VoiceCommand {
   type: VoiceCommandType;
   taskName?: string;
   taskIdentifier?: string; // For delete/complete/update operations
+  targetReference?: 'last'; // Indicates targeting relative items (e.g. last added)
+  targetCount?: number; // E.g., 3 for "last 3 tasks"
   updates?: {
     title?: string;
     priority?: 'high' | 'medium' | 'low';
     deadline?: Date | null;
     category?: string;
+  };
+  eventDetails?: {
+    title: string;
+    startTime: Date;
+    endTime: Date;
+    allDay?: boolean;
+  };
+  noteDetails?: {
+    title: string;
+    content: string;
   };
   destination?: string;
   modalName?: string;
@@ -44,10 +59,79 @@ export function parseVoiceCommand(speech: string, categories: any[] = [], tasks:
     return { type: 'navigate', destination: route, confidence: 'high', originalText: speech };
   }
 
-  // 2. Check for Open Modal
+  // 2. Check for Open Modal (New Task, Settings, Notifications)
   if (/^(open|show)\s+(the\s+)?(new\s+task|task\s+creation)\s+(popup|modal|dialog|window)/i.test(lowerSpeech) ||
       /^(create\s+a\s+task\s+manually|add\s+task\s+manually)/i.test(lowerSpeech)) {
     return { type: 'open_modal', modalName: 'new_task', confidence: 'high', originalText: speech };
+  }
+  
+  if (/^(open|show|edit|change)\s+(my\s+)?(account\s+)?(settings|profile|name|avatar|preferences)/i.test(lowerSpeech)) {
+    return { type: 'open_modal', modalName: 'settings', confidence: 'high', originalText: speech };
+  }
+
+  if (/^(open|show|check|view)\s+(the\s+)?(my\s+)?(notifications|upcoming\s+notifications|reminders|upcoming\s+tasks)/i.test(lowerSpeech)) {
+    return { type: 'open_modal', modalName: 'notifications', confidence: 'high', originalText: speech };
+  }
+
+  // 2.5 Check for Sound Toggle
+  if (/^(toggle|change|turn\s+(on|off)|mute|unmute)\s+(the\s+)?(notification\s+)?(sound|alarm|ring|bell)/i.test(lowerSpeech)) {
+    return { type: 'toggle_sound', confidence: 'high', originalText: speech };
+  }
+
+  // 2.8 Check for Calendar Scheduling
+  if (/^(schedule|book|create)\s+(an\s+)?(event|meeting|call|appointment)/i.test(lowerSpeech) || 
+      /^(add|put)\s+(.+)\s+(on|in)\s+(my\s+)?calendar/i.test(lowerSpeech)) {
+    
+    // Extract title
+    let title = "New Event";
+    const titleMatch = lowerSpeech.match(/(?:schedule|book|create)\s+(?:an?\s+)?(?:event|meeting|call|appointment)(?:\s+(?:called|titled|for|with)\s+(.+?))?(?:\s+(?:on|at|tomorrow|next|this|in)\b|$)/i);
+    if (titleMatch && titleMatch[1]) {
+      title = titleMatch[1].trim();
+    } else {
+      const addMatch = lowerSpeech.match(/^(?:add|put)\s+(.+?)\s+(?:on|in)\s+(?:my\s+)?calendar/i);
+      if (addMatch && addMatch[1]) {
+        title = addMatch[1].trim();
+      }
+    }
+
+    const dateTimeResult = detectDateTimeFromText(speech);
+    let startTime = dateTimeResult.detectedDate || new Date();
+    // Default duration to 1 hour
+    let endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    
+    // If no time is specified, make it all day for today/tomorrow
+    let allDay = false;
+    if (!dateTimeResult.detectedDate) {
+      allDay = true;
+    }
+
+    return { 
+      type: 'schedule_event', 
+      eventDetails: { title: title.charAt(0).toUpperCase() + title.slice(1), startTime, endTime, allDay },
+      confidence: 'high', 
+      originalText: speech 
+    };
+  }
+
+  // 2.9 Check for Note Creation
+  if (/^(take\s+a\s+note|create\s+a\s+note|note\s+down|jot\s+down|make\s+a\s+note)/i.test(lowerSpeech)) {
+    let content = "";
+    const contentMatch = lowerSpeech.match(/^(?:take\s+a\s+note|create\s+a\s+note|note\s+down|jot\s+down|make\s+a\s+note)(?:\s+(?:that|about|saying))?\s+(.+)$/i);
+    if (contentMatch && contentMatch[1]) {
+      content = contentMatch[1].trim();
+    }
+    
+    // Auto-generate title from first few words
+    const title = content.length > 0 
+      ? content.split(' ').slice(0, 4).join(' ') + (content.split(' ').length > 4 ? '...' : '')
+      : 'Quick Note';
+
+    return {
+      type: 'create_note',
+      noteDetails: { title, content: `<p>${content}</p>` },
+      confidence: 'high',
+      originalText: speech
+    };
   }
 
   // 3. Check for Filtering (including "search for today's task")
@@ -80,6 +164,21 @@ export function parseVoiceCommand(speech: string, categories: any[] = [], tasks:
       }
     }
     
+    // Check for "update the last task"
+    if (/last\s+(task|todo|item)/i.test(lowerSpeech)) {
+      const dateTimeResult = detectDateTimeFromText(speech);
+      if (dateTimeResult.detectedDate) {
+        return {
+          type: 'update',
+          targetReference: 'last',
+          targetCount: 1,
+          updates: { deadline: dateTimeResult.detectedDate },
+          confidence: 'high',
+          originalText: speech
+        };
+      }
+    }
+    
     // If a task was identified, or it strongly looks like an update
     if (targetTask) {
       const dateTimeResult = detectDateTimeFromText(speech);
@@ -108,8 +207,17 @@ export function parseVoiceCommand(speech: string, categories: any[] = [], tasks:
   }
 
   // 5. Check for Delete/Complete/Uncomplete
+  // First, check relative references like "last 3 tasks"
+  const deleteLastMatch = lowerSpeech.match(/^(?:delete|remove|cancel|erase|get rid of)\s+(?:the\s+)?last\s+(\d+)\s+(?:tasks|todos|items)/i);
+  if (deleteLastMatch) return { type: 'delete', targetReference: 'last', targetCount: parseInt(deleteLastMatch[1], 10), confidence: 'high', originalText: speech };
+  const deleteLastSingleMatch = lowerSpeech.match(/^(?:delete|remove|cancel|erase|get rid of)\s+(?:the\s+)?last\s+(?:task|todo|item)/i);
+  if (deleteLastSingleMatch) return { type: 'delete', targetReference: 'last', targetCount: 1, confidence: 'high', originalText: speech };
+
   const deleteMatch = lowerSpeech.match(/^(?:delete|remove|cancel|erase|get rid of)\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i);
   if (deleteMatch) return { type: 'delete', taskIdentifier: deleteMatch[1].trim(), confidence: 'high', originalText: speech };
+
+  const completeLastSingleMatch = lowerSpeech.match(/^(?:complete|finish|done|mark as done|mark as complete|i (?:finished|completed))\s+(?:the\s+)?last\s+(?:task|todo|item)/i);
+  if (completeLastSingleMatch) return { type: 'complete', targetReference: 'last', targetCount: 1, confidence: 'high', originalText: speech };
 
   const completeMatch = lowerSpeech.match(/^(?:complete|finish|done|mark as done|mark as complete|i (?:finished|completed))\s+(?:the\s+)?(?:task|todo|item)?\s*(?:called|named)?\s*(.+)/i);
   if (completeMatch) return { type: 'complete', taskIdentifier: completeMatch[1].trim(), confidence: 'high', originalText: speech };

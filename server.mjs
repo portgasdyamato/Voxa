@@ -68,8 +68,48 @@ const tasks = pgTable('tasks', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  categoryId: integer('category_id').references(() => categories.id, { onDelete: 'set null' }),
+  title: text('title').notNull(),
+  description: text('description'),
+  startTime: timestamp('start_time').notNull(),
+  endTime: timestamp('end_time').notNull(),
+  allDay: boolean('all_day').notNull().default(false),
+  location: text('location'),
+  meetingLink: text('meeting_link'),
+  recurringPattern: varchar('recurring_pattern', { enum: ['none', 'daily', 'weekly', 'monthly', 'yearly'] }).default('none'),
+  reminders: jsonb('reminders'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+const folders = pgTable("folders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 100 }).notNull(),
+  parentId: integer("parent_id"),
+  color: varchar("color", { length: 7 }).default("#6B7280"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+const notes = pgTable("notes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  folderId: integer("folder_id").references(() => folders.id, { onDelete: "set null" }),
+  title: varchar("title", { length: 255 }).notNull().default("Untitled Note"),
+  content: text("content"),
+  isPinned: boolean("is_pinned").notNull().default(false),
+  color: varchar("color", { length: 7 }),
+  tags: jsonb("tags"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool, { schema: { tasks, categories, users } });
+const db = drizzle(pool, { schema: { tasks, categories, users, events, folders, notes } });
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
@@ -261,4 +301,144 @@ app.listen(PORT, () => {
   console.log(`\n✅ VoXa Local API Server running on http://localhost:${PORT}`);
   console.log(`   Google OAuth callback: ${LOCAL_CALLBACK}`);
   console.log(`   👉 Register this in Google Cloud Console → Credentials → OAuth 2.0 → Authorized redirect URIs\n`);
+});
+// --- Events Routes ---
+app.get('/api/events', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const userEvents = await db.select().from(events).where(eq(events.userId, userId)).orderBy(desc(events.startTime));
+  res.json(userEvents);
+});
+
+app.post('/api/events', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const e = req.body;
+  const newEvent = await db.insert(events).values({
+    userId, 
+    title: e.title, 
+    description: e.description || null,
+    startTime: new Date(e.startTime),
+    endTime: new Date(e.endTime),
+    allDay: e.allDay || false,
+    categoryId: e.categoryId || null,
+    location: e.location || null,
+    meetingLink: e.meetingLink || null,
+    recurringPattern: e.recurringPattern || 'none',
+    reminders: e.reminders || null,
+  }).returning();
+  res.status(201).json(newEvent[0]);
+});
+
+app.patch('/api/events/:id', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const eventId = parseInt(req.params.id);
+  const updates = { ...req.body };
+  if (updates.startTime) updates.startTime = new Date(updates.startTime);
+  if (updates.endTime) updates.endTime = new Date(updates.endTime);
+  updates.updatedAt = new Date();
+
+  const updated = await db.update(events).set(updates)
+    .where(and(eq(events.id, eventId), eq(events.userId, userId))).returning();
+  if (!updated.length) return res.status(404).json({ error: 'Event not found' });
+  res.json(updated[0]);
+});
+
+app.delete('/api/events/:id', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const eventId = parseInt(req.params.id);
+  const deleted = await db.delete(events)
+    .where(and(eq(events.id, eventId), eq(events.userId, userId))).returning();
+  if (!deleted.length) return res.status(404).json({ error: 'Event not found' });
+  res.json({ success: true });
+});
+
+// --- Notes Routes ---
+app.get('/api/notes', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const userNotes = await db.select().from(notes).where(eq(notes.userId, userId)).orderBy(desc(notes.updatedAt));
+  res.json(userNotes);
+});
+
+app.post('/api/notes', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const n = req.body;
+  const newNote = await db.insert(notes).values({
+    userId,
+    title: n.title || 'Untitled Note',
+    content: n.content || '',
+    folderId: n.folderId || null,
+    isPinned: n.isPinned || false,
+    color: n.color || null,
+    tags: n.tags || []
+  }).returning();
+  res.status(201).json(newNote[0]);
+});
+
+app.patch('/api/notes/:id', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const noteId = parseInt(req.params.id);
+  const updates = { ...req.body, updatedAt: new Date() };
+
+  const updated = await db.update(notes).set(updates)
+    .where(and(eq(notes.id, noteId), eq(notes.userId, userId))).returning();
+  if (!updated.length) return res.status(404).json({ error: 'Note not found' });
+  res.json(updated[0]);
+});
+
+app.delete('/api/notes/:id', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const noteId = parseInt(req.params.id);
+  const deleted = await db.delete(notes)
+    .where(and(eq(notes.id, noteId), eq(notes.userId, userId))).returning();
+  if (!deleted.length) return res.status(404).json({ error: 'Note not found' });
+  res.json({ success: true });
+});
+
+app.post("/api/ai/format", async (req, res) => {
+  const { content, action } = req.body;
+  let newContent = content;
+  if (action === "summarize") {
+    newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>Here is a quick summary of your notes.<ul><li>Action item extracted</li><li>Key point highlighted</li></ul></div>` + content;
+  } else if (action === "polish") {
+    newContent = `<p>✨ <em>Polished Note:</em></p>` + content;
+  }
+  res.status(200).json({ content: newContent });
+});
+
+// --- Folders Routes ---
+app.get('/api/folders', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const userFolders = await db.select().from(folders).where(eq(folders.userId, userId)).orderBy(desc(folders.createdAt));
+  res.json(userFolders);
+});
+
+app.post('/api/folders', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const f = req.body;
+  const newFolder = await db.insert(folders).values({
+    userId,
+    name: f.name,
+    parentId: f.parentId || null,
+    color: f.color || '#6B7280'
+  }).returning();
+  res.status(201).json(newFolder[0]);
+});
+
+app.patch('/api/folders/:id', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const folderId = parseInt(req.params.id);
+  const updates = { ...req.body, updatedAt: new Date() };
+
+  const updated = await db.update(folders).set(updates)
+    .where(and(eq(folders.id, folderId), eq(folders.userId, userId))).returning();
+  if (!updated.length) return res.status(404).json({ error: 'Folder not found' });
+  res.json(updated[0]);
+});
+
+app.delete('/api/folders/:id', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const folderId = parseInt(req.params.id);
+  const deleted = await db.delete(folders)
+    .where(and(eq(folders.id, folderId), eq(folders.userId, userId))).returning();
+  if (!deleted.length) return res.status(404).json({ error: 'Folder not found' });
+  res.json({ success: true });
 });

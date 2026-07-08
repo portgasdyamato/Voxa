@@ -1,7 +1,7 @@
 import { useLocation } from 'wouter';
 import { useState, useRef, useEffect } from 'react';
 import { 
-  BarChart3, Bell, LayoutGrid, Zap, Search, Mic, X, ArrowRight
+  BarChart3, Bell, LayoutGrid, Zap, Search, Mic, X, ArrowRight, Calendar as CalendarIcon, FileText
 } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface NavigationProps {
-  activeTab: 'home' | 'stats';
-  onTabChange: (tab: 'home' | 'stats') => void;
+  activeTab: 'home' | 'stats' | 'calendar' | 'notes';
+  onTabChange: (tab: 'home' | 'stats' | 'calendar' | 'notes') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -29,14 +29,21 @@ interface NavigationProps {
 export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange }: NavigationProps) {
   const [location, setLocation] = useLocation();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { data: tasks = [] } = useTasks();
+
+  useEffect(() => {
+    const handleOpenNotifications = () => setIsNotificationsOpen(true);
+    window.addEventListener('voxa-open-notifications', handleOpenNotifications);
+    return () => window.removeEventListener('voxa-open-notifications', handleOpenNotifications);
+  }, []);
 
   const upcomingTasks = tasks
     .filter(t => !t.completed && t.dueDate && isAfter(new Date(t.dueDate), new Date()))
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
     .slice(0, 3);
 
-  const handleNavigation = (path: string, tab: 'home' | 'stats') => {
+  const handleNavigation = (path: string, tab: 'home' | 'stats' | 'calendar' | 'notes') => {
     setLocation(path);
     onTabChange(tab);
   };
@@ -44,6 +51,8 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
   // Ref-based sliding pill for bottom nav
   const tabs = [
     { id: 'home' as const, path: '/home', label: 'Workspace', icon: <LayoutGrid className="w-4 h-4" /> },
+    { id: 'calendar' as const, path: '/calendar', label: 'Calendar', icon: <CalendarIcon className="w-4 h-4" /> },
+    { id: 'notes' as const, path: '/notes', label: 'Notes', icon: <FileText className="w-4 h-4" /> },
     { id: 'stats' as const, path: '/stats', label: 'Performance', icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
@@ -107,7 +116,7 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
             </div>
 
             <div className="hidden sm:flex items-center gap-2">
-               <DropdownMenu>
+               <DropdownMenu open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative hover:bg-white/5 group transition-all">
                       <Bell className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />

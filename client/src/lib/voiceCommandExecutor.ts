@@ -4,6 +4,7 @@
 import { parseVoiceCommand, findTaskByIdentifier } from '@/lib/voiceCommands';
 import { parseTaskFromSpeech } from '@/lib/dateDetection';
 import { parseCategoryFromText } from '@/lib/categoryDetection';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export async function executeVoiceCommand(
   transcript: string,
@@ -80,6 +81,17 @@ export async function executeVoiceCommand(
       }
 
       case 'delete': {
+        if (command.targetReference === 'last') {
+          const count = command.targetCount || 1;
+          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
+          const targetTasks = sorted.slice(0, count);
+          if (!targetTasks.length) return;
+          for (const t of targetTasks) await deleteTask.mutateAsync(t.id);
+          toast({ title: "Tasks Deleted", description: `Deleted last ${count} task(s)` });
+          if (onSuccess) onSuccess();
+          return;
+        }
+
         if (!command.taskIdentifier) {
           toast({ title: "Error", description: "Please specify which task to delete.", variant: "destructive" });
           return;
@@ -104,6 +116,17 @@ export async function executeVoiceCommand(
       }
 
       case 'complete': {
+        if (command.targetReference === 'last') {
+          const count = command.targetCount || 1;
+          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
+          const targetTasks = sorted.slice(0, count);
+          if (!targetTasks.length) return;
+          for (const t of targetTasks) await updateTask.mutateAsync({ id: t.id, updates: { completed: true } });
+          toast({ title: "Tasks Completed", description: `Completed last ${count} task(s)` });
+          if (onSuccess) onSuccess();
+          return;
+        }
+
         if (!command.taskIdentifier) {
           toast({ title: "Error", description: "Please specify which task to complete.", variant: "destructive" });
           return;
@@ -132,6 +155,17 @@ export async function executeVoiceCommand(
       }
 
       case 'uncomplete': {
+        if (command.targetReference === 'last') {
+          const count = command.targetCount || 1;
+          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
+          const targetTasks = sorted.slice(0, count);
+          if (!targetTasks.length) return;
+          for (const t of targetTasks) await updateTask.mutateAsync({ id: t.id, updates: { completed: false } });
+          toast({ title: "Tasks Reopened", description: `Reopened last ${count} task(s)` });
+          if (onSuccess) onSuccess();
+          return;
+        }
+
         if (!command.taskIdentifier) {
           toast({ title: "Error", description: "Please specify which task to reopen.", variant: "destructive" });
           return;
@@ -160,6 +194,20 @@ export async function executeVoiceCommand(
       }
 
       case 'update': {
+        if (command.targetReference === 'last') {
+          const count = command.targetCount || 1;
+          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
+          const targetTasks = sorted.slice(0, count);
+          if (!targetTasks.length) return;
+          const updates: any = {};
+          if (command.updates?.title) updates.title = command.updates.title;
+          if (command.updates?.deadline) updates.dueDate = command.updates.deadline.toISOString();
+          for (const t of targetTasks) await updateTask.mutateAsync({ id: t.id, updates });
+          toast({ title: "Tasks Updated", description: `Updated last ${count} task(s)` });
+          if (onSuccess) onSuccess();
+          return;
+        }
+
         if (!command.taskIdentifier || (!command.updates?.title && !command.updates?.deadline)) {
           toast({ title: "Error", description: "Please specify the task and what to change (name or time).", variant: "destructive" });
           return;
@@ -190,6 +238,56 @@ export async function executeVoiceCommand(
             ? `Renamed to "${command.updates.title}"` 
             : `Rescheduled for ${command.updates?.deadline?.toLocaleString()}`,
         });
+        break;
+      }
+
+      case 'schedule_event': {
+        if (!command.eventDetails) {
+          toast({ title: "Error", description: "Missing event details.", variant: "destructive" });
+          return;
+        }
+        try {
+          await apiRequest('POST', '/api/events', {
+            title: command.eventDetails.title,
+            startTime: command.eventDetails.startTime.toISOString(),
+            endTime: command.eventDetails.endTime.toISOString(),
+            allDay: command.eventDetails.allDay || false,
+          });
+          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+          toast({
+            title: "Event Scheduled",
+            description: `Scheduled "${command.eventDetails.title}" for ${command.eventDetails.startTime.toLocaleDateString()}`,
+          });
+          // Dispatch a navigation event to calendar to show the newly added event
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/calendar' }));
+          if (onSuccess) onSuccess();
+        } catch (e: any) {
+          toast({ title: "Failed to schedule", description: e.message, variant: "destructive" });
+        }
+        break;
+      }
+
+      case 'create_note': {
+        if (!command.noteDetails) {
+          toast({ title: "Error", description: "Missing note details.", variant: "destructive" });
+          return;
+        }
+        try {
+          await apiRequest('POST', '/api/notes', {
+            title: command.noteDetails.title,
+            content: command.noteDetails.content,
+            isPinned: false
+          });
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({
+            title: "Note Created",
+            description: `Saved note: "${command.noteDetails.title}"`,
+          });
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/notes' }));
+          if (onSuccess) onSuccess();
+        } catch (e: any) {
+          toast({ title: "Failed to create note", description: e.message, variant: "destructive" });
+        }
         break;
       }
 
@@ -239,10 +337,33 @@ export async function executeVoiceCommand(
 
       case 'open_modal': {
         if (!command.modalName) return;
-        window.dispatchEvent(new CustomEvent('voxa-open-modal', { detail: command.modalName }));
+        
+        if (command.modalName === 'settings') {
+          window.dispatchEvent(new CustomEvent('voxa-open-profile-settings'));
+          toast({ title: "Settings", description: "Opening account settings..." });
+        } else if (command.modalName === 'notifications') {
+          window.dispatchEvent(new CustomEvent('voxa-open-notifications'));
+          toast({ title: "Notifications", description: "Opening notifications..." });
+        } else {
+          window.dispatchEvent(new CustomEvent('voxa-open-modal', { detail: command.modalName }));
+          toast({ title: "Opening", description: `Opening New Task dialog...` });
+        }
+        break;
+      }
+
+      case 'toggle_sound': {
+        const current = localStorage.getItem('voxa_alarm_sound') !== 'false';
+        const nextState = !current;
+        localStorage.setItem('voxa_alarm_sound', nextState.toString());
+        window.dispatchEvent(new CustomEvent('voxa-toggle-sound', { detail: nextState }));
+        
+        // Update DOM element for dropdown if it exists
+        const el = document.getElementById('alarm-sound-status');
+        if (el) el.textContent = nextState ? 'On' : 'Off';
+        
         toast({
-          title: "Opening",
-          description: `Opening New Task dialog...`,
+          title: "Sound Preferences",
+          description: `Alarm sound is now ${nextState ? 'ON' : 'OFF'}`,
         });
         break;
       }
