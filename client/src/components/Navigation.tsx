@@ -99,7 +99,7 @@ export function Navigation({ activeTab, onTabChange, activeWorkspaceTab, setActi
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search workspaces..."
-                className="h-10 bg-transparent border-none pl-12 pr-4 text-sm font-medium focus:ring-0 placeholder:text-white/20 text-white w-full shadow-none"
+                className="h-10 bg-transparent border-none pl-12 pr-4 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-white/20 text-white w-full shadow-none"
               />
             </div>
             
@@ -204,7 +204,7 @@ export function Navigation({ activeTab, onTabChange, activeWorkspaceTab, setActi
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder="Search Systems..."
-                  className="h-12 rounded-xl bg-white/5 border-white/10 pl-11 text-sm focus:ring-0 focus:border-white/20 text-white"
+                  className="h-12 rounded-xl bg-white/5 border-white/10 pl-11 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-white/20 text-white"
                   autoFocus
                 />
               </div>
