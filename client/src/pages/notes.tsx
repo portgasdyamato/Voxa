@@ -679,7 +679,18 @@ export default function NotesPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-white/20">
+          <div className="flex-1 flex flex-col items-center justify-center text-white/20 relative">
+            {!isSidebarOpen && (
+              <Button 
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(true)}
+                className="absolute top-6 left-6 text-white/40 hover:text-white hover:bg-white/10"
+                title="Expand Sidebar"
+              >
+                <PanelLeft className="w-5 h-5" />
+              </Button>
+            )}
             <FileEdit className="w-16 h-16 mb-4 opacity-20" />
             <p>Select a note or create a new one to start writing.</p>
           </div>
