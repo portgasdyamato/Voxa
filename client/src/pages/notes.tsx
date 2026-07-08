@@ -91,9 +91,10 @@ export default function NotesPage() {
   });
 
   const [isProcessingAI, setIsProcessingAI] = useState(false);
-  const handleAIAction = async (action: 'summarize' | 'polish') => {
+  const handleAIAction = async (action: 'summarize' | 'polish' | 'task') => {
     if (!editor || !selectedNoteId) return;
     setIsProcessingAI(true);
+    toast({ title: `Processing ${action}...`, description: "Applying AI format to your note." });
     try {
       const res = await apiRequest('POST', '/api/ai/format', {
         content: editor.getHTML(),
@@ -107,6 +108,7 @@ export default function NotesPage() {
       });
     } catch (e) {
       console.error("AI processing failed", e);
+      toast({ title: "AI Error", description: "Failed to process your request.", variant: "destructive" });
     }
     setIsProcessingAI(false);
   };
@@ -231,9 +233,20 @@ export default function NotesPage() {
           >
             <div className="p-6 pb-4 w-80">
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-              Notes
-            </h1>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="text-white/40 hover:text-white hover:bg-white/10 -ml-2"
+                    title="Collapse Sidebar"
+                  >
+                    <PanelLeft className="w-5 h-5" />
+                  </Button>
+                  <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                    Notes
+                  </h1>
+                </div>
             <Button 
               onClick={handleCreateNote}
               size="icon" 
@@ -361,13 +374,26 @@ export default function NotesPage() {
         {selectedNoteId ? (
           <>
             <div className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-transparent sticky top-0 z-10">
-              <input
-                type="text"
-                value={selectedNote?.title || ''}
-                onChange={(e) => updateNoteMutation.mutate({ id: selectedNoteId, updates: { title: e.target.value }})}
-                className="bg-transparent border-none text-2xl font-semibold text-white focus:outline-none focus:ring-0 p-0 placeholder:text-white/20"
-                placeholder="Note Title"
-              />
+              <div className="flex items-center gap-3">
+                {!isSidebarOpen && (
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="text-white/40 hover:text-white hover:bg-white/10 -ml-4"
+                    title="Expand Sidebar"
+                  >
+                    <PanelLeft className="w-5 h-5" />
+                  </Button>
+                )}
+                <input
+                  type="text"
+                  value={selectedNote?.title || ''}
+                  onChange={(e) => updateNoteMutation.mutate({ id: selectedNoteId, updates: { title: e.target.value }})}
+                  className="bg-transparent border-none text-2xl font-semibold text-white focus:outline-none focus:ring-0 p-0 placeholder:text-white/20"
+                  placeholder="Note Title"
+                />
+              </div>
               <div className="flex items-center gap-2">
                 <Button 
                   variant="ghost" 
@@ -401,16 +427,6 @@ export default function NotesPage() {
               
               {/* Toolbar */}
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5 flex-wrap">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="text-white/40 hover:text-white hover:bg-white/10 mr-2"
-                  title="Toggle Sidebar"
-                >
-                  <PanelLeft className="w-5 h-5" />
-                </Button>
-                
                 <Button
                   variant="outline"
                   size="sm"
