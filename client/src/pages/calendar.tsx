@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { format } from 'date-fns';
 
 export default function CalendarPage() {
   const queryClient = useQueryClient();
@@ -215,14 +216,26 @@ export default function CalendarPage() {
               font-weight: 600 !important;
             }
             .fc-event {
-              border-radius: 6px;
-              padding: 2px 4px;
-              font-size: 0.8rem;
-              transition: transform 0.2s;
+              border-radius: 8px !important;
+              padding: 4px 8px !important;
+              font-size: 0.85rem !important;
+              font-weight: 500 !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.1)) !important;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+              backdrop-filter: blur(4px) !important;
+              transition: transform 0.2s, box-shadow 0.2s !important;
               cursor: pointer;
+              margin-bottom: 2px !important;
             }
             .fc-event:hover {
-              transform: scale(1.02);
+              transform: translateY(-1px) scale(1.02);
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+              border-color: rgba(255, 255, 255, 0.2) !important;
+            }
+            .fc-event-title {
+              font-weight: 600 !important;
+              letter-spacing: 0.3px;
             }
             .fc-day-today {
               background: rgba(255,255,255,0.03) !important;
@@ -268,44 +281,67 @@ export default function CalendarPage() {
             onClick={() => setSelectedEvent(null)}
           >
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-[#0c0c0e]/95 backdrop-blur-xl border border-white/10 rounded-[24px] w-full max-w-md overflow-hidden shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center p-6 border-b border-white/5">
-                <h2 className="text-xl font-semibold text-white">Event Details</h2>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedEvent(null)} className="text-white/40 hover:text-white">
+              {/* Decorative top gradient */}
+              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-500/20 to-transparent pointer-events-none" />
+
+              <div className="flex justify-between items-start p-6 border-b border-white/5 relative z-10">
+                <div>
+                  <h2 className="text-sm font-medium text-blue-400 uppercase tracking-wider mb-1">Event Details</h2>
+                  <h3 className="text-3xl font-bold text-white tracking-tight">{selectedEvent.title}</h3>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setSelectedEvent(null)} className="text-white/40 hover:text-white hover:bg-white/5 rounded-full bg-black/20 backdrop-blur-md">
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              <div className="p-6 space-y-4 text-white">
-                <div>
-                  <h3 className="text-2xl font-bold mb-1">{selectedEvent.title}</h3>
-                  <p className="text-white/60 flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4" />
-                    {new Date(selectedEvent.startTime).toLocaleString()} - {new Date(selectedEvent.endTime).toLocaleString()}
-                  </p>
+              
+              <div className="p-6 space-y-6 relative z-10">
+                <div className="flex items-center gap-4 bg-white/[0.03] p-4 rounded-2xl border border-white/5">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">
+                      {format(new Date(selectedEvent.startTime), "EEEE, MMMM d")}
+                    </p>
+                    <p className="text-white/60 text-sm mt-0.5">
+                      {format(new Date(selectedEvent.startTime), "h:mm a")} – {format(new Date(selectedEvent.endTime), "h:mm a")}
+                    </p>
+                  </div>
                 </div>
+
                 {selectedEvent.description && (
                   <div>
-                    <h4 className="text-sm text-white/40 mb-1">Description</h4>
-                    <p className="text-white/80">{selectedEvent.description}</p>
+                    <h4 className="text-sm font-medium text-white/40 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <AlignLeft className="w-4 h-4" /> Description
+                    </h4>
+                    <p className="text-white/80 leading-relaxed bg-white/[0.02] p-4 rounded-2xl border border-white/5">
+                      {selectedEvent.description}
+                    </p>
                   </div>
                 )}
+                
                 {selectedEvent.guests && selectedEvent.guests.length > 0 && (
                   <div>
-                    <h4 className="text-sm text-white/40 mb-2">Guests</h4>
-                    <div className="flex flex-col gap-2">
+                    <h4 className="text-sm font-medium text-white/40 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <Users className="w-4 h-4" /> Guests ({selectedEvent.guests.length})
+                    </h4>
+                    <div className="flex flex-col gap-3">
                       {selectedEvent.guests.map((g: any, i: number) => (
-                        <div key={i} className="flex items-center gap-2 bg-white/5 rounded-lg p-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-                            <User className="w-4 h-4" />
+                        <div key={i} className="flex items-center gap-4 bg-white/[0.03] rounded-2xl p-3 border border-white/5 hover:bg-white/[0.06] transition-colors">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                            <span className="text-white font-medium text-sm">
+                              {g.name ? g.name.charAt(0).toUpperCase() : g.email.charAt(0).toUpperCase()}
+                            </span>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium">{g.name}</p>
-                            <p className="text-xs text-white/50">{g.email}</p>
+                          <div className="overflow-hidden">
+                            <p className="text-sm font-medium text-white truncate">{g.name}</p>
+                            <p className="text-xs text-white/50 truncate">{g.email}</p>
                           </div>
                         </div>
                       ))}
