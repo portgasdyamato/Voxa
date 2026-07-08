@@ -810,24 +810,36 @@ async function handler(req, res) {
       const { content, action } = req.body;
       let newContent = content;
       
-      const rawText = (content || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
-      const sentences = rawText.match(/[^.!?]+[.!?]+/g) || (rawText ? [rawText] : ["No text provided"]);
+      // Extract pure text for mock processing, preserving newlines
+      const rawText = (content || '').replace(/<br[^>]*>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]*>?/gm, '').trim();
+      
+      // Split by newlines or punctuation
+      const sentences = rawText.split(/(?:\n|(?<=[.!?])\s+)/).map(s => s.trim()).filter(s => s.length > 0) || ["No text provided"];
 
       if (action === "summarize") {
-        const summaryPoints = sentences.slice(0, 3).map(s => `<li>${s.trim()}</li>`).join('');
-        newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/><ul>${summaryPoints}</ul></div>` + content;
+        const summaryPoints = sentences.slice(0, 3).map(s => `<li><p>${s}</p></li>`).join('');
+        newContent = `
+          <h2>🤖 AI Summary</h2>
+          <ul>${summaryPoints}</ul>
+          <hr>
+        ` + content;
       } else if (action === "polish") {
         const polished = sentences.map(s => {
-          let t = s.trim();
-          return t.charAt(0).toUpperCase() + t.slice(1) + (t.match(/[.!?]$/) ? '' : '.');
+          return s.charAt(0).toUpperCase() + s.slice(1) + (s.match(/[.!?]$/) ? '' : '.');
         }).join(' ');
-        newContent = `<p>✨ <em>Polished Note:</em></p><p>${polished}</p>`;
-      } else if (action === "task") {
-        const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s.trim()}</p></li>`).join('');
         newContent = `
+          <h2>✨ Polished Note</h2>
+          <p>${polished}</p>
+          <hr>
+        `;
+      } else if (action === "task") {
+        const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s}</p></li>`).join('');
+        newContent = `
+          <h2>📋 Extracted Tasks</h2>
           <ul data-type="taskList">
             ${tasks}
           </ul>
+          <hr>
         ` + content;
       }
       res.status(200).json({ content: newContent });

@@ -668,6 +668,10 @@ export default function NotesPage() {
                   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
                   transition: all 0.2s ease;
                 }
+                .audio-node-view.ProseMirror-selectednode {
+                  outline: none;
+                  box-shadow: none;
+                }
                 .ProseMirror-selectednode audio {
                   opacity: 0.8;
                 }
