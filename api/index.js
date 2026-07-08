@@ -758,6 +758,35 @@ async function handler(req, res) {
       return;
     }
 
+    if (url.pathname === "/api/test-email" && req.method === "GET") {
+      const email = url.searchParams.get("email");
+      const resendKey = process.env.RESEND_API_KEY;
+      
+      if (!resendKey) {
+        res.status(200).json({ success: false, error: "RESEND_API_KEY is totally missing in Vercel. Did you redeploy after adding it?" });
+        return;
+      }
+      
+      if (!email) {
+        res.status(200).json({ success: false, error: "Please provide an email query param, e.g. /api/test-email?email=you@example.com" });
+        return;
+      }
+
+      try {
+        const resend = new Resend(resendKey);
+        const data = await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: email,
+          subject: 'Vercel Resend Debug Test',
+          html: '<p>If you see this, Resend is working perfectly on Vercel!</p>'
+        });
+        res.status(200).json({ success: true, data });
+      } catch (err) {
+        res.status(200).json({ success: false, error: err.message, name: err.name, fullError: err });
+      }
+      return;
+    }
+
     if (url.pathname.startsWith("/api/events/") && (req.method === "PATCH" || req.method === "PUT")) {
       const eventId = parseInt(url.pathname.split("/")[3]);
       let updates = req.body;
