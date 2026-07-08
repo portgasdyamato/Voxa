@@ -13,8 +13,6 @@ import Image from '@tiptap/extension-image';
 import { AudioExtension } from '@/lib/AudioExtension';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRef, useState } from 'react';
-import { Sparkles, FileText as FileTextIcon, ListTodo } from 'lucide-react';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
@@ -26,7 +24,7 @@ export default function NotesPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   
-  const { data: notes = [] } = useQuery({ queryKey: ['/api/notes'] });
+  const { data: notes = [] as any[] } = useQuery({ queryKey: ['/api/notes'] });
   const { data: folders = [] } = useQuery({ queryKey: ['/api/folders'] });
 
   const createNoteMutation = useMutation({
@@ -78,7 +76,7 @@ export default function NotesPage() {
     setIsProcessingAI(false);
   };
 
-  const selectedNote = notes.find((n: any) => n.id === selectedNoteId);
+  const selectedNote = (notes as any[]).find((n: any) => n.id === selectedNoteId);
 
   const handleCreateNote = () => {
     createNoteMutation.mutate({
@@ -142,7 +140,7 @@ export default function NotesPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {notes
+          {(notes as any[])
             .filter((n: any) => n.title.toLowerCase().includes(searchQuery.toLowerCase()))
             .map((note: any) => (
             <motion.div

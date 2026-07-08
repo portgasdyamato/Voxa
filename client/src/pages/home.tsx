@@ -15,15 +15,16 @@ import NotesPage from '@/pages/notes';
 
 interface HomeProps {
   searchQuery?: string;
+  activeWorkspaceTab?: 'tasks' | 'calendar' | 'notes';
+  setActiveWorkspaceTab?: (tab: 'tasks' | 'calendar' | 'notes') => void;
 }
 
-export default function Home({ searchQuery = '' }: HomeProps) {
+export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', setActiveWorkspaceTab = () => {} }: any) {
   const { data: tasks, isLoading: tasksLoading } = useTasks();
   const { data: categories } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'tasks' | 'calendar' | 'notes'>('tasks');
 
   useEffect(() => {
     const handleOpenModal = (e: CustomEvent) => {
@@ -98,30 +99,8 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-12 md:pt-20 pb-64">
-      {/* Workspace Tabs */}
-      <div className="flex items-center justify-center mb-12">
-        <div className="flex bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/10 rounded-full p-1.5 shadow-xl">
-          <button
-            onClick={() => setActiveWorkspaceTab('tasks')}
-            className={cn("px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300", activeWorkspaceTab === 'tasks' ? "bg-white/15 text-white shadow-md" : "text-white/40 hover:text-white/80 hover:bg-white/5")}
-          >
-            Tasks
-          </button>
-          <button
-            onClick={() => setActiveWorkspaceTab('calendar')}
-            className={cn("px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300", activeWorkspaceTab === 'calendar' ? "bg-white/15 text-white shadow-md" : "text-white/40 hover:text-white/80 hover:bg-white/5")}
-          >
-            Calendar
-          </button>
-          <button
-            onClick={() => setActiveWorkspaceTab('notes')}
-            className={cn("px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300", activeWorkspaceTab === 'notes' ? "bg-white/15 text-white shadow-md" : "text-white/40 hover:text-white/80 hover:bg-white/5")}
-          >
-            Notes
-          </button>
-        </div>
-      </div>
+    <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-4 pb-64">
+      {/* Workspace Area */}
 
       {activeWorkspaceTab === 'calendar' && (
         <div className="-mx-6 md:-mx-12 lg:-mx-24 -mt-8">

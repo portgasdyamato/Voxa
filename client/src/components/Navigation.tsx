@@ -22,11 +22,13 @@ import {
 interface NavigationProps {
   activeTab: 'home' | 'stats';
   onTabChange: (tab: 'home' | 'stats') => void;
+  activeWorkspaceTab: 'tasks' | 'calendar' | 'notes';
+  setActiveWorkspaceTab: (tab: 'tasks' | 'calendar' | 'notes') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
 
-export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange }: NavigationProps) {
+export function Navigation({ activeTab, onTabChange, activeWorkspaceTab, setActiveWorkspaceTab, searchQuery, onSearchChange }: NavigationProps) {
   const [location, setLocation] = useLocation();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -89,15 +91,43 @@ export function Navigation({ activeTab, onTabChange, searchQuery, onSearchChange
             <span className="text-xl font-bold tracking-tight text-white/90">VoXa</span>
           </motion.div>
 
-          {/* Elite Glass Search Bar */}
-          <div className="flex-1 max-w-xl relative group hidden md:block pointer-events-auto">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-white/40 transition-colors duration-500" />
-            <Input 
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search workspaces..."
-              className="h-11 rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] pl-14 pr-10 text-sm font-medium focus:bg-white/[0.06] focus:ring-0 focus:border-white/10 transition-all duration-500 placeholder:text-white/10 text-white"
-            />
+          {/* Elite Glass Combined Control Panel */}
+          <div className="flex-1 max-w-2xl relative group hidden md:flex items-center pointer-events-auto bg-white/[0.08] backdrop-blur-[40px] border border-white/[0.22] rounded-[3rem] p-1.5 shadow-[0_40px_80px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)]">
+            <div className="flex-1 relative flex items-center">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-white/60 transition-colors" />
+              <Input 
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search workspaces..."
+                className="h-10 bg-transparent border-none pl-12 pr-4 text-sm font-medium focus:ring-0 placeholder:text-white/20 text-white w-full shadow-none"
+              />
+            </div>
+            
+            {activeTab === 'home' && (
+              <>
+                <div className="w-px h-6 bg-white/10 mx-2" />
+                <div className="flex items-center gap-1 pr-1 shrink-0">
+                  <button 
+                    onClick={() => setActiveWorkspaceTab('tasks')} 
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeWorkspaceTab === 'tasks' ? 'bg-white/20 text-white shadow-md' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}
+                  >
+                    Tasks
+                  </button>
+                  <button 
+                    onClick={() => setActiveWorkspaceTab('calendar')} 
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeWorkspaceTab === 'calendar' ? 'bg-white/20 text-white shadow-md' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}
+                  >
+                    Calendar
+                  </button>
+                  <button 
+                    onClick={() => setActiveWorkspaceTab('notes')} 
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeWorkspaceTab === 'notes' ? 'bg-white/20 text-white shadow-md' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}
+                  >
+                    Notes
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4 md:gap-8 shrink-0 pointer-events-auto">

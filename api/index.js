@@ -749,9 +749,7 @@ async function handler(req, res) {
         title: n.title || 'Untitled Note',
         content: n.content || '',
         folderId: n.folderId || null,
-        isPinned: n.isPinned || false,
-        color: n.color || null,
-        tags: n.tags || []
+        isPinned: n.isPinned || false
       }).returning();
       res.status(201).json(newNote[0]);
       return;

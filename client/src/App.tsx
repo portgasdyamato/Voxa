@@ -20,7 +20,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Stats from "@/pages/stats";
 
-function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
+function ProtectedLayout({ children, activeTab, setActiveTab, activeWorkspaceTab, setActiveWorkspaceTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
   const { data: tasks = [] } = useTasks();
   useDeadlineNotifications(tasks);
 
@@ -31,6 +31,8 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
       <Navigation 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
+        activeWorkspaceTab={activeWorkspaceTab}
+        setActiveWorkspaceTab={setActiveWorkspaceTab}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
@@ -72,6 +74,7 @@ function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'tasks' | 'calendar' | 'notes'>('tasks');
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -135,25 +138,28 @@ function Router() {
         ) : (
           <ProtectedLayout 
             activeTab={activeTab} setActiveTab={setActiveTab}
+            activeWorkspaceTab={activeWorkspaceTab} setActiveWorkspaceTab={setActiveWorkspaceTab}
             searchQuery={searchQuery} setSearchQuery={setSearchQuery}
             voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
           >
-            <Home searchQuery={searchQuery} />
+            <Home searchQuery={searchQuery} activeWorkspaceTab={activeWorkspaceTab} setActiveWorkspaceTab={setActiveWorkspaceTab} />
           </ProtectedLayout>
         )}
       </Route>
       <Route path="/home">
          <ProtectedLayout 
             activeTab={activeTab} setActiveTab={setActiveTab}
+            activeWorkspaceTab={activeWorkspaceTab} setActiveWorkspaceTab={setActiveWorkspaceTab}
             searchQuery={searchQuery} setSearchQuery={setSearchQuery}
             voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
          >
-            <Home searchQuery={searchQuery} />
+            <Home searchQuery={searchQuery} activeWorkspaceTab={activeWorkspaceTab} setActiveWorkspaceTab={setActiveWorkspaceTab} />
          </ProtectedLayout>
       </Route>
       <Route path="/stats">
          <ProtectedLayout
             activeTab={activeTab} setActiveTab={setActiveTab}
+            activeWorkspaceTab={activeWorkspaceTab} setActiveWorkspaceTab={setActiveWorkspaceTab}
             searchQuery={searchQuery} setSearchQuery={setSearchQuery}
             voiceModalOpen={voiceModalOpen} setVoiceModalOpen={setVoiceModalOpen}
          >

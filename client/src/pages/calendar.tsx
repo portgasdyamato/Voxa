@@ -29,7 +29,7 @@ export default function CalendarPage() {
   });
 
   // Fetch Events
-  const { data: events = [], isLoading } = useQuery({
+  const { data: events = [] as any[] } = useQuery({
     queryKey: ['/api/events'],
   });
 
@@ -56,7 +56,7 @@ export default function CalendarPage() {
 
   const handleExportICS = () => {
     let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//VoXa//EN\n";
-    events.forEach((event: any) => {
+    (events as any[]).forEach((event: any) => {
       const dtStart = new Date(event.startTime).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       const dtEnd = new Date(event.endTime).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       icsContent += "BEGIN:VEVENT\n";
@@ -108,7 +108,7 @@ export default function CalendarPage() {
     });
   };
 
-  const formattedEvents = events.map((e: any) => ({
+  const formattedEvents = (events as any[]).map((e: any) => ({
     id: String(e.id),
     title: e.title,
     start: e.startTime,

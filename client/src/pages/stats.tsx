@@ -279,6 +279,7 @@ function KpiCard({
   icon: React.ReactNode;
   sub?: string;
   delay?: number;
+  highlight?: boolean;
 }) {
   return (
     <motion.div

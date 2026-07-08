@@ -27,12 +27,12 @@ export const AudioExtension = Node.create({
 
   addCommands() {
     return {
-      setAudio: (options: { src: string }) => ({ commands }) => {
+      setAudio: (options: { src: string }) => ({ commands }: any) => {
         return commands.insertContent({
           type: this.name,
           attrs: options,
         });
       },
-    };
+    } as any;
   },
 });
