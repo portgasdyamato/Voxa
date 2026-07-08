@@ -132,8 +132,8 @@ export default function CalendarPage() {
       start: selectInfo.start,
       end: selectInfo.end
     });
-    form.setValue('startTime', selectInfo.start.toISOString().slice(0, 16));
-    form.setValue('endTime', selectInfo.end.toISOString().slice(0, 16));
+    form.setValue('startTime', format(selectInfo.start, "yyyy-MM-dd'T'HH:mm"));
+    form.setValue('endTime', format(selectInfo.end, "yyyy-MM-dd'T'HH:mm"));
     form.setValue('allDay', selectInfo.allDay);
     setIsModalOpen(true);
   };
