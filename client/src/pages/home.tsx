@@ -103,13 +103,13 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
       {/* Workspace Area */}
 
       {activeWorkspaceTab === 'calendar' && (
-        <div className="-mx-6 md:-mx-12 lg:-mx-24 -mt-8">
+        <div className="-mx-6 md:-mx-12 lg:-mx-24 mt-4">
           <CalendarPage />
         </div>
       )}
 
       {activeWorkspaceTab === 'notes' && (
-        <div className="-mx-6 md:-mx-12 lg:-mx-24 -mt-8">
+        <div className="-mx-6 md:-mx-12 lg:-mx-24 mt-4">
           <NotesPage />
         </div>
       )}
