@@ -100,10 +100,8 @@ const notes = pgTable("notes", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   folderId: integer("folder_id").references(() => folders.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull().default("Untitled Note"),
-  content: text("content"),
+  content: jsonb("content"),
   isPinned: boolean("is_pinned").notNull().default(false),
-  color: varchar("color", { length: 7 }),
-  tags: jsonb("tags"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
 });
