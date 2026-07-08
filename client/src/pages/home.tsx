@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { TaskCard } from '@/components/TaskCard';
@@ -21,6 +21,29 @@ export default function Home({ searchQuery = '' }: HomeProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
+
+  useEffect(() => {
+    const handleOpenModal = (e: CustomEvent) => {
+      if (e.detail === 'new_task') {
+        setIsModalOpen(true);
+      }
+    };
+    
+    const handleSetFilter = (e: CustomEvent) => {
+      if (e.detail) {
+        setSelectedFilter(e.detail);
+        setSelectedCategory(null);
+      }
+    };
+
+    window.addEventListener('voxa-open-modal', handleOpenModal as EventListener);
+    window.addEventListener('voxa-set-filter', handleSetFilter as EventListener);
+    
+    return () => {
+      window.removeEventListener('voxa-open-modal', handleOpenModal as EventListener);
+      window.removeEventListener('voxa-set-filter', handleSetFilter as EventListener);
+    };
+  }, []);
 
   const filteredTasks = useMemo(() => {
     if (!tasks) return [];

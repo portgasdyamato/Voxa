@@ -227,6 +227,49 @@ export async function executeVoiceCommand(
         break;
       }
 
+      case 'navigate': {
+        if (!command.destination) return;
+        window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: command.destination }));
+        toast({
+          title: "Navigating",
+          description: `Taking you to ${command.destination === '/stats' ? 'Analytics' : 'Workspace'}...`,
+        });
+        break;
+      }
+
+      case 'open_modal': {
+        if (!command.modalName) return;
+        window.dispatchEvent(new CustomEvent('voxa-open-modal', { detail: command.modalName }));
+        toast({
+          title: "Opening",
+          description: `Opening New Task dialog...`,
+        });
+        break;
+      }
+
+      case 'set_filter': {
+        if (!command.filterId) return;
+        window.dispatchEvent(new CustomEvent('voxa-set-filter', { detail: command.filterId }));
+        let filterName = 'All tasks';
+        if (command.filterId === 'today') filterName = "Today's tasks";
+        if (command.filterId === 'overdue') filterName = "Priority/Overdue tasks";
+        toast({
+          title: "Filtering",
+          description: `Showing ${filterName}`,
+        });
+        break;
+      }
+
+      case 'search': {
+        if (!command.searchQuery) return;
+        window.dispatchEvent(new CustomEvent('voxa-search', { detail: command.searchQuery }));
+        toast({
+          title: "Searching",
+          description: `Looking for "${command.searchQuery}"`,
+        });
+        break;
+      }
+
       default: {
         toast({ 
           title: "Unknown Command", 

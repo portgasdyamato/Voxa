@@ -68,7 +68,7 @@ function ProtectedLayout({ children, activeTab, setActiveTab, searchQuery, setSe
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<'home' | 'stats'>('home');
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,6 +81,32 @@ function Router() {
       setActiveTab('stats');
     }
   }, [location]);
+
+  // Global voice command event listeners
+  useEffect(() => {
+    const handleNavigate = (e: CustomEvent) => {
+      if (e.detail) {
+        setLocation(e.detail);
+      }
+    };
+    
+    const handleSearch = (e: CustomEvent) => {
+      if (e.detail) {
+        setSearchQuery(e.detail);
+        if (location !== '/home' && location !== '/') {
+          setLocation('/home');
+        }
+      }
+    };
+
+    window.addEventListener('voxa-navigate', handleNavigate as EventListener);
+    window.addEventListener('voxa-search', handleSearch as EventListener);
+    
+    return () => {
+      window.removeEventListener('voxa-navigate', handleNavigate as EventListener);
+      window.removeEventListener('voxa-search', handleSearch as EventListener);
+    };
+  }, [location, setLocation]);
 
   if (isLoading) {
     return (

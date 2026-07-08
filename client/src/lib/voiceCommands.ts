@@ -8,6 +8,10 @@ export type VoiceCommandType =
   | 'update'
   | 'list'
   | 'clear_completed'
+  | 'navigate'
+  | 'open_modal'
+  | 'set_filter'
+  | 'search'
   | 'unknown';
 
 export interface VoiceCommand {
@@ -20,6 +24,10 @@ export interface VoiceCommand {
     deadline?: Date | null;
     category?: string;
   };
+  destination?: string;
+  modalName?: string;
+  filterId?: string;
+  searchQuery?: string;
   confidence: 'high' | 'medium' | 'low';
   originalText: string;
 }
@@ -67,6 +75,29 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
     // Clear completed tasks
     clearCompleted: [
       /^(?:clear|delete|remove)\s+(?:all\s+)?(?:completed|finished|done)\s+(?:tasks|todos|items)/i,
+    ],
+    
+    // Navigation
+    navigate: [
+      /^(?:go|navigate|take me|open)\s+(?:to\s+)?(?:the\s+)?(home|dashboard|workspace|tasks|analytics|stats|statistics)/i,
+      /^(?:show|view)\s+(?:me\s+)?(?:the\s+)?(analytics|stats|statistics|dashboard)/i,
+    ],
+    
+    // UI Modals
+    openModal: [
+      /^(?:open|show)\s+(?:the\s+)?(?:new\s+task|task\s+creation)\s+(?:popup|modal|dialog|window)/i,
+      /^(?:create\s+a\s+task\s+manually|add\s+task\s+manually)/i,
+    ],
+    
+    // Filtering
+    setFilter: [
+      /^(?:show|filter|view)\s+(?:by\s+)?(?:only\s+)?(all|today|overdue)\s+(?:tasks|todos)?/i,
+      /^(?:show\s+me)\s+(all|today'?s|overdue)\s+(?:tasks|todos)?/i,
+    ],
+    
+    // Search
+    search: [
+      /^(?:search|find|look\s+for)\s+(?:for\s+)?(.+)/i,
     ],
   };
   
@@ -200,6 +231,70 @@ export function parseVoiceCommand(speech: string): VoiceCommand {
         confidence: 'high',
         originalText: speech,
       };
+    }
+  }
+
+  // Check for navigate
+  for (const pattern of commandPatterns.navigate) {
+    const match = speech.match(pattern);
+    if (match) {
+      const dest = match[1]?.toLowerCase();
+      let route = '/home';
+      if (['analytics', 'stats', 'statistics'].includes(dest)) {
+        route = '/stats';
+      }
+      return {
+        type: 'navigate',
+        destination: route,
+        confidence: 'high',
+        originalText: speech,
+      };
+    }
+  }
+
+  // Check for openModal
+  for (const pattern of commandPatterns.openModal) {
+    const match = speech.match(pattern);
+    if (match) {
+      return {
+        type: 'open_modal',
+        modalName: 'new_task',
+        confidence: 'high',
+        originalText: speech,
+      };
+    }
+  }
+
+  // Check for setFilter
+  for (const pattern of commandPatterns.setFilter) {
+    const match = speech.match(pattern);
+    if (match) {
+      let filterRaw = match[1]?.toLowerCase().replace("'s", "");
+      let filterId = 'all';
+      if (filterRaw.includes('today')) filterId = 'today';
+      if (filterRaw.includes('overdue')) filterId = 'overdue';
+      return {
+        type: 'set_filter',
+        filterId,
+        confidence: 'high',
+        originalText: speech,
+      };
+    }
+  }
+
+  // Check for search
+  for (const pattern of commandPatterns.search) {
+    const match = speech.match(pattern);
+    if (match) {
+      const query = match[1]?.trim();
+      if (query) {
+        return {
+          type: 'search',
+          searchQuery: query,
+          confidence: 'high',
+          originalText: speech,
+        };
+      }
     }
   }
   
