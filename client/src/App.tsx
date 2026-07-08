@@ -91,7 +91,14 @@ function Router() {
   useEffect(() => {
     const handleNavigate = (e: CustomEvent) => {
       if (e.detail) {
-        setLocation(e.detail);
+        if (['tasks', 'calendar', 'notes'].includes(e.detail)) {
+          setActiveWorkspaceTab(e.detail as any);
+          if (location !== '/home' && location !== '/') {
+            setLocation('/home');
+          }
+        } else {
+          setLocation(e.detail);
+        }
       }
     };
     

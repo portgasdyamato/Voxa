@@ -52,10 +52,13 @@ export function parseVoiceCommand(speech: string, categories: any[] = [], tasks:
   const lowerSpeech = speech.toLowerCase().trim();
   
   // 1. Check for Navigation
-  if (/^(go|navigate|take me|open)\s+(to\s+)?(the\s+)?(home|dashboard|workspace|tasks|analytics|stats|statistics)/i.test(lowerSpeech) || 
-      /^(show|view)\s+(me\s+)?(the\s+)?(analytics|stats|statistics|dashboard)/i.test(lowerSpeech)) {
+  if (/^(go|navigate|take me|open|switch)\s+(to\s+)?(the\s+)?(home|dashboard|workspace|tasks|analytics|stats|statistics|calendar|notes)/i.test(lowerSpeech) || 
+      /^(show|view)\s+(me\s+)?(the\s+)?(analytics|stats|statistics|dashboard|calendar|notes)/i.test(lowerSpeech)) {
     let route = '/home';
     if (/(analytics|stats|statistics)/i.test(lowerSpeech)) route = '/stats';
+    else if (/(calendar)/i.test(lowerSpeech)) route = 'calendar';
+    else if (/(notes)/i.test(lowerSpeech)) route = 'notes';
+    else if (/(tasks)/i.test(lowerSpeech)) route = 'tasks';
     return { type: 'navigate', destination: route, confidence: 'high', originalText: speech };
   }
 
@@ -164,15 +167,42 @@ export function parseVoiceCommand(speech: string, categories: any[] = [], tasks:
       }
     }
     
+    // Check for "update the last X tasks"
+    const lastMultipleMatch = lowerSpeech.match(/last\s+(\d+)\s+(tasks|todos|items)/i);
+    if (lastMultipleMatch) {
+      const targetCount = parseInt(lastMultipleMatch[1], 10);
+      const dateTimeResult = detectDateTimeFromText(speech);
+      const parsedTask = parseTaskFromSpeech(speech);
+      const updates: any = {};
+      if (dateTimeResult.detectedDate) updates.deadline = dateTimeResult.detectedDate;
+      if (/(high|medium|low)\s+priority/i.test(lowerSpeech)) updates.priority = parsedTask.priority;
+      
+      if (Object.keys(updates).length > 0) {
+        return {
+          type: 'update',
+          targetReference: 'last',
+          targetCount,
+          updates,
+          confidence: 'high',
+          originalText: speech
+        };
+      }
+    }
+
     // Check for "update the last task"
     if (/last\s+(task|todo|item)/i.test(lowerSpeech)) {
       const dateTimeResult = detectDateTimeFromText(speech);
-      if (dateTimeResult.detectedDate) {
+      const parsedTask = parseTaskFromSpeech(speech);
+      const updates: any = {};
+      if (dateTimeResult.detectedDate) updates.deadline = dateTimeResult.detectedDate;
+      if (/(high|medium|low)\s+priority/i.test(lowerSpeech)) updates.priority = parsedTask.priority;
+      
+      if (Object.keys(updates).length > 0) {
         return {
           type: 'update',
           targetReference: 'last',
           targetCount: 1,
-          updates: { deadline: dateTimeResult.detectedDate },
+          updates,
           confidence: 'high',
           originalText: speech
         };
