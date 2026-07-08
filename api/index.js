@@ -810,39 +810,71 @@ async function handler(req, res) {
       const { content, action } = req.body;
       let newContent = content;
       
-      // Extract pure text for mock processing, preserving newlines
-      const rawText = (content || '').replace(/<br[^>]*>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]*>?/gm, '').trim();
-      
-      // Split by newlines or punctuation
-      const sentences = rawText.split(/(?:\n|(?<=[.!?])\s+)/).map(s => s.trim()).filter(s => s.length > 0) || ["No text provided"];
-
-      if (action === "summarize") {
-        const summaryPoints = sentences.slice(0, 3).map(s => `<li><p>${s}</p></li>`).join('');
+      if (!process.env.OPENAI_API_KEY) {
         newContent = `
-          <h2>🤖 AI Summary</h2>
-          <ul>${summaryPoints}</ul>
-          <hr>
+          <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin: 1rem 0;">
+            <strong>⚠️ AI Not Configured</strong><br/>
+            <p>To enable real AI summarizing, polishing, and task extraction, please add your <code>OPENAI_API_KEY</code> to your environment variables.</p>
+          </div>
         ` + content;
-      } else if (action === "polish") {
-        const polished = sentences.map(s => {
-          return s.charAt(0).toUpperCase() + s.slice(1) + (s.match(/[.!?]$/) ? '' : '.');
-        }).join(' ');
-        newContent = `
-          <h2>✨ Polished Note</h2>
-          <p>${polished}</p>
-          <hr>
-        `;
-      } else if (action === "task") {
-        const tasks = sentences.slice(0, 4).map(s => `<li data-type="taskItem" data-checked="false"><p>${s}</p></li>`).join('');
-        newContent = `
-          <h2>📋 Extracted Tasks</h2>
-          <ul data-type="taskList">
-            ${tasks}
-          </ul>
-          <hr>
-        ` + content;
+        return res.status(200).json({ content: newContent });
       }
-      res.status(200).json({ content: newContent });
+
+      // Extract raw text for the AI prompt
+      const rawText = (content || '').replace(/<[^>]*>?/gm, '\n').replace(/\n+/g, '\n').trim();
+      
+      let systemPrompt = "You are a helpful assistant.";
+      if (action === "summarize") {
+        systemPrompt = "You are an AI assistant. Summarize the user's text into 3 concise bullet points. Output ONLY HTML: an <ul> with <li> elements.";
+      } else if (action === "polish") {
+        systemPrompt = "You are an AI assistant. Polish the user's text to fix grammar, improve flow, and make it sound professional. Output ONLY HTML: wrapping paragraphs in <p> tags. Do not output anything else.";
+      } else if (action === "task") {
+        systemPrompt = "You are an AI assistant. Extract actionable tasks from the user's text. Output ONLY HTML: an <ul data-type=\"taskList\"> with <li data-type=\"taskItem\" data-checked=\"false\"><p>task</p></li> elements.";
+      }
+
+      try {
+        const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: rawText || "No text provided." }
+            ],
+            temperature: 0.5
+          })
+        });
+
+        if (!aiResponse.ok) {
+          throw new Error("OpenAI API error");
+        }
+
+        const data = await aiResponse.json();
+        const aiHtml = data.choices[0]?.message?.content || "";
+
+        if (action === "summarize") {
+          newContent = `<h2>🤖 AI Summary</h2>${aiHtml}<hr>` + content;
+        } else if (action === "polish") {
+          newContent = `<h2>✨ Polished Note</h2>${aiHtml}<hr>`;
+        } else if (action === "task") {
+          newContent = `<h2>📋 Extracted Tasks</h2>${aiHtml}<hr>` + content;
+        }
+
+        res.status(200).json({ content: newContent });
+      } catch (e) {
+        console.error("OpenAI Error:", e);
+        newContent = `
+          <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #ef4444; margin: 1rem 0;">
+            <strong>⚠️ AI Error</strong><br/>
+            <p>Failed to process AI request. Please check your API key.</p>
+          </div>
+        ` + content;
+        res.status(200).json({ content: newContent });
+      }
       return;
     }
 

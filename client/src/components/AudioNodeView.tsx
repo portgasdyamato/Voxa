@@ -52,7 +52,7 @@ export default function AudioNodeView({ node, deleteNode }: any) {
 
   return (
     <NodeViewWrapper 
-      className="audio-node-view relative my-4 rounded-full border border-white/10 bg-[#1A1A1A] p-2 pr-4 flex items-center gap-3 overflow-hidden shadow-lg select-none"
+      className="audio-node-view relative my-4 rounded-full border border-white/10 bg-[#1A1A1A] p-2 pr-4 flex items-center gap-3 overflow-hidden shadow-lg select-none outline-none focus:outline-none focus:ring-0"
       style={{ resize: 'horizontal', minWidth: '280px', maxWidth: '100%', width: '320px', display: 'flex' }}
     >
       <audio ref={audioRef} src={node.attrs.src} className="hidden" />
