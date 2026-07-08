@@ -4,7 +4,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Folder, Plus, FileText, Pin, MoreVertical, Search, 
-  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft, List, ListOrdered
+  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo, PanelLeft, List, ListOrdered, AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -25,6 +25,7 @@ import FontFamily from '@tiptap/extension-font-family';
 import { TextStyle } from '@tiptap/extension-text-style';
 import ImageResize from 'tiptap-extension-resize-image';
 import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
+import TextAlign from '@tiptap/extension-text-align';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
@@ -192,6 +193,9 @@ export default function NotesPage() {
       TaskList,
       TaskItem.configure({
         nested: true,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph', 'image', 'audio'],
       }),
       TextStyle,
       FontFamily,
@@ -562,6 +566,36 @@ export default function NotesPage() {
                   Italic
                 </Button>
 
+                <div className="w-px h-6 bg-white/10 mx-1" />
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().setTextAlign('left').run()}
+                  className={`bg-white/5 border-white/10 text-white hover:bg-white/10 ${editor?.isActive({ textAlign: 'left' }) ? 'bg-white/20' : ''}`}
+                  title="Align Left"
+                >
+                  <AlignLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().setTextAlign('center').run()}
+                  className={`bg-white/5 border-white/10 text-white hover:bg-white/10 ${editor?.isActive({ textAlign: 'center' }) ? 'bg-white/20' : ''}`}
+                  title="Align Center"
+                >
+                  <AlignCenter className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().setTextAlign('right').run()}
+                  className={`bg-white/5 border-white/10 text-white hover:bg-white/10 ${editor?.isActive({ textAlign: 'right' }) ? 'bg-white/20' : ''}`}
+                  title="Align Right"
+                >
+                  <AlignRight className="w-4 h-4" />
+                </Button>
+
                 <div className="w-px h-6 bg-white/10 mx-2" />
                 
                 <Button
@@ -675,11 +709,14 @@ export default function NotesPage() {
                   width: 24px;
                   height: 24px;
                   border-radius: 4px;
+                  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>');
+                  background-repeat: no-repeat;
+                  background-position: center;
                   color: rgba(255, 255, 255, 0.4);
-                  transition: background 0.2s, color 0.2s;
+                  transition: background-color 0.2s, color 0.2s;
                 }
                 .drag-handle:hover {
-                  background: rgba(255, 255, 255, 0.1);
+                  background-color: rgba(255, 255, 255, 0.1);
                   color: rgba(255, 255, 255, 0.8);
                 }
                 .ProseMirror-selectednode img {
