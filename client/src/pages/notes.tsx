@@ -33,6 +33,9 @@ export default function NotesPage() {
   const [renameNoteId, setRenameNoteId] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState('');
 
+  // Delete state
+  const [noteToDelete, setNoteToDelete] = useState<number | null>(null);
+
   // Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -186,6 +189,15 @@ export default function NotesPage() {
 
   return (
     <div className="flex h-[calc(100vh-240px)] min-h-[600px] overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in duration-700">
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       
       {/* Sidebar */}
       <div className="w-80 border-r border-white/10 bg-white/[0.02] flex flex-col">
@@ -214,7 +226,7 @@ export default function NotesPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 hide-scrollbar">
           {(notes as any[])
             .filter((n: any) => n.title.toLowerCase().includes(searchQuery.toLowerCase()))
             .map((note: any) => (
@@ -282,7 +294,7 @@ export default function NotesPage() {
                       <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm('Delete this note?')) deleteNoteMutation.mutate(note.id);
+                          setNoteToDelete(note.id);
                         }}
                         className="text-red-400 hover:bg-red-500/10 cursor-pointer"
                       >
@@ -325,7 +337,7 @@ export default function NotesPage() {
                   variant="ghost" 
                   size="icon"
                   onClick={() => {
-                    if (confirm('Delete this note?')) deleteNoteMutation.mutate(selectedNoteId);
+                    setNoteToDelete(selectedNoteId);
                   }}
                   className="text-white/40 hover:text-red-400"
                 >
@@ -334,7 +346,7 @@ export default function NotesPage() {
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-blue-400">
+            <div className="flex-1 overflow-y-auto hide-scrollbar p-8 max-w-4xl mx-auto w-full prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-blue-400">
               
               {/* Toolbar */}
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/5">
@@ -532,6 +544,28 @@ export default function NotesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={noteToDelete !== null} onOpenChange={(open) => !open && setNoteToDelete(null)}>
+        <DialogContent className="bg-[#0c0c0e] border border-white/10 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Note</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-white/60">Are you sure you want to delete this note? This action cannot be undone.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNoteToDelete(null)} className="text-white/60 hover:text-white">Cancel</Button>
+            <Button onClick={() => {
+              if (noteToDelete !== null) {
+                deleteNoteMutation.mutate(noteToDelete);
+              }
+              setNoteToDelete(null);
+            }} className="bg-red-600 hover:bg-red-700 text-white border-0">Delete Note</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
