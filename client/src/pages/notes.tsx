@@ -13,12 +13,26 @@ import Image from '@tiptap/extension-image';
 import { AudioExtension } from '@/lib/AudioExtension';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
 
 export default function NotesPage() {
   const queryClient = useQueryClient();
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Drag and drop state
+  const [draggedNoteId, setDraggedNoteId] = useState<number | null>(null);
+
+  // Dialog states
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  
+  // Rename state
+  const [renameNoteId, setRenameNoteId] = useState<number | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
   // Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -41,6 +55,13 @@ export default function NotesPage() {
   const updateNoteMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: number, updates: any }) => {
       await apiRequest('PATCH', `/api/notes/${id}`, updates);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['/api/notes'] })
+  });
+
+  const reorderNotesMutation = useMutation({
+    mutationFn: async (updates: any[]) => {
+      await apiRequest('PATCH', '/api/notes/reorder', { updates });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['/api/notes'] })
   });
@@ -84,6 +105,60 @@ export default function NotesPage() {
       content: '',
       isPinned: false
     });
+  };
+
+  const handleDragStart = (e: React.DragEvent, id: number) => {
+    setDraggedNoteId(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, targetNoteId: number) => {
+    e.preventDefault();
+    if (draggedNoteId === null || draggedNoteId === targetNoteId) return;
+
+    const currentNotes = [...notes];
+    const draggedIndex = currentNotes.findIndex((n: any) => n.id === draggedNoteId);
+    const targetIndex = currentNotes.findIndex((n: any) => n.id === targetNoteId);
+    
+    const [removed] = currentNotes.splice(draggedIndex, 1);
+    currentNotes.splice(targetIndex, 0, removed);
+    
+    // Update order property
+    const updates = currentNotes.map((n, index) => ({ id: n.id, order: index }));
+    
+    // Optimistic update
+    queryClient.setQueryData(['/api/notes'], currentNotes);
+    
+    // Call reorder API
+    reorderNotesMutation.mutate(updates);
+    setDraggedNoteId(null);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (editor && reader.result) {
+          editor.chain().focus().setImage({ src: reader.result as string }).run();
+          setIsImageDialogOpen(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const submitImageUrl = () => {
+    if (imageUrlInput && editor) {
+      editor.chain().focus().setImage({ src: imageUrlInput }).run();
+      setIsImageDialogOpen(false);
+      setImageUrlInput('');
+    }
   };
 
   const editor = useEditor({
@@ -145,6 +220,10 @@ export default function NotesPage() {
             .map((note: any) => (
             <motion.div
               key={note.id}
+              draggable
+              onDragStart={(e: any) => handleDragStart(e, note.id)}
+              onDragOver={handleDragOver}
+              onDrop={(e: any) => handleDrop(e, note.id)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedNoteId(note.id)}
@@ -155,8 +234,63 @@ export default function NotesPage() {
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="text-white font-medium truncate">{note.title || 'Untitled Note'}</h3>
-                {note.isPinned && <Pin className="w-3 h-3 text-blue-400 shrink-0" />}
+                {renameNoteId === note.id ? (
+                  <Input
+                    autoFocus
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={() => {
+                      if (renameValue.trim() !== '') {
+                        updateNoteMutation.mutate({ id: note.id, updates: { title: renameValue } });
+                      }
+                      setRenameNoteId(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (renameValue.trim() !== '') {
+                          updateNoteMutation.mutate({ id: note.id, updates: { title: renameValue } });
+                        }
+                        setRenameNoteId(null);
+                      }
+                    }}
+                    className="h-6 text-sm bg-black/40 border-white/20 text-white px-2"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <h3 className="text-white font-medium truncate">{note.title || 'Untitled Note'}</h3>
+                )}
+                
+                <div className="flex items-center gap-1 shrink-0">
+                  {note.isPinned && <Pin className="w-3 h-3 text-blue-400" />}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-white/10 text-white/40 hover:text-white">
+                        <MoreVertical className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40 bg-[#121214] border-white/10 text-white">
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRenameNoteId(note.id);
+                          setRenameValue(note.title);
+                        }}
+                        className="hover:bg-white/10 cursor-pointer"
+                      >
+                        <FileEdit className="w-4 h-4 mr-2" /> Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Delete this note?')) deleteNoteMutation.mutate(note.id);
+                        }}
+                        className="text-red-400 hover:bg-red-500/10 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
               <p className="text-white/40 text-xs line-clamp-2">
                 {note.content ? note.content.replace(/<[^>]+>/g, '') : 'No additional text'}
@@ -207,12 +341,7 @@ export default function NotesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const url = window.prompt('URL of the image:');
-                    if (url && editor) {
-                      editor.chain().focus().setImage({ src: url }).run();
-                    }
-                  }}
+                  onClick={() => setIsImageDialogOpen(true)}
                   className="bg-white/5 border-white/10 text-white hover:bg-white/10"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -362,6 +491,47 @@ export default function NotesPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+        <DialogContent className="bg-[#121214] border border-white/10 text-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Insert Image</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="image-url">Image URL</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image-url"
+                  value={imageUrlInput}
+                  onChange={(e) => setImageUrlInput(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="bg-white/5 border-white/10 text-white"
+                  onKeyDown={(e) => e.key === 'Enter' && submitImageUrl()}
+                />
+                <Button onClick={submitImageUrl} className="bg-blue-600 hover:bg-blue-700">Add</Button>
+              </div>
+            </div>
+            
+            <div className="relative flex py-2 items-center">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink-0 mx-4 text-white/40 text-xs">OR</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="image-upload">Upload from computer</Label>
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="bg-white/5 border-white/10 text-white file:text-white file:bg-white/10 file:border-0 file:rounded-md hover:file:bg-white/20 cursor-pointer"
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

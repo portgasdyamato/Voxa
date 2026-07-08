@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Calendar as CalendarIcon, Clock, Type, AlignLeft, Download } from 'lucide-react';
+import { Plus, X, Calendar as CalendarIcon, Clock, Type, AlignLeft, Download, Users, User, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,12 @@ export default function CalendarPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ start: Date, end: Date } | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  
+  // Guest invites state
+  const [guests, setGuests] = useState<{email: string, name: string}[]>([]);
+  const [guestEmailInput, setGuestEmailInput] = useState('');
+  const [isLookingUpGuest, setIsLookingUpGuest] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -51,6 +57,7 @@ export default function CalendarPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/events'] });
       setIsModalOpen(false);
       form.reset();
+      setGuests([]);
     }
   });
 
@@ -105,7 +112,30 @@ export default function CalendarPage() {
       ...data,
       startTime: new Date(data.startTime),
       endTime: new Date(data.endTime),
+      guests: guests
     });
+  };
+
+  const handleAddGuest = async () => {
+    if (!guestEmailInput || !guestEmailInput.includes('@')) return;
+    setIsLookingUpGuest(true);
+    try {
+      const res = await fetch(`/api/users/lookup?email=${encodeURIComponent(guestEmailInput)}`);
+      const data = await res.json();
+      const name = data.name || guestEmailInput.split('@')[0];
+      setGuests(prev => [...prev, { email: guestEmailInput, name }]);
+      setGuestEmailInput('');
+    } catch (e) {
+      console.error("Failed to lookup guest", e);
+    }
+    setIsLookingUpGuest(false);
+  };
+
+  const handleEventClick = (info: any) => {
+    const ev = (events as any[]).find((e: any) => e.id.toString() === info.event.id);
+    if (ev) {
+      setSelectedEvent(ev);
+    }
   };
 
   const formattedEvents = (events as any[]).map((e: any) => ({
@@ -117,7 +147,8 @@ export default function CalendarPage() {
     extendedProps: {
       description: e.description,
       location: e.location,
-      meetingLink: e.meetingLink
+      meetingLink: e.meetingLink,
+      guests: e.guests
     }
   }));
 
@@ -217,11 +248,73 @@ export default function CalendarPage() {
             select={handleDateSelect}
             eventDrop={handleEventDrop}
             eventResize={handleEventDrop}
+            eventClick={handleEventClick}
             height="auto"
             contentHeight={700}
           />
         </div>
       </motion.div>
+
+      {/* Event Details Modal */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedEvent(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-6 border-b border-white/5">
+                <h2 className="text-xl font-semibold text-white">Event Details</h2>
+                <Button variant="ghost" size="icon" onClick={() => setSelectedEvent(null)} className="text-white/40 hover:text-white">
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="p-6 space-y-4 text-white">
+                <div>
+                  <h3 className="text-2xl font-bold mb-1">{selectedEvent.title}</h3>
+                  <p className="text-white/60 flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4" />
+                    {new Date(selectedEvent.startTime).toLocaleString()} - {new Date(selectedEvent.endTime).toLocaleString()}
+                  </p>
+                </div>
+                {selectedEvent.description && (
+                  <div>
+                    <h4 className="text-sm text-white/40 mb-1">Description</h4>
+                    <p className="text-white/80">{selectedEvent.description}</p>
+                  </div>
+                )}
+                {selectedEvent.guests && selectedEvent.guests.length > 0 && (
+                  <div>
+                    <h4 className="text-sm text-white/40 mb-2">Guests</h4>
+                    <div className="flex flex-col gap-2">
+                      {selectedEvent.guests.map((g: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{g.name}</p>
+                            <p className="text-xs text-white/50">{g.email}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Event Creation Modal */}
       <AnimatePresence>
@@ -283,6 +376,42 @@ export default function CalendarPage() {
                       <label className="text-sm text-white/60">Description (Optional)</label>
                     </div>
                     <Textarea {...form.register('description')} placeholder="Add notes or location..." className="bg-white/5 border-white/10 text-white resize-none" rows={3} />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Users className="w-4 h-4 text-white/40" />
+                      <label className="text-sm text-white/60">Guests</label>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input 
+                        value={guestEmailInput}
+                        onChange={e => setGuestEmailInput(e.target.value)}
+                        placeholder="guest@example.com"
+                        className="bg-white/5 border-white/10 text-white flex-1"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddGuest();
+                          }
+                        }}
+                      />
+                      <Button type="button" onClick={handleAddGuest} disabled={isLookingUpGuest} className="bg-white/10 hover:bg-white/20">
+                        Add
+                      </Button>
+                    </div>
+                    {guests.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {guests.map((g, i) => (
+                          <div key={i} className="flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 rounded-full px-3 py-1 text-sm text-blue-400">
+                            <span>{g.name}</span>
+                            <button type="button" onClick={() => setGuests(guests.filter((_, idx) => idx !== i))} className="hover:text-blue-300">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

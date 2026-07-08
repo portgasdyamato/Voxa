@@ -6,7 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import {
   pgTable, text, varchar, timestamp, jsonb, index,
   serial, boolean, integer
@@ -81,6 +81,7 @@ const events = pgTable('events', {
   meetingLink: text('meeting_link'),
   recurringPattern: varchar('recurring_pattern', { enum: ['none', 'daily', 'weekly', 'monthly', 'yearly'] }).default('none'),
   reminders: jsonb('reminders'),
+  guests: jsonb('guests'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -102,6 +103,7 @@ const notes = pgTable("notes", {
   title: varchar("title", { length: 255 }).notNull().default("Untitled Note"),
   content: jsonb("content"),
   isPinned: boolean("is_pinned").notNull().default(false),
+  order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
 });
@@ -217,6 +219,19 @@ app.get('/api/profile', async (req, res) => {
   res.json(profile[0]);
 });
 
+app.get('/api/users/lookup', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+  
+  const foundUsers = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (foundUsers.length > 0) {
+    const user = foundUsers[0];
+    res.json({ name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email });
+  } else {
+    res.json({ name: null });
+  }
+});
+
 app.patch('/api/profile', async (req, res) => {
   const userId = await ensureMockUser(db, users, categories);
   const { firstName, lastName, profileImageUrl } = req.body;
@@ -322,6 +337,7 @@ app.post('/api/events', async (req, res) => {
     meetingLink: e.meetingLink || null,
     recurringPattern: e.recurringPattern || 'none',
     reminders: e.reminders || null,
+    guests: e.guests || null,
   }).returning();
   res.status(201).json(newEvent[0]);
 });
@@ -352,8 +368,28 @@ app.delete('/api/events/:id', async (req, res) => {
 // --- Notes Routes ---
 app.get('/api/notes', async (req, res) => {
   const userId = await ensureMockUser(db, users, categories);
-  const userNotes = await db.select().from(notes).where(eq(notes.userId, userId)).orderBy(desc(notes.updatedAt));
+  const userNotes = await db.select().from(notes).where(eq(notes.userId, userId)).orderBy(asc(notes.order), desc(notes.updatedAt));
   res.json(userNotes);
+});
+
+app.patch('/api/notes/reorder', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  const { updates } = req.body; // updates is an array of { id, order }
+
+  if (!Array.isArray(updates)) {
+    return res.status(400).json({ error: 'Updates must be an array' });
+  }
+
+  try {
+    for (const update of updates) {
+      await db.update(notes)
+        .set({ order: update.order, updatedAt: new Date() })
+        .where(and(eq(notes.id, update.id), eq(notes.userId, userId)));
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to reorder notes' });
+  }
 });
 
 app.post('/api/notes', async (req, res) => {

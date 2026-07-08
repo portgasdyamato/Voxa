@@ -83,6 +83,7 @@ export const events = pgTable("events", {
   meetingLink: text("meeting_link"),
   recurringPattern: varchar("recurring_pattern", { enum: ["none", "daily", "weekly", "monthly", "yearly"] }).default("none"),
   reminders: jsonb("reminders"), // Array of { type: 'email'|'notification', minutesBefore: number }
+  guests: jsonb("guests"), // Array of { email: string, name: string, status?: string }
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -107,6 +108,7 @@ export const notes = pgTable("notes", {
   content: jsonb("content"), // Tiptap JSON document
   isPinned: boolean("is_pinned").notNull().default(false),
   isArchived: boolean("is_archived").notNull().default(false),
+  order: integer("order").notNull().default(0), // Manual reordering
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
