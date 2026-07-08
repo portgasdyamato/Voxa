@@ -4,7 +4,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Folder, Plus, FileText, Pin, MoreVertical, Search, 
-  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo
+  Trash2, FileEdit, Tag, Mic, Sparkles, FileText as FileTextIcon, ListTodo, Undo, Redo
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -508,6 +508,27 @@ export default function NotesPage() {
 
                 <div className="w-px h-6 bg-white/10 mx-2" />
                 
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().undo().run()}
+                  disabled={!editor?.can().chain().focus().undo().run()}
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-8 w-8"
+                >
+                  <Undo className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => editor?.chain().focus().redo().run()}
+                  disabled={!editor?.can().chain().focus().redo().run()}
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-8 w-8"
+                >
+                  <Redo className="w-4 h-4" />
+                </Button>
+
+                <div className="w-px h-6 bg-white/10 mx-2" />
+                
                 {/* AI Tools */}
                 <Button
                   variant="outline"
@@ -568,15 +589,25 @@ export default function NotesPage() {
                 .ProseMirror ul[data-type="taskList"] li {
                   display: flex;
                   align-items: flex-start;
-                  margin-bottom: 0.5rem;
+                  margin-bottom: 0.25rem;
                 }
                 .ProseMirror ul[data-type="taskList"] li > label {
                   margin-right: 0.5rem;
-                  margin-top: 0.2rem;
+                  margin-top: 0.1rem;
                   user-select: none;
+                  display: flex;
+                  align-items: center;
+                }
+                .ProseMirror ul[data-type="taskList"] li > label input {
+                  margin: 0;
+                  cursor: pointer;
                 }
                 .ProseMirror ul[data-type="taskList"] li > div {
                   flex: 1;
+                }
+                .ProseMirror ul[data-type="taskList"] li p {
+                  margin: 0;
+                  line-height: 1.6;
                 }
                 
                 /* Drag and drop styling */

@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import AudioNodeView from '../components/AudioNodeView';
 
 export const AudioExtension = Node.create({
   name: 'audio',
@@ -24,6 +26,10 @@ export const AudioExtension = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     return ['audio', mergeAttributes(HTMLAttributes, { controls: 'true', class: 'w-full my-4 rounded-xl' })];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(AudioNodeView);
   },
 
   addCommands() {
