@@ -2,6 +2,8 @@
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { eq, and, desc, asc, inArray } from "drizzle-orm";
+import { Resend } from "resend";
+import * as ics from "ics";
 
 // shared/schema.ts
 import {
@@ -692,6 +694,66 @@ async function handler(req, res) {
         reminders: e.reminders || null,
         guests: e.guests || null,
       }).returning();
+
+      // Dispatch emails via Resend
+      if (e.guests && e.guests.length > 0 && process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const start = new Date(e.startTime);
+        const end = new Date(e.endTime);
+        
+        const icsEvent = {
+          start: [start.getFullYear(), start.getMonth() + 1, start.getDate(), start.getHours(), start.getMinutes()],
+          end: [end.getFullYear(), end.getMonth() + 1, end.getDate(), end.getHours(), end.getMinutes()],
+          title: e.title,
+          description: e.description || '',
+          location: e.location || '',
+          url: e.meetingLink || '',
+          status: 'CONFIRMED',
+          organizer: { name: 'VoXa Calendar', email: 'onboarding@resend.dev' },
+        };
+        
+        ics.createEvent(icsEvent, async (error, value) => {
+          if (error) {
+            console.error('ICS creation error:', error);
+          } else {
+            const attachments = [{
+              filename: 'invite.ics',
+              content: Buffer.from(value).toString('base64'),
+              type: 'text/calendar'
+            }];
+            
+            for (const guest of e.guests) {
+              try {
+                await resend.emails.send({
+                  from: 'VoXa Calendar <onboarding@resend.dev>',
+                  to: guest.email,
+                  subject: `Invitation: ${e.title}`,
+                  html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0c0c0e; color: #fff; padding: 2rem; border-radius: 1rem; border: 1px solid #333;">
+                      <h1 style="color: #fff; margin-top: 0;">You're invited!</h1>
+                      <p style="color: #ccc; font-size: 16px;">You have been invited to <strong>${e.title}</strong>.</p>
+                      <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; margin: 1.5rem 0;">
+                        <p style="margin: 0 0 0.5rem 0; color: #fff;"><strong>When:</strong> ${start.toLocaleString()}</p>
+                        ${e.location ? `<p style="margin: 0 0 0.5rem 0; color: #fff;"><strong>Where:</strong> ${e.location}</p>` : ''}
+                        ${e.meetingLink ? `<p style="margin: 0; color: #fff;"><strong>Link:</strong> <a href="${e.meetingLink}" style="color: #3b82f6;">${e.meetingLink}</a></p>` : ''}
+                      </div>
+                      ${e.description ? `<p style="color: #ccc; line-height: 1.5;">${e.description}</p>` : ''}
+                      <p style="color: #666; font-size: 12px; margin-top: 2rem; border-top: 1px solid #333; padding-top: 1rem;">Sent via VoXa</p>
+                    </div>
+                  `,
+                  attachments
+                });
+                console.log(`[VoXa API] Sent calendar invite to ${guest.email}`);
+              } catch (err) {
+                console.error(`[VoXa API] Failed to send email to ${guest.email}:`, err);
+              }
+            }
+          }
+        });
+      } else if (e.guests && e.guests.length > 0) {
+        console.log('[VoXa API] Guests were invited, but RESEND_API_KEY is not set. Skipping emails.');
+      }
+
       res.status(201).json(newEvent[0]);
       return;
     }
