@@ -112,10 +112,10 @@ export default function NotesPage() {
   }, [selectedNoteId]); // Recreate editor when selected note changes
 
   return (
-    <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-[#010101] animate-in fade-in duration-700">
+    <div className="flex h-[calc(100vh-240px)] min-h-[600px] overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in duration-700">
       
       {/* Sidebar */}
-      <div className="w-80 border-r border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md flex flex-col">
+      <div className="w-80 border-r border-white/10 bg-white/[0.02] flex flex-col">
         <div className="p-6 pb-4">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
@@ -169,10 +169,10 @@ export default function NotesPage() {
       </div>
 
       {/* Editor Area */}
-      <div className="flex-1 flex flex-col relative bg-[#050505]">
+      <div className="flex-1 flex flex-col relative bg-transparent">
         {selectedNoteId ? (
           <>
-            <div className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/30 backdrop-blur-sm sticky top-0 z-10">
+            <div className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-transparent sticky top-0 z-10">
               <input
                 type="text"
                 value={selectedNote?.title || ''}
