@@ -936,17 +936,19 @@ export default function NotesPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={noteToDelete !== null} onOpenChange={(open) => !open && setNoteToDelete(null)}>
-        <AlertDialogContent className="bg-[#121214] border-white/10 text-white max-w-sm rounded-[24px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
+      <Dialog open={noteToDelete !== null} onOpenChange={(open) => !open && setNoteToDelete(null)}>
+        <DialogContent className="bg-[#121214] border-white/10 text-white max-w-sm rounded-[24px]">
+          <DialogHeader>
+            <DialogTitle>Are you sure?</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-white/60">
               {showTrash ? "This will permanently delete the note." : "This will move the note to the trash."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNoteToDelete(null)} className="text-white/60 hover:text-white">Cancel</Button>
+            <Button 
               onClick={() => {
                 if (noteToDelete !== null) {
                   if (showTrash) {
@@ -958,14 +960,15 @@ export default function NotesPage() {
                     setSelectedNoteId(null);
                   }
                 }
+                setNoteToDelete(null);
               }}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
