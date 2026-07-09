@@ -31,7 +31,11 @@ export async function executeVoiceCommand(
     const response = await fetch('/api/ai/command', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript, context })
+      body: JSON.stringify({ 
+        transcript, 
+        context,
+        localTime: new Date().toString()
+      })
     });
 
     if (!response.ok) {
