@@ -108,30 +108,7 @@ export function ProfileDropdown() {
               </span>
             </div>
 
-            <DropdownMenuSeparator className="mx-2 opacity-10" />
-            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest opacity-20 px-3 pt-2 pb-1">Appearance</DropdownMenuLabel>
-            
-            <div className="grid grid-cols-3 gap-1 p-1">
-              {[
-                { id: 'light', icon: Sun, label: 'Light' },
-                { id: 'dark', icon: Moon, label: 'Dark' },
-                { id: 'system', icon: Monitor, label: 'System' }
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTheme(t.id as any)}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-1.5 py-2 rounded-lg transition-all",
-                    theme === t.id 
-                      ? "bg-primary/10 text-primary border border-primary/20" 
-                      : "text-foreground/40 hover:text-foreground hover:bg-muted border border-transparent"
-                  )}
-                >
-                  <t.icon className="w-4 h-4" />
-                  <span className="text-[9px] font-bold uppercase tracking-tighter">{t.label}</span>
-                </button>
-              ))}
-            </div>
+
           </div>
           
           <DropdownMenuSeparator className="mx-2 opacity-10" />
