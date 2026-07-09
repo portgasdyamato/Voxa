@@ -1113,11 +1113,13 @@ You have access to the following actions:
 - { "action": "APPEND_NOTE", "id": number, "content": string }
 - { "action": "DELETE_NOTE", "id": number }
 - { "action": "PIN_NOTE", "id": number }
+- { "action": "UNPIN_NOTE", "id": number }
 - { "action": "SUMMARIZE_NOTE", "id": number }
 - { "action": "POLISH_NOTE", "id": number }
 - { "action": "CREATE_EVENT", "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean }
 - { "action": "UPDATE_EVENT", "id": number, "updates": { "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean } }
 - { "action": "DELETE_EVENT", "id": number }
+- { "action": "CHANGE_CALENDAR_VIEW", "view": "month"|"week"|"day" }
 - { "action": "NAVIGATE", "destination": "/home"|"/tasks"|"/calendar"|"/notes"|"/stats" }
 - { "action": "OPEN_MODAL", "modalName": "new_task"|"settings"|"notifications" }
 - { "action": "UPDATE_PROFILE", "firstName": string, "lastName": string }
@@ -1125,6 +1127,7 @@ You have access to the following actions:
 
 Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs.
 Important: The user's command is transcribed from speech and may contain phonetic misspellings or homophones (e.g., "right a note" instead of "write a note", or "cancel meat in" instead of "cancel meeting"). Infer the most logical intent based on the context.
+CRITICAL: Actively copy-edit and fix any speech-to-text typos, missing capitalization, or missing punctuation in titles and content before generating the JSON. The output text should look professionally typed.
 Important: To mark a task as complete, use UPDATE_TASK with { completed: true }. To rename a task, use UPDATE_TASK with { title: new_title }.
 Important: To add text to an existing note, use APPEND_NOTE so you do not overwrite its existing content.
 CRITICAL TIMEZONE INSTRUCTION: When generating ISO strings for dates (startTime, endTime, deadline, dueDate), NEVER append the 'Z' (UTC) suffix. Always output exactly in the format YYYY-MM-DDTHH:mm:ss so it is properly parsed in the user's local timezone.

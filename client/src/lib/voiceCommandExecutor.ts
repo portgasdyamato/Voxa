@@ -157,6 +157,16 @@ export async function executeVoiceCommand(
           toast({ title: "Note Pinned", description: "The note was pinned to the top." });
           break;
         }
+        case 'UNPIN_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
+          await apiRequest('PATCH', `/api/notes/${action.id}`, { isPinned: false });
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Unpinned", description: "The note is no longer pinned." });
+          break;
+        }
         case 'SUMMARIZE_NOTE':
         case 'POLISH_NOTE': {
           if (!action.id || !notes.find(n => n.id === action.id)) {
@@ -218,6 +228,12 @@ export async function executeVoiceCommand(
           await apiRequest('DELETE', `/api/events/${action.id}`);
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
           toast({ title: "Event Deleted", description: "The event was successfully removed." });
+          break;
+        }
+        case 'CHANGE_CALENDAR_VIEW': {
+          window.dispatchEvent(new CustomEvent('voxa-calendar-view', { detail: action.view }));
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'calendar' }));
+          toast({ title: "View Changed", description: `Switched to ${action.view} view.` });
           break;
         }
 

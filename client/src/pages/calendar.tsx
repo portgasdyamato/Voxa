@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -23,6 +23,23 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<{ start: Date, end: Date } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventToDelete, setEventToDelete] = useState<any>(null);
+  const calendarRef = useRef<any>(null);
+
+  useEffect(() => {
+    const handleViewChange = (e: any) => {
+      if (calendarRef.current) {
+        const viewMap: Record<string, string> = {
+          'month': 'dayGridMonth',
+          'week': 'timeGridWeek',
+          'day': 'timeGridDay'
+        };
+        const viewName = viewMap[e.detail] || 'dayGridMonth';
+        calendarRef.current.getApi().changeView(viewName);
+      }
+    };
+    window.addEventListener('voxa-calendar-view', handleViewChange);
+    return () => window.removeEventListener('voxa-calendar-view', handleViewChange);
+  }, []);
   
   // Guest invites state
   const [guests, setGuests] = useState<{email: string, name: string}[]>([]);
@@ -277,6 +294,7 @@ export default function CalendarPage() {
           `}</style>
           
           <FullCalendar
+            ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
               left: 'prev,next today',
