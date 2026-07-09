@@ -62,11 +62,22 @@ export function useAlarms(tasks: any[] = [], events: any[] = []) {
     // Show browser notification if permission is granted
     if (Notification.permission === 'granted') {
       try {
-        new Notification(title, {
-          body,
-          icon: '/logo.png',
-          tag: `${isEvent ? 'event' : 'task'}-${item.id}`,
-        });
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification(title, {
+              body,
+              icon: '/logo.png',
+              badge: '/logo.png',
+              tag: `${isEvent ? 'event' : 'task'}-${item.id}`,
+            });
+          });
+        } else {
+          new Notification(title, {
+            body,
+            icon: '/logo.png',
+            tag: `${isEvent ? 'event' : 'task'}-${item.id}`,
+          });
+        }
       } catch (e) {
         console.warn('Browser notification failed:', e);
       }
