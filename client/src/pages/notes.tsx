@@ -263,7 +263,7 @@ export default function NotesPage() {
                     <PanelLeft className="w-5 h-5" />
                   </Button>
                   <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                    Notes
+                    {showTrash ? "Trash" : "Notes"}
                   </h1>
                 </div>
             <Button 
@@ -359,30 +359,45 @@ export default function NotesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-40 bg-[#121214] border-white/10 text-white">
-                      <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRenameNoteId(note.id);
-                          setRenameValue(note.title);
-                        }}
-                        className="hover:bg-white/10 cursor-pointer"
-                      >
-                        <FileEdit className="w-4 h-4 mr-2" /> Rename
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const isCurrentlyPinned = note.isPinned;
-                          updateNoteMutation.mutate({ id: note.id, updates: { isPinned: !isCurrentlyPinned } });
-                          toast({
-                            title: !isCurrentlyPinned ? "Note pinned" : "Note unpinned",
-                            description: !isCurrentlyPinned ? "This note will appear at the top." : "Note removed from pins.",
-                          });
-                        }}
-                        className="hover:bg-white/10 cursor-pointer"
-                      >
-                        <Pin className="w-4 h-4 mr-2" /> {note.isPinned ? "Unpin" : "Pin"}
-                      </DropdownMenuItem>
+                      {!showTrash ? (
+                        <>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRenameNoteId(note.id);
+                              setRenameValue(note.title);
+                            }}
+                            className="hover:bg-white/10 cursor-pointer"
+                          >
+                            <FileEdit className="w-4 h-4 mr-2" /> Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const isCurrentlyPinned = note.isPinned;
+                              updateNoteMutation.mutate({ id: note.id, updates: { isPinned: !isCurrentlyPinned } });
+                              toast({
+                                title: !isCurrentlyPinned ? "Note pinned" : "Note unpinned",
+                                description: !isCurrentlyPinned ? "This note will appear at the top." : "Note removed from pins.",
+                              });
+                            }}
+                            className="hover:bg-white/10 cursor-pointer"
+                          >
+                            <Pin className="w-4 h-4 mr-2" /> {note.isPinned ? "Unpin" : "Pin"}
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateNoteMutation.mutate({ id: note.id, updates: { isArchived: false } });
+                            toast({ title: "Note Restored", description: "The note has been restored." });
+                          }}
+                          className="hover:bg-white/10 cursor-pointer text-green-400"
+                        >
+                          <Undo className="w-4 h-4 mr-2" /> Restore
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation();

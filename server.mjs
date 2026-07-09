@@ -6,7 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, and, desc, asc, inArray } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray, lt } from 'drizzle-orm';
 import {
   pgTable, text, varchar, timestamp, jsonb, index,
   serial, boolean, integer
@@ -553,6 +553,21 @@ app.get('/api/cron/alarms', async (req, res) => {
 // --- Notes Routes ---
 app.get('/api/notes', async (req, res) => {
   const userId = await ensureMockUser(db, users, categories);
+  
+  // 24 hour trash cleanup
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  try {
+    await db.delete(notes).where(
+      and(
+        eq(notes.userId, userId),
+        eq(notes.isArchived, true),
+        lt(notes.updatedAt, oneDayAgo)
+      )
+    );
+  } catch (e) {
+    console.error("Failed to clean up trash", e);
+  }
+
   const userNotes = await db.select().from(notes).where(eq(notes.userId, userId)).orderBy(asc(notes.order), desc(notes.updatedAt));
   res.json(userNotes);
 });

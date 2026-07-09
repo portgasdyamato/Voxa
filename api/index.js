@@ -1,7 +1,7 @@
 // api/index.ts
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
-import { eq, and, desc, asc, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, inArray, lt } from "drizzle-orm";
 import { Resend } from "resend";
 import * as ics from "ics";
 import Groq from "groq-sdk";
@@ -1011,6 +1011,19 @@ RULES:
 
     // --- Notes Routes ---
     if (url.pathname === "/api/notes" && req.method === "GET") {
+      // 24 hour trash cleanup
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      try {
+        await db.delete(notes).where(
+          and(
+            eq(notes.userId, currentUserId),
+            eq(notes.isArchived, true),
+            lt(notes.updatedAt, oneDayAgo)
+          )
+        );
+      } catch (e) {
+        console.error("Failed to clean up trash", e);
+      }
       const userNotes = await db.select().from(notes).where(eq(notes.userId, currentUserId)).orderBy(asc(notes.order), desc(notes.updatedAt));
       res.status(200).json(userNotes);
       return;
