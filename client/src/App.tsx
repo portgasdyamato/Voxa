@@ -10,7 +10,8 @@ import { Navigation } from "@/components/Navigation";
 import { VoiceTaskModal } from "@/components/VoiceTaskModal";
 import { CinematicBackground } from "@/components/CinematicBackground";
 import { useTasks } from "@/hooks/useTasks";
-import { useDeadlineNotifications } from "@/hooks/useDeadlineNotifications";
+import { useAlarms } from "@/hooks/useAlarms";
+import { useQuery } from "@tanstack/react-query";
 import { Mic, Zap, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import NotFound from "@/pages/not-found";
@@ -22,7 +23,9 @@ import Stats from "@/pages/stats";
 
 function ProtectedLayout({ children, activeTab, setActiveTab, activeWorkspaceTab, setActiveWorkspaceTab, searchQuery, setSearchQuery, setVoiceModalOpen, voiceModalOpen }: any) {
   const { data: tasks = [] } = useTasks();
-  useDeadlineNotifications(tasks);
+  const { data: events = [] } = useQuery({ queryKey: ['/api/events'] });
+  
+  useAlarms(tasks, events);
 
   return (
     <div className="relative min-h-screen bg-[#010101] text-[#f1f1f1] selection:bg-white/20 overflow-x-hidden">
