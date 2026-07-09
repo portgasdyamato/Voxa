@@ -701,6 +701,7 @@ You have access to the following actions:
 - { "action": "SUMMARIZE_NOTE", "id": number }
 - { "action": "POLISH_NOTE", "id": number }
 - { "action": "CREATE_EVENT", "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean }
+- { "action": "UPDATE_EVENT", "id": number, "updates": { "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean } }
 - { "action": "DELETE_EVENT", "id": number }
 - { "action": "NAVIGATE", "destination": "/home"|"/tasks"|"/calendar"|"/notes"|"/stats" }
 - { "action": "OPEN_MODAL", "modalName": "new_task"|"settings"|"notifications" }
@@ -709,6 +710,7 @@ You have access to the following actions:
 
 Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs.
 Important: The user's command is transcribed from speech and may contain phonetic misspellings or homophones (e.g., "right a note" instead of "write a note", or "cancel meat in" instead of "cancel meeting"). Infer the most logical intent based on the context.
+Important: To mark a task as complete, use UPDATE_TASK with { completed: true }. To rename a task, use UPDATE_TASK with { title: new_title }.
 Output ONLY a JSON object with a single key "actions" containing an array of action objects. Do not add any markdown formatting.`;
 
   const userPrompt = `Context: ${JSON.stringify(context)}

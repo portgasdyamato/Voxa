@@ -65,7 +65,15 @@ export async function executeVoiceCommand(
         }
         case 'UPDATE_TASK': {
           await updateTask.mutateAsync({ id: action.id, updates: action.updates });
-          toast({ title: "Task Updated", description: "The task was updated." });
+          
+          if (action.updates && action.updates.completed !== undefined) {
+            toast({ 
+              title: action.updates.completed ? "Task Completed" : "Task Re-opened", 
+              description: action.updates.completed ? "Great job!" : "Task is active again." 
+            });
+          } else {
+            toast({ title: "Task Updated", description: "The task was updated." });
+          }
           break;
         }
         case 'DELETE_TASK': {
@@ -125,6 +133,12 @@ export async function executeVoiceCommand(
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
           toast({ title: "Event Scheduled", description: `Scheduled "${action.title}"` });
           window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'calendar' }));
+          break;
+        }
+        case 'UPDATE_EVENT': {
+          await apiRequest('PATCH', `/api/events/${action.id}`, action.updates);
+          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+          toast({ title: "Event Updated", description: "The event was successfully updated." });
           break;
         }
         case 'DELETE_EVENT': {
