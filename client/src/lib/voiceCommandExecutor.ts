@@ -11,7 +11,8 @@ export async function executeVoiceCommand(
   updateTask: any,
   deleteTask: any,
   toast: any,
-  onSuccess: () => void
+  onSuccess: (actions?: any[]) => void,
+  conversationHistory?: {role: string, content: string}[]
 ) {
   if (!transcript.trim()) {
     toast({ title: "No Voice Input", description: "Please speak a command.", variant: "destructive" });
@@ -43,7 +44,8 @@ export async function executeVoiceCommand(
       body: JSON.stringify({ 
         transcript, 
         context,
-        localTime: new Date().toString()
+        localTime: new Date().toString(),
+        conversationHistory
       })
     });
 
@@ -278,7 +280,7 @@ export async function executeVoiceCommand(
       }
     }
 
-    onSuccess();
+    onSuccess(actions);
   } catch (error) {
     console.error('Voice command error:', error);
     toast({ 

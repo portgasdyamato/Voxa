@@ -1096,7 +1096,7 @@ async function handler(req, res) {
     }
 
     if (url.pathname === "/api/ai/command" && req.method === "POST") {
-      const { transcript, context, localTime } = req.body;
+      const { transcript, context, localTime, conversationHistory = [] } = req.body;
       
       if (!process.env.GROQ_API_KEY) {
         return res.status(500).json({ error: "GROQ_API_KEY is not configured." });
@@ -1139,11 +1139,14 @@ User Command: "${transcript}"`;
 
       try {
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const messages = [
+          { role: "system", content: systemPrompt },
+          ...conversationHistory.slice(-10), // keep last 10 messages for context
+          { role: "user", content: userPrompt }
+        ];
+        
         const chatCompletion = await groq.chat.completions.create({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
+          messages,
           model: "llama-3.1-8b-instant",
           temperature: 0.1,
           response_format: { type: "json_object" }

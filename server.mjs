@@ -682,13 +682,10 @@ app.post("/api/ai/format", async (req, res) => {
 });
 
 app.post("/api/ai/command", async (req, res) => {
-  const { transcript, context, localTime } = req.body;
-  
-  if (!process.env.GROQ_API_KEY) {
-    return res.status(500).json({ error: "GROQ_API_KEY is not configured." });
-  }
+  try {
+    const { transcript, context, localTime, conversationHistory = [] } = req.body;
 
-  const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant. Your job is to translate a user's voice command into a structured JSON array of actions.
+    const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant. Your job is to translate a user's voice command into a structured JSON array of actions.
 The user's current local date and time is: ${localTime || new Date().toString()}. Please use this as the reference point for resolving relative dates like "tomorrow", "next week", etc.
 You have access to the following actions:
 - { "action": "CREATE_TASK", "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "categoryId": number (optional) }
@@ -725,11 +722,14 @@ User Command: "${transcript}"`;
 
   try {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...conversationHistory.slice(-10), // keep last 10 messages for context
+      { role: "user", content: userPrompt }
+    ];
+    
     const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
+      messages,
       model: "llama-3.1-8b-instant",
       temperature: 0.1,
       response_format: { type: "json_object" }

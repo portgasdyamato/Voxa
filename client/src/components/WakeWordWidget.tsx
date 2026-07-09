@@ -17,6 +17,7 @@ export function WakeWordWidget() {
   const [listenerState, setListenerState] = useState<ListenerState>('idle');
   const [liveText, setLiveText]           = useState('');
   const [commandText, setCommandText]     = useState('');
+  const [conversationHistory, setConversationHistory] = useState<{role: string, content: string}[]>([]);
 
   const recognitionRef   = useRef<any>(null);
   const restartTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,16 +61,33 @@ export function WakeWordWidget() {
     if (!cmd.trim()) return;
     setLS('processing');
     setCommandText('Processing…');
+    
+    // Add user's command to local conversation history state immediately
+    const newUserMsg = { role: 'user', content: cmd };
+    let currentHistory = [...conversationHistory, newUserMsg];
+    if (currentHistory.length > 10) currentHistory = currentHistory.slice(currentHistory.length - 10);
+    setConversationHistory(currentHistory);
+
     await executeVoiceCommand(
       cmd, tasks, notes, events, categories,
       createTask, updateTask, deleteTask, toast,
-      () => {
+      (actions) => {
+        // AI execution complete, add response to history
+        if (actions && actions.length > 0) {
+          const newAiMsg = { role: 'assistant', content: `Executed actions: ${JSON.stringify(actions)}` };
+          setConversationHistory(prev => {
+            let nextHistory = [...prev, newAiMsg];
+            if (nextHistory.length > 10) nextHistory = nextHistory.slice(nextHistory.length - 10);
+            return nextHistory;
+          });
+        }
         setLS('idle');
         setCommandText('');
         setLiveText('');
-      }
+      },
+      currentHistory
     );
-  }, [tasks, notes, events, categories, createTask, updateTask, deleteTask, toast]);
+  }, [tasks, notes, events, categories, createTask, updateTask, deleteTask, toast, conversationHistory]);
 
   // ── Cancel awake mode ──────────────────────────────────────────────────────
   const cancelAwake = useCallback(() => {
