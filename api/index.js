@@ -4,6 +4,16 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { eq, and, desc, asc, inArray } from "drizzle-orm";
 import { Resend } from "resend";
 import * as ics from "ics";
+import Groq from "groq-sdk";
+import webpush from "web-push";
+
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:support@voxa.app',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 // shared/schema.ts
 import {
@@ -90,8 +100,17 @@ var folders = pgTable("folders", {
   name: varchar("name", { length: 100 }).notNull(),
   parentId: integer("parent_id"),
   color: varchar("color", { length: 7 }).default("#6B7280"),
+  color: varchar("color", { length: 7 }).default("#6B7280"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
+});
+var pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 var notes = pgTable("notes", {
   id: serial("id").primaryKey(),
@@ -811,6 +830,110 @@ async function handler(req, res) {
         .where(and(eq(events.id, eventId), eq(events.userId, currentUserId))).returning();
       if (!deleted.length) return res.status(404).json({ error: 'Event not found' });
       res.status(200).json({ success: true });
+      return;
+    }
+
+    // --- Web Push Routes ---
+    if (url.pathname === "/api/push/subscribe" && req.method === "POST") {
+      const subscription = req.body;
+      if (!subscription || !subscription.endpoint) {
+        res.status(400).json({ error: 'Invalid subscription' });
+        return;
+      }
+      
+      await db.delete(pushSubscriptions).where(and(eq(pushSubscriptions.userId, currentUserId), eq(pushSubscriptions.endpoint, subscription.endpoint)));
+      
+      await db.insert(pushSubscriptions).values({
+        userId: currentUserId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+      });
+      res.status(201).json({ success: true });
+      return;
+    }
+
+    if (url.pathname === "/api/cron/alarms" && req.method === "GET") {
+      if (!process.env.VAPID_PUBLIC_KEY) {
+        res.status(500).json({ error: 'VAPID keys missing' });
+        return;
+      }
+      try {
+        const now = new Date();
+        const nowTs = now.getTime();
+        const allSubs = await db.select().from(pushSubscriptions);
+        if (!allSubs.length) {
+          res.json({ status: 'no_subscriptions' });
+          return;
+        }
+        
+        const allTasks = await db.select().from(tasks).where(eq(tasks.completed, false));
+        const allEvents = await db.select().from(events);
+        const pushes = [];
+        
+        const checkItem = (item, isEvent) => {
+          const targetDate = isEvent ? new Date(item.startTime) : (item.dueDate ? new Date(item.dueDate) : null);
+          if (!targetDate || isNaN(targetDate.getTime())) return;
+          if (!isEvent && item.reminderEnabled === false) return;
+          
+          const targetTs = targetDate.getTime();
+          const diffMinutes = (targetTs - nowTs) / (1000 * 60);
+          
+          let shouldNotify = false;
+          let title = isEvent ? "📅 Event Reminder" : "⏰ Task Reminder";
+          let body = "";
+          
+          if (now.getHours() === 8 && now.getMinutes() === 0 && targetDate.toDateString() === now.toDateString()) {
+            shouldNotify = true;
+            title = "🌅 Morning Brief";
+            body = `"${item.title}" is scheduled for today.`;
+          }
+          
+          const intervals = [30, 15, 5];
+          const reachedInterval = intervals.find(mins => diffMinutes <= mins && diffMinutes > mins - 1);
+          
+          if (reachedInterval !== undefined) {
+            shouldNotify = true;
+            body = `"${item.title}" is coming up in ${reachedInterval} minutes!`;
+          }
+          
+          if (!isEvent && item.reminderType === 'manual' && item.reminderTime) {
+            const [targetH, targetM] = item.reminderTime.split(':').map(Number);
+            if (now.getHours() === targetH && now.getMinutes() === targetM && targetDate.toDateString() === now.toDateString()) {
+              shouldNotify = true;
+              title = "🔔 Scheduled Alert";
+              body = `Reminder for "${item.title}"`;
+            }
+          }
+          
+          if (shouldNotify) {
+            const userSubs = allSubs.filter(sub => sub.userId === item.userId);
+            for (const sub of userSubs) {
+              const pushPayload = JSON.stringify({ title, body, isEvent, id: item.id });
+              const subObject = {
+                endpoint: sub.endpoint,
+                keys: { p256dh: sub.p256dh, auth: sub.auth }
+              };
+              pushes.push(
+                webpush.sendNotification(subObject, pushPayload).catch(async err => {
+                   if (err.statusCode === 410 || err.statusCode === 404) {
+                     await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, sub.id));
+                   }
+                })
+              );
+            }
+          }
+        };
+        
+        allTasks.forEach(t => checkItem(t, false));
+        allEvents.forEach(e => checkItem(e, true));
+        
+        await Promise.all(pushes);
+        res.json({ success: true, pushed: pushes.length });
+      } catch (error) {
+        console.error('Cron error:', error);
+        res.status(500).json({ error: error.message });
+      }
       return;
     }
 

@@ -99,6 +99,16 @@ export const folders = pgTable("folders", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Push Subscriptions table (Web Push API)
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Notes table
 export const notes = pgTable("notes", {
   id: serial("id").primaryKey(),

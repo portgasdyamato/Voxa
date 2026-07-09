@@ -13,6 +13,41 @@ export function useAlarms(tasks: any[] = [], events: any[] = []) {
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
+      
+      // Register Service Worker for Push Notifications
+      if ('serviceWorker' in navigator && 'PushManager' in window && Notification.permission === 'granted') {
+        navigator.serviceWorker.register('/sw.js').then(async (registration) => {
+          let subscription = await registration.pushManager.getSubscription();
+          
+          if (!subscription) {
+            const publicVapidKey = 'BA0CBd22G-cwAJLrG1kIuQu9yO4gy5vYjlZ2CJWxmhSmNXe2rp3H6iU7F6iFMOnN5Y7SsHQLTY9I1et9wo6i-qI';
+            
+            // Convert VAPID key to Uint8Array
+            const padding = '='.repeat((4 - publicVapidKey.length % 4) % 4);
+            const base64 = (publicVapidKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+              outputArray[i] = rawData.charCodeAt(i);
+            }
+
+            subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: outputArray
+            });
+          }
+
+          // Send subscription to server
+          fetch('/api/push/subscribe', {
+            method: 'POST',
+            body: JSON.stringify(subscription),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).catch(err => console.error("Failed to save push subscription", err));
+          
+        }).catch(err => console.error('Service Worker registration failed', err));
+      }
     }
   }, []);
 
