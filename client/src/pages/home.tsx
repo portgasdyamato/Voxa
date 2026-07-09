@@ -262,7 +262,7 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
 
         {/* Dynamic Activity Wing - Ultra Premium */}
         <aside className="space-y-6 lg:sticky lg:top-32 hidden xl:block">
-           <div className="relative p-8 rounded-[2rem] overflow-hidden border border-white/[0.04] bg-[#09090b] shadow-2xl group transition-all duration-500 hover:border-white/[0.08]">
+           <div className="relative p-8 rounded-[2rem] overflow-hidden border border-white/[0.05] bg-[#0a0a0c]/40 backdrop-blur-[40px] shadow-2xl group transition-all duration-500 hover:border-white/[0.08]">
               {/* Subtle top edge highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent" />
               
@@ -288,8 +288,8 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
                     <svg viewBox="0 0 160 160" className="w-44 h-44 transform -rotate-90 relative z-10 overflow-visible">
                        <defs>
                           <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                             <stop offset="0%" stopColor="#3b82f6" />
-                             <stop offset="100%" stopColor="#8b5cf6" />
+                             <stop offset="0%" stopColor="#60a5fa" />
+                             <stop offset="100%" stopColor="#3b82f6" />
                           </linearGradient>
                        </defs>
                        
@@ -323,7 +323,7 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
                          animate={{ strokeDashoffset: 389.55 - (389.55 * completionRate) / 100 }}
                          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
                          strokeLinecap="round"
-                         className="drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                         className="drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
                        />
                        
                        {/* Inner Thin Boundary Ring */}
