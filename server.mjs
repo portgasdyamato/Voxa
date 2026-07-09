@@ -616,6 +616,12 @@ app.patch('/api/notes/:id', async (req, res) => {
   res.json(updated[0]);
 });
 
+app.delete('/api/notes/trash', async (req, res) => {
+  const userId = await ensureMockUser(db, users, categories);
+  await db.delete(notes).where(and(eq(notes.userId, userId), eq(notes.isArchived, true)));
+  res.json({ success: true });
+});
+
 app.delete('/api/notes/:id', async (req, res) => {
   const userId = await ensureMockUser(db, users, categories);
   const noteId = parseInt(req.params.id);

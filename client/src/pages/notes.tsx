@@ -99,6 +99,17 @@ export default function NotesPage() {
     }
   });
 
+  const emptyTrashMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('DELETE', '/api/notes/trash');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+      setSelectedNoteId(null);
+      toast({ title: "Trash Emptied", description: "All trashed notes have been permanently deleted." });
+    }
+  });
+
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const handleAIAction = async (action: 'summarize' | 'polish' | 'task') => {
     if (!editor || !selectedNoteId) return;
@@ -266,13 +277,24 @@ export default function NotesPage() {
                     {showTrash ? "Trash" : "Notes"}
                   </h1>
                 </div>
-            <Button 
-              onClick={handleCreateNote}
-              size="icon" 
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
+            {showTrash ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTrash(false)}
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-full px-4 h-8 text-xs"
+              >
+                Back
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleCreateNote}
+                size="icon" 
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
           <div className="relative flex gap-2">
@@ -292,12 +314,31 @@ export default function NotesPage() {
                 setShowTrash(!showTrash);
                 setSelectedNoteId(null);
               }}
-              className={`border-white/10 ${showTrash ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-white/5 text-white hover:bg-white/10'}`}
+              className={`border-white/10 shrink-0 ${showTrash ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-white/5 text-white hover:bg-white/10'}`}
               title={showTrash ? "Hide Trash" : "View Trash"}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
+          
+          {showTrash && (
+            <div className="mt-4 flex flex-col gap-3 p-3 bg-red-500/5 rounded-xl border border-red-500/10">
+              <p className="text-[10px] text-white/50 leading-tight text-center">
+                Items in trash will be permanently deleted after 24 hours.
+              </p>
+              <Button 
+                onClick={() => {
+                  if (confirm("Are you sure you want to permanently delete all notes in the trash? This cannot be undone.")) {
+                    emptyTrashMutation.mutate();
+                  }
+                }}
+                variant="outline" 
+                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20 text-xs h-8"
+              >
+                Empty Trash
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2 hide-scrollbar">

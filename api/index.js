@@ -1066,6 +1066,11 @@ RULES:
       res.status(200).json(updated[0]);
       return;
     }
+    if (url.pathname === "/api/notes/trash" && req.method === "DELETE") {
+      await db.delete(notes).where(and(eq(notes.userId, currentUserId), eq(notes.isArchived, true)));
+      res.status(200).json({ success: true });
+      return;
+    }
     if (url.pathname.startsWith("/api/notes/") && req.method === "DELETE") {
       const noteId = parseInt(url.pathname.split("/")[3]);
       const deleted = await db.delete(notes).where(and(eq(notes.id, noteId), eq(notes.userId, currentUserId))).returning();
