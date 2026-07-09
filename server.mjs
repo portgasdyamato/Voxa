@@ -695,7 +695,8 @@ You have access to the following actions:
 - { "action": "UPDATE_TASK", "id": number, "updates": { "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "completed": boolean } }
 - { "action": "DELETE_TASK", "id": number }
 - { "action": "CREATE_NOTE", "title": string, "content": string }
-- { "action": "UPDATE_NOTE", "id": number, "updates": { "title": string, "content": string } }
+- { "action": "UPDATE_NOTE", "id": number, "content": string }
+- { "action": "APPEND_NOTE", "id": number, "content": string }
 - { "action": "DELETE_NOTE", "id": number }
 - { "action": "PIN_NOTE", "id": number }
 - { "action": "SUMMARIZE_NOTE", "id": number }
@@ -711,7 +712,8 @@ You have access to the following actions:
 Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs.
 Important: The user's command is transcribed from speech and may contain phonetic misspellings or homophones (e.g., "right a note" instead of "write a note", or "cancel meat in" instead of "cancel meeting"). Infer the most logical intent based on the context.
 Important: To mark a task as complete, use UPDATE_TASK with { completed: true }. To rename a task, use UPDATE_TASK with { title: new_title }.
-CRITICAL TIMEZONE INSTRUCTION: When generating ISO strings for dates (startTime, endTime, deadline), NEVER append the 'Z' (UTC) suffix. Always output exactly in the format YYYY-MM-DDTHH:mm:ss so it is properly parsed in the user's local timezone.
+Important: To add text to an existing note, use APPEND_NOTE so you do not overwrite its existing content.
+CRITICAL TIMEZONE INSTRUCTION: When generating ISO strings for dates (startTime, endTime, deadline, dueDate), NEVER append the 'Z' (UTC) suffix. Always output exactly in the format YYYY-MM-DDTHH:mm:ss so it is properly parsed in the user's local timezone.
 Output ONLY a JSON object with a single key "actions" containing an array of action objects. Do not add any markdown formatting.`;
 
   const userPrompt = `Context: ${JSON.stringify(context)}

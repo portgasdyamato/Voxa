@@ -67,7 +67,7 @@ export async function executeVoiceCommand(
             title: action.title,
             priority: action.priority || 'medium',
             categoryId: action.categoryId || null,
-            dueDate: ensureAbsoluteDate(action.deadline) || undefined,
+            dueDate: ensureAbsoluteDate(action.deadline || action.dueDate) || undefined,
           });
           toast({ title: "Task Created", description: `Added "${action.title}"` });
           break;
@@ -78,8 +78,9 @@ export async function executeVoiceCommand(
             break;
           }
           const updates = { ...action.updates };
-          if (updates.deadline) {
-            updates.dueDate = ensureAbsoluteDate(updates.deadline);
+          const deadlineStr = updates.deadline || updates.dueDate;
+          if (deadlineStr) {
+            updates.dueDate = ensureAbsoluteDate(deadlineStr);
             delete updates.deadline;
           }
           await updateTask.mutateAsync({ id: action.id, updates });
@@ -120,6 +121,20 @@ export async function executeVoiceCommand(
           await apiRequest('PATCH', `/api/notes/${action.id}`, { content: action.content });
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Updated", description: "The note was updated." });
+          break;
+        }
+        case 'APPEND_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
+          const noteToAppend = notes.find(n => n.id === action.id);
+          const currentContent = noteToAppend.content || "";
+          const newContent = currentContent ? `${currentContent}\n\n${action.content}` : action.content;
+          
+          await apiRequest('PATCH', `/api/notes/${action.id}`, { content: newContent });
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Updated", description: "Content was appended to the note." });
           break;
         }
         case 'DELETE_NOTE': {
