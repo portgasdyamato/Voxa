@@ -267,7 +267,8 @@ export default function CalendarPage() {
               letter-spacing: 0.3px;
             }
             .fc-day-today {
-              background: rgba(255,255,255,0.03) !important;
+              background: rgba(59, 130, 246, 0.1) !important;
+              box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3) !important;
             }
             .fc-col-header-cell-cushion {
               padding: 12px 4px !important;
@@ -292,6 +293,7 @@ export default function CalendarPage() {
             eventDrop={handleEventDrop}
             eventResize={handleEventDrop}
             eventClick={handleEventClick}
+            displayEventTime={false}
             height="auto"
             contentHeight={700}
           />

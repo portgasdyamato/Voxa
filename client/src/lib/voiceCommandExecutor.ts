@@ -138,10 +138,18 @@ export async function executeVoiceCommand(
 
         // --- EVENTS ---
         case 'CREATE_EVENT': {
+          let start = ensureAbsoluteDate(action.startTime);
+          if (!start) start = new Date().toISOString();
+          
+          let end = ensureAbsoluteDate(action.endTime);
+          if (!end) {
+            end = new Date(new Date(start).getTime() + 30 * 60000).toISOString();
+          }
+
           await apiRequest('POST', '/api/events', {
             title: action.title,
-            startTime: ensureAbsoluteDate(action.startTime) || new Date().toISOString(),
-            endTime: ensureAbsoluteDate(action.endTime) || new Date(Date.now() + 3600000).toISOString(),
+            startTime: start,
+            endTime: end,
             allDay: action.allDay || false,
           });
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
