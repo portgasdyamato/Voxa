@@ -176,7 +176,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
         </DialogHeader>
 
         {/* Form Body */}
-        <form onSubmit={(e) => { e.preventDefault(); handleSaveTask(); }} className="flex flex-col flex-1 overflow-hidden relative z-10">
+        <form onSubmit={(e) => { e.preventDefault(); handleSaveTask(); }} className="flex flex-col flex-1 min-h-0 overflow-hidden relative z-10">
           <div className="px-8 py-8 space-y-7 overflow-y-auto flex-1 no-scrollbar">
 
             {/* Task Title */}

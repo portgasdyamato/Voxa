@@ -477,17 +477,18 @@ export default function CalendarPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+              className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
             >
-              <div className="flex justify-between items-center p-6 border-b border-white/5">
+              <div className="flex justify-between items-center p-6 border-b border-white/5 shrink-0">
                 <h2 className="text-xl font-semibold text-white">{isEditingEvent ? 'Update Event' : 'Create Event'}</h2>
                 <Button variant="ghost" size="icon" onClick={() => { setIsModalOpen(false); setIsEditingEvent(false); }} className="text-white/40 hover:text-white">
                   <X className="w-5 h-5" />
                 </Button>
               </div>
               
-              <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">
-                <div className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="p-6 space-y-6 overflow-y-auto no-scrollbar">
+                  <div className="space-y-4">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <Type className="w-4 h-4 text-white/40" />
@@ -593,7 +594,7 @@ export default function CalendarPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                <div className="flex justify-end gap-3 p-6 border-t border-white/5 shrink-0 bg-[#0c0c0e]">
                   <Button type="button" variant="ghost" onClick={() => { setIsModalOpen(false); setIsEditingEvent(false); }} className="text-white/60 hover:text-white">Cancel</Button>
                   <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
                     {createEventMutation.isPending || updateEventMutation.isPending ? 'Saving...' : (isEditingEvent ? 'Update Event' : 'Save Event')}
