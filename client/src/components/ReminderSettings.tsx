@@ -13,6 +13,8 @@ interface ReminderSettingsProps {
   onReminderEnabledChange: (enabled: boolean) => void;
   onReminderTypeChange: (type: 'manual' | 'morning' | 'default') => void;
   onReminderTimeChange: (time: string) => void;
+  intervals?: number[];
+  onIntervalsChange?: (intervals: number[]) => void;
 }
 
 export function ReminderSettings({
@@ -22,6 +24,8 @@ export function ReminderSettings({
   onReminderEnabledChange,
   onReminderTypeChange,
   onReminderTimeChange,
+  intervals = [5, 15, 30],
+  onIntervalsChange,
 }: ReminderSettingsProps) {
   return (
     <div className="space-y-8 relative">
@@ -84,6 +88,42 @@ export function ReminderSettings({
                 </motion.div>
               )}
             </div>
+
+            {reminderType === 'default' && (
+              <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border">
+                <p className="text-xs font-medium text-foreground">Standard Schedule</p>
+                <p className="text-[10px] text-muted-foreground">
+                  • 🌅 Morning Brief at 8:00 AM on the day of the task/event.
+                </p>
+                <div className="space-y-2 mt-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Minutes before due:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[5, 15, 30, 60, 120].map((mins) => {
+                      const isActive = intervals.includes(mins);
+                      return (
+                        <button
+                          key={mins}
+                          onClick={() => {
+                            if (!onIntervalsChange) return;
+                            if (isActive) {
+                              onIntervalsChange(intervals.filter(i => i !== mins));
+                            } else {
+                              onIntervalsChange([...intervals, mins].sort((a, b) => a - b));
+                            }
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
+                            isActive ? "bg-primary/20 border-primary/50 text-primary" : "bg-muted border-border text-muted-foreground hover:bg-muted/80"
+                          )}
+                        >
+                          {mins}m
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="p-4 rounded-xl border border-primary/10 bg-primary/5 flex items-center gap-3">
                <Zap className="w-4 h-4 text-primary" />

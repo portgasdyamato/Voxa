@@ -15,14 +15,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { ReminderSettings } from '@/components/ReminderSettings';
 
 export default function CalendarPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditingEvent, setIsEditingEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState<{ start: Date, end: Date } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventToDelete, setEventToDelete] = useState<any>(null);
+  const [reminderIntervals, setReminderIntervals] = useState<number[]>([5, 15, 30]);
   const calendarRef = useRef<any>(null);
 
   useEffect(() => {
@@ -156,12 +159,29 @@ export default function CalendarPage() {
   };
 
   const onSubmit = (data: any) => {
-    createEventMutation.mutate({
+    const payload = {
       ...data,
       startTime: new Date(data.startTime),
       endTime: new Date(data.endTime),
-      guests: guests
-    });
+      guests: guests,
+      reminders: reminderIntervals,
+    };
+
+    if (isEditingEvent && selectedEvent) {
+      updateEventMutation.mutate({
+        id: parseInt(selectedEvent.id),
+        updates: payload
+      }, {
+        onSuccess: () => {
+          setIsModalOpen(false);
+          setIsEditingEvent(false);
+          setSelectedEvent(null);
+          toast({ title: 'Event updated' });
+        }
+      });
+    } else {
+      createEventMutation.mutate(payload);
+    }
   };
 
   const handleAddGuest = async () => {
@@ -220,7 +240,13 @@ export default function CalendarPage() {
             Export ICS
           </Button>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setIsEditingEvent(false);
+              form.reset();
+              setGuests([]);
+              setReminderIntervals([5, 15, 30]);
+              setIsModalOpen(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-white transition-all duration-300"
           >
             <Plus className="w-4 h-4" />
@@ -398,7 +424,26 @@ export default function CalendarPage() {
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-white/5 flex justify-end">
+                <div className="pt-4 border-t border-white/5 flex justify-end gap-3">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditingEvent(true);
+                      form.setValue('title', selectedEvent.title);
+                      form.setValue('startTime', format(new Date(selectedEvent.startTime), "yyyy-MM-dd'T'HH:mm"));
+                      form.setValue('endTime', format(new Date(selectedEvent.endTime), "yyyy-MM-dd'T'HH:mm"));
+                      form.setValue('allDay', selectedEvent.allDay);
+                      form.setValue('description', selectedEvent.description || '');
+                      form.setValue('meetingLink', selectedEvent.meetingLink || '');
+                      setGuests(selectedEvent.guests || []);
+                      setReminderIntervals(selectedEvent.reminders || [5, 15, 30]);
+                      setSelectedEvent(null);
+                      setIsModalOpen(true);
+                    }}
+                    className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl"
+                  >
+                    Edit Event
+                  </Button>
                   <Button 
                     variant="destructive" 
                     onClick={() => {
@@ -435,8 +480,8 @@ export default function CalendarPage() {
               className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
             >
               <div className="flex justify-between items-center p-6 border-b border-white/5">
-                <h2 className="text-xl font-semibold text-white">Create Event</h2>
-                <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="text-white/40 hover:text-white">
+                <h2 className="text-xl font-semibold text-white">{isEditingEvent ? 'Update Event' : 'Create Event'}</h2>
+                <Button variant="ghost" size="icon" onClick={() => { setIsModalOpen(false); setIsEditingEvent(false); }} className="text-white/40 hover:text-white">
                   <X className="w-5 h-5" />
                 </Button>
               </div>
@@ -533,12 +578,25 @@ export default function CalendarPage() {
                       </div>
                     )}
                   </div>
+                  
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <ReminderSettings
+                      reminderEnabled={true}
+                      reminderType={'default'}
+                      reminderTime={'09:00'}
+                      onReminderEnabledChange={() => {}}
+                      onReminderTypeChange={() => {}}
+                      onReminderTimeChange={() => {}}
+                      intervals={reminderIntervals}
+                      onIntervalsChange={setReminderIntervals}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-                  <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="text-white/60 hover:text-white">Cancel</Button>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl" disabled={createEventMutation.isPending}>
-                    {createEventMutation.isPending ? 'Saving...' : 'Save Event'}
+                  <Button type="button" variant="ghost" onClick={() => { setIsModalOpen(false); setIsEditingEvent(false); }} className="text-white/60 hover:text-white">Cancel</Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
+                    {createEventMutation.isPending || updateEventMutation.isPending ? 'Saving...' : (isEditingEvent ? 'Update Event' : 'Save Event')}
                   </Button>
                 </div>
               </form>

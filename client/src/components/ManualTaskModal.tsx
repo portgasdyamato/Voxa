@@ -33,6 +33,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderType, setReminderType] = useState<'manual' | 'morning' | 'default'>('default');
   const [reminderTime, setReminderTime] = useState<string>('09:00');
+  const [reminderIntervals, setReminderIntervals] = useState<number[]>([5, 15, 30]);
   
   const { toast } = useToast();
   const { data: categories } = useCategories();
@@ -55,7 +56,13 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
       }
       setReminderEnabled(task.reminderEnabled ?? true);
       setReminderType(task.reminderType || 'default');
-      setReminderTime(task.reminderTime || '09:00');
+      if (task.reminderType === 'default' && task.reminderTime) {
+        setReminderIntervals(task.reminderTime.split(',').map(Number).filter((n: any) => !isNaN(n)));
+        setReminderTime('09:00');
+      } else {
+        setReminderTime(task.reminderTime || '09:00');
+        setReminderIntervals([5, 15, 30]);
+      }
     } else if (!open) {
       resetForm();
     }
@@ -71,6 +78,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
     setReminderEnabled(true);
     setReminderType('default');
     setReminderTime('09:00');
+    setReminderIntervals([5, 15, 30]);
   };
 
   const handleTaskTitleChange = (value: string) => {
@@ -111,7 +119,7 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
       dueDate: selectedDeadline ? selectedDeadline.toISOString() : null,
       reminderEnabled,
       reminderType,
-      reminderTime: reminderType === 'manual' ? reminderTime : null,
+      reminderTime: reminderType === 'manual' ? reminderTime : (reminderType === 'default' ? reminderIntervals.join(',') : null),
     };
     try {
       if (isEditing) {
@@ -261,6 +269,8 @@ export function ManualTaskModal({ open, onOpenChange, task }: ManualTaskModalPro
                   onReminderEnabledChange={setReminderEnabled}
                   onReminderTypeChange={setReminderType}
                   onReminderTimeChange={setReminderTime}
+                  intervals={reminderIntervals}
+                  onIntervalsChange={setReminderIntervals}
                 />
               </div>
             )}

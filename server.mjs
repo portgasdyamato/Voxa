@@ -501,7 +501,13 @@ app.get('/api/cron/alarms', async (req, res) => {
       }
       
       // 2. Intervals
-      const intervals = [30, 15, 5];
+      let intervals = [30, 15, 5];
+      if (!isEvent && item.reminderType === 'default' && item.reminderTime) {
+        intervals = item.reminderTime.split(',').map(Number).filter(n => !isNaN(n));
+      } else if (isEvent && Array.isArray(item.reminders)) {
+        intervals = item.reminders.map(Number).filter(n => !isNaN(n));
+      }
+      
       const reachedInterval = intervals.find(mins => diffMinutes <= mins && diffMinutes > mins - 1);
       
       if (reachedInterval !== undefined) {
