@@ -54,7 +54,9 @@ export default function NotesPage() {
 
   // Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
+  const [isDictating, setIsDictating] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const dictationRef = useRef<any>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   
   const { data: notes = [] as any[] } = useQuery({ queryKey: ['/api/notes'] });
@@ -511,6 +513,70 @@ export default function NotesPage() {
                 >
                   <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'animate-pulse text-red-500' : ''}`} />
                   {isRecording ? 'Stop Rec' : 'Voice Memo'}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (isDictating) {
+                      dictationRef.current?.stop();
+                      setIsDictating(false);
+                    } else {
+                      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                      if (!SR) {
+                        toast({ title: "Not Supported", description: "Speech recognition is not supported in this browser." });
+                        return;
+                      }
+                      
+                      const rec = new SR();
+                      rec.continuous = true;
+                      rec.interimResults = true;
+                      dictationRef.current = rec;
+                      
+                      let finalTranscript = '';
+                      
+                      rec.onstart = () => setIsDictating(true);
+                      
+                      rec.onresult = (event: any) => {
+                        let interim = '';
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                          if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript + ' ';
+                          } else {
+                            interim += event.results[i][0].transcript;
+                          }
+                        }
+                      };
+                      
+                      rec.onend = async () => {
+                        setIsDictating(false);
+                        if (finalTranscript.trim()) {
+                           toast({ title: "Formatting...", description: "AI is formatting your dictation..." });
+                           try {
+                             const res = await fetch('/api/ai/dictate', {
+                               method: 'POST',
+                               headers: { 'Content-Type': 'application/json' },
+                               body: JSON.stringify({ rawText: finalTranscript })
+                             });
+                             const data = await res.json();
+                             if (data.html && editor) {
+                               editor.chain().focus().insertContent(data.html + '<p></p>').run();
+                               toast({ title: "Dictation Inserted" });
+                             }
+                           } catch (err) {
+                             toast({ title: "Dictation Failed", description: err.message, variant: "destructive" });
+                           }
+                        }
+                      };
+                      
+                      rec.start();
+                    }
+                  }}
+                  className={`border-white/10 text-white hover:bg-white/10 ${isDictating ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-white/5'}`}
+                >
+                  <Mic className={`w-4 h-4 mr-2 ${isDictating ? 'animate-pulse text-blue-400' : ''}`} />
+                  {isDictating ? 'Stop Dictating' : 'Smart Dictate'}
                 </Button>
 
                 <div className="w-px h-6 bg-white/10 mx-2" />

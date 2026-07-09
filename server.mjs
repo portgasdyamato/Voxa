@@ -648,7 +648,7 @@ app.post("/api/ai/format", async (req, res) => {
     if (action === "summarize") {
       prompt = `Summarize the following text into 3 concise bullet points. Output ONLY a <ul> tag containing the <li> elements.\n\nText: ${rawText}`;
     } else if (action === "polish") {
-      prompt = `Fix any grammar errors and polish the vocabulary of the following text to make it sound professional but keep the original meaning. Output ONLY a <p> tag containing the polished text.\n\nText: ${rawText}`;
+      prompt = `Fix any grammar errors and polish the vocabulary of the following HTML text to make it sound professional but keep the original meaning. CRITICAL: You MUST preserve all original HTML formatting exactly as it is (including <ul>, <li>, <p>, <h1>, <strong>, etc.). Do not collapse the text into a single paragraph. Output ONLY the polished HTML.\n\nText: ${content}`;
     } else if (action === "task") {
       prompt = `Extract all actionable tasks from the following text. Output ONLY a <ul data-type="taskList"> containing <li data-type="taskItem" data-checked="false"><p>Task text</p></li> elements.\n\nText: ${rawText}`;
     }
@@ -669,7 +669,7 @@ app.post("/api/ai/format", async (req, res) => {
     if (action === "summarize") {
       newContent = `<div style="background: rgba(59,130,246,0.1); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; margin-bottom: 1rem;"><strong>🤖 AI Summary:</strong><br/>${aiHtml}</div>` + content;
     } else if (action === "polish") {
-      newContent = `<p>✨ <em>Polished Note:</em></p>${aiHtml}`;
+      newContent = aiHtml;
     } else if (action === "task") {
       newContent = aiHtml + content;
     }
@@ -739,8 +739,43 @@ User Command: "${transcript}"`;
     const parsed = JSON.parse(aiOutput);
     res.status(200).json(parsed);
   } catch (error) {
-    console.error("Groq AI Command Error:", error);
     res.status(500).json({ error: error.message || "Failed to process AI command" });
+  }
+});
+
+app.post("/api/ai/dictate", async (req, res) => {
+  try {
+    const { rawText } = req.body;
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ error: "GROQ_API_KEY is not configured." });
+    }
+
+    const systemPrompt = `You are a Smart Dictation formatter. 
+The user has spoken some raw text using speech-to-text. Your job is to format it beautifully into clean HTML suitable for a rich text editor.
+RULES:
+1. Fix all speech-to-text typos, missing capitalization, and punctuation.
+2. If they rattle off a list of items, format it as an HTML <ul> or <ol> with <li>.
+3. If they emphasize something or it sounds like a heading, use <h3> or <strong>.
+4. Output ONLY the raw HTML string. Do NOT wrap it in markdown code blocks (\`\`\`html). Do NOT include <head> or <body> tags. Just the content.`;
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: rawText }
+      ],
+      model: "llama-3.1-8b-instant",
+      temperature: 0.2,
+    });
+    
+    let htmlOutput = chatCompletion.choices[0]?.message?.content || "";
+    // Clean up if it hallucinated markdown blocks
+    htmlOutput = htmlOutput.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+    
+    res.status(200).json({ html: htmlOutput });
+  } catch (error) {
+    console.error("Groq AI Dictate Error:", error);
+    res.status(500).json({ error: error.message || "Failed to process dictation" });
   }
 });
 
