@@ -226,7 +226,7 @@ export default function NotesPage() {
   }, [isPreviewMode, editor]);
 
   return (
-    <div className="flex h-[calc(100vh-240px)] min-h-[600px] overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in duration-700">
+    <div className="flex h-[calc(100vh-140px)] min-h-[600px] overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in duration-700">
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
