@@ -675,10 +675,10 @@ app.post("/api/ai/format", async (req, res) => {
     }
     
     res.status(200).json({ content: newContent });
-  } catch (error) {
-    console.error("Groq AI Error:", error);
-    res.status(500).json({ error: "Failed to process AI request" });
-  }
+    } catch (error) {
+      console.error("Groq AI Error:", error);
+      res.status(500).json({ error: error.message || "Failed to process AI request" });
+    }
 });
 
 // --- Folders Routes ---
