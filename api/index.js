@@ -1146,10 +1146,11 @@ You have access to the following actions:
 - { "action": "CREATE_TASK", "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "categoryId": number (optional) }
 - { "action": "UPDATE_TASK", "id": number, "updates": { "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "completed": boolean } }
 - { "action": "DELETE_TASK", "id": number }
-- { "action": "CREATE_NOTE", "title": string, "content": string }
+- { "action": "CREATE_NOTE", "title": string, "content": string, "isPinned": boolean }
 - { "action": "UPDATE_NOTE", "id": number, "content": string }
 - { "action": "APPEND_NOTE", "id": number, "content": string }
-- { "action": "DELETE_NOTE", "id": number }
+- { "action": "DELETE_NOTE", "id": number } (This soft-deletes the note to the trash)
+- { "action": "RESTORE_NOTE", "id": number } (This recovers a note from the trash)
 - { "action": "PIN_NOTE", "id": number }
 - { "action": "UNPIN_NOTE", "id": number }
 - { "action": "SUMMARIZE_NOTE", "id": number }
@@ -1163,8 +1164,9 @@ You have access to the following actions:
 - { "action": "UPDATE_PROFILE", "firstName": string, "lastName": string }
 - { "action": "TOGGLE_SETTING", "setting": "alarm_sound", "value": boolean }
 
-Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs.
+Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs. Note that notes have an 'isArchived' flag showing if they are in the trash.
 Important: The user's command is transcribed from speech and may contain phonetic misspellings or homophones (e.g., "right a note" instead of "write a note", or "cancel meat in" instead of "cancel meeting"). Infer the most logical intent based on the context.
+CRITICAL EXCLUSIONS: If the user uses words like "except", "excluding", or "but not", you MUST explicitly EXCLUDE those specific items from your actions. Double check your IDs to ensure you do not act on items they told you to exclude!
 CRITICAL: Actively copy-edit and fix any speech-to-text typos, missing capitalization, or missing punctuation in titles and content before generating the JSON. The output text should look professionally typed.
 Important: To mark a task as complete, use UPDATE_TASK with { completed: true }. To rename a task, use UPDATE_TASK with { title: new_title }.
 Important: To add text to an existing note, use APPEND_NOTE so you do not overwrite its existing content.

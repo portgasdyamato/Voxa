@@ -35,6 +35,8 @@ export default function NotesPage() {
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
+  const [showTrash, setShowTrash] = useState(false);
+  
   // Drag and drop state
   const [draggedNoteId, setDraggedNoteId] = useState<number | null>(null);
 
@@ -273,19 +275,34 @@ export default function NotesPage() {
             </Button>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-            <Input 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search notes..." 
-              className="pl-9 bg-white/5 border-white/10 text-white rounded-xl focus:border-white/20"
-            />
+          <div className="relative flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+              <Input 
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search notes..." 
+                className="pl-9 bg-white/5 border-white/10 text-white rounded-xl focus:border-white/20"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                setShowTrash(!showTrash);
+                setSelectedNoteId(null);
+              }}
+              className={`border-white/10 ${showTrash ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-white/5 text-white hover:bg-white/10'}`}
+              title={showTrash ? "Hide Trash" : "View Trash"}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2 hide-scrollbar">
           {(notes as any[])
+            .filter((n: any) => Boolean(n.isArchived) === showTrash)
             .filter((n: any) => n.title.toLowerCase().includes(searchQuery.toLowerCase()))
             .map((note: any) => (
             <motion.div
@@ -427,28 +444,43 @@ export default function NotesPage() {
                   {isPreviewMode ? "Edit Note" : "Preview Note"}
                 </Button>
                 <div className="w-px h-6 bg-white/10 mx-1" />
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => {
-                    const isCurrentlyPinned = selectedNote?.isPinned;
-                    updateNoteMutation.mutate({ id: selectedNoteId, updates: { isPinned: !isCurrentlyPinned }});
-                    toast({
-                      title: !isCurrentlyPinned ? "Note pinned" : "Note unpinned",
-                      description: !isCurrentlyPinned ? "This note will appear at the top." : "Note removed from pins.",
-                    });
-                  }}
-                  className={`hover:bg-white/10 text-white/40 hover:text-white ${selectedNote?.isPinned ? 'text-blue-400 hover:text-blue-300' : ''}`}
-                >
-                  <Pin className="w-5 h-5" />
-                </Button>
+                {selectedNote?.isArchived ? (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      updateNoteMutation.mutate({ id: selectedNoteId, updates: { isArchived: false } });
+                      toast({ title: "Note Restored", description: "The note has been removed from trash." });
+                      setSelectedNoteId(null);
+                    }}
+                    className="bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 mr-2"
+                  >
+                    Restore
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => {
+                      const isCurrentlyPinned = selectedNote?.isPinned;
+                      updateNoteMutation.mutate({ id: selectedNoteId, updates: { isPinned: !isCurrentlyPinned }});
+                      toast({
+                        title: !isCurrentlyPinned ? "Note pinned" : "Note unpinned",
+                        description: !isCurrentlyPinned ? "This note will appear at the top." : "Note removed from pins.",
+                      });
+                    }}
+                    className={`hover:bg-white/10 text-white/40 hover:text-white mr-2 ${selectedNote?.isPinned ? 'text-blue-400 hover:text-blue-300' : ''}`}
+                  >
+                    <Pin className="w-5 h-5" />
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   size="icon"
                   onClick={() => {
                     setNoteToDelete(selectedNoteId);
                   }}
-                  className="text-white/40 hover:text-red-400 hover:bg-red-500/10"
+                  className="bg-white/5 border-white/10 text-white hover:bg-red-500/20 hover:text-red-400"
                 >
                   <Trash2 className="w-5 h-5" />
                 </Button>
@@ -898,31 +930,237 @@ export default function NotesPage() {
                 onChange={handleImageUpload}
                 className="bg-white/5 border-white/10 text-white file:text-white file:bg-white/10 file:border-0 file:rounded-md hover:file:bg-white/20 cursor-pointer"
               />
+                  size="icon"
+                  onClick={() => editor?.chain().focus().redo().run()}
+                  disabled={!editor?.can().chain().focus().redo().run()}
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-8 w-8"
+                >
+                  <Redo className="w-4 h-4" />
+                </Button>
+
+                <div className="w-px h-6 bg-white/10 mx-2" />
+                
+                {/* AI Tools */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAIAction('summarize')}
+                  disabled={isProcessingAI}
+                  className="bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
+                >
+                  <ListTodo className="w-4 h-4 mr-2" />
+                  Summarize
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAIAction('polish')}
+                  disabled={isProcessingAI}
+                  className="bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Polish
+                </Button>
+
+                <div className="flex-1" />
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAIAction('task')}
+                  disabled={isProcessingAI}
+                  className="bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20"
+                >
+                  <ListTodo className="w-4 h-4 mr-2" />
+                  AI: Extract Tasks
+                </Button>
+              </div>
+              </>
+              )}
+
+              <EditorContent editor={editor} className="min-h-[500px]" />
+              
+              <style>{`
+                .ProseMirror {
+                  outline: none;
+                  min-height: calc(100vh - 400px);
+                  padding-bottom: 4rem;
+                }
+                .preview-mode .ProseMirror {
+                  min-height: auto;
+                  padding-bottom: 2rem;
+                }
+                .preview-mode .drag-handle {
+                  display: none !important;
+                }
+                .ProseMirror:focus { outline: none; }
+                .ProseMirror p.is-editor-empty:first-child::before {
+                  content: attr(data-placeholder);
+                  float: left;
+                  color: rgba(255,255,255,0.2);
+                  pointer-events: none;
+                  height: 0;
+                }
+                .ProseMirror img {
+                  border-radius: 0.5rem;
+                  max-width: 100%;
+                  height: auto;
+                  margin: 1rem 0;
+                }
+                .ProseMirror ul[data-type="taskList"] {
+                  list-style: none;
+                  padding: 0;
+                }
+                .ProseMirror ul[data-type="taskList"] li {
+                  display: flex;
+                  align-items: flex-start;
+                  margin-bottom: 0.25rem;
+                }
+                .ProseMirror ul[data-type="taskList"] li > label {
+                  margin-right: 0.5rem;
+                  margin-top: 0.1rem;
+                  user-select: none;
+                  display: flex;
+                  align-items: center;
+                }
+                .ProseMirror ul[data-type="taskList"] li > label input {
+                  margin: 0;
+                  cursor: pointer;
+                }
+                .ProseMirror ul[data-type="taskList"] li > div {
+                  flex: 1;
+                }
+                .ProseMirror ul[data-type="taskList"] li p {
+                  margin: 0;
+                  line-height: 1.6;
+                }
+                
+                /* Drag and drop styling */
+                .drag-handle {
+                  cursor: grab;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 24px;
+                  height: 24px;
+                  border-radius: 4px;
+                  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>');
+                  background-repeat: no-repeat;
+                  background-position: center;
+                  color: rgba(255, 255, 255, 0.4);
+                  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+                }
+                .drag-handle.hide {
+                  opacity: 0;
+                  pointer-events: none;
+                }
+                .drag-handle:hover {
+                  background-color: rgba(255, 255, 255, 0.1);
+                  color: rgba(255, 255, 255, 0.8);
+                }
+                .ProseMirror-selectednode img {
+                  outline: 2px solid rgba(59, 130, 246, 0.5); /* blue-500 */
+                  border-radius: 0.5rem;
+                  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+                  transition: all 0.2s ease;
+                }
+                .ProseMirror-selectednode audio {
+                  opacity: 0.8;
+                }
+              `}</style>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-white/20 relative">
+            {!isSidebarOpen && (
+              <Button 
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(true)}
+                className="absolute top-6 left-6 text-white/40 hover:text-white hover:bg-white/10"
+                title="Expand Sidebar"
+              >
+                <PanelLeft className="w-5 h-5" />
+              </Button>
+            )}
+            <FileEdit className="w-16 h-16 mb-4 opacity-20" />
+            <p>Select a note or create a new one to start writing.</p>
+          </div>
+        )}
+      </div>
+
+      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+        <DialogContent className="bg-[#121214] border border-white/10 text-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Insert Image</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="image-url">Image URL</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image-url"
+                  value={imageUrlInput}
+                  onChange={(e) => setImageUrlInput(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="bg-white/5 border-white/10 text-white"
+                  onKeyDown={(e) => e.key === 'Enter' && submitImageUrl()}
+                />
+                <Button onClick={submitImageUrl} className="bg-blue-600 hover:bg-blue-700">Add</Button>
+              </div>
+            </div>
+            
+            <div className="relative flex py-2 items-center">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink-0 mx-4 text-white/40 text-xs">OR</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="image-upload">Upload from computer</Label>
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="bg-white/5 border-white/10 text-white file:text-white file:bg-white/10 file:border-0 file:rounded-md hover:file:bg-white/20 cursor-pointer"
+              />
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={noteToDelete !== null} onOpenChange={(open) => !open && setNoteToDelete(null)}>
-        <DialogContent className="bg-[#0c0c0e] border border-white/10 text-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete Note</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-white/60">Are you sure you want to delete this note? This action cannot be undone.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setNoteToDelete(null)} className="text-white/60 hover:text-white">Cancel</Button>
-            <Button onClick={() => {
-              if (noteToDelete !== null) {
-                deleteNoteMutation.mutate(noteToDelete);
-              }
-              setNoteToDelete(null);
-            }} className="bg-red-600 hover:bg-red-700 text-white border-0">Delete Note</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={noteToDelete !== null} onOpenChange={(open) => !open && setNoteToDelete(null)}>
+        <AlertDialogContent className="bg-[#121214] border-white/10 text-white max-w-sm rounded-[24px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              {showTrash ? "This will permanently delete the note." : "This will move the note to the trash."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                if (noteToDelete !== null) {
+                  if (showTrash) {
+                    deleteNoteMutation.mutate(noteToDelete);
+                    toast({ title: "Note Deleted", description: "The note has been permanently deleted." });
+                  } else {
+                    updateNoteMutation.mutate({ id: noteToDelete, updates: { isArchived: true } });
+                    toast({ title: "Moved to Trash", description: "The note was moved to the trash." });
+                    setSelectedNoteId(null);
+                  }
+                }
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   );

@@ -32,7 +32,7 @@ export async function executeVoiceCommand(
     // Build lightweight context to avoid exceeding token limits
     const context = {
       tasks: tasks.map(t => ({ id: t.id, title: t.title, completed: t.completed, priority: t.priority })),
-      notes: notes.map(n => ({ id: n.id, title: n.title, isPinned: n.isPinned })),
+      notes: notes.map(n => ({ id: n.id, title: n.title, isPinned: n.isPinned, isArchived: n.isArchived })),
       events: events.map(e => ({ id: e.id, title: e.title, startTime: e.startTime })),
       categories: categories.map(c => ({ id: c.id, name: c.name }))
     };
@@ -144,9 +144,19 @@ export async function executeVoiceCommand(
             toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
             break;
           }
-          await apiRequest('DELETE', `/api/notes/${action.id}`);
+          await apiRequest('PATCH', `/api/notes/${action.id}`, { isArchived: true });
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
-          toast({ title: "Note Deleted", description: "The note was deleted." });
+          toast({ title: "Note Deleted", description: "The note was moved to the trash." });
+          break;
+        }
+        case 'RESTORE_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
+          await apiRequest('PATCH', `/api/notes/${action.id}`, { isArchived: false });
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Restored", description: "The note was restored." });
           break;
         }
         case 'PIN_NOTE': {
