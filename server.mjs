@@ -352,12 +352,13 @@ app.post('/api/events', async (req, res) => {
       start: [start.getFullYear(), start.getMonth() + 1, start.getDate(), start.getHours(), start.getMinutes()],
       end: [end.getFullYear(), end.getMonth() + 1, end.getDate(), end.getHours(), end.getMinutes()],
       title: e.title,
-      description: e.description || '',
-      location: e.location || '',
-      url: e.meetingLink || '',
       status: 'CONFIRMED',
       organizer: { name: 'VoXa Calendar', email: 'onboarding@resend.dev' },
     };
+    
+    if (e.description) icsEvent.description = e.description;
+    if (e.location) icsEvent.location = e.location;
+    if (e.meetingLink) icsEvent.url = e.meetingLink;
     
     const { error, value } = ics.createEvent(icsEvent);
     
