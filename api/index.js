@@ -1071,7 +1071,7 @@ async function handler(req, res) {
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          model: "llama3-8b-8192",
+          model: "llama-3.1-8b-instant",
           temperature: 0.2,
         });
         
