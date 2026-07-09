@@ -75,7 +75,7 @@ export async function executeVoiceCommand(
           await apiRequest('POST', '/api/notes', { title: action.title, content: action.content, isPinned: false });
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Created", description: `Saved "${action.title}"` });
-          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/notes' }));
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'notes' }));
           break;
         }
         case 'UPDATE_NOTE': {
@@ -120,7 +120,7 @@ export async function executeVoiceCommand(
           });
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
           toast({ title: "Event Scheduled", description: `Scheduled "${action.title}"` });
-          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/calendar' }));
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'calendar' }));
           break;
         }
         case 'DELETE_EVENT': {
@@ -132,7 +132,13 @@ export async function executeVoiceCommand(
 
         // --- UI & NAVIGATION ---
         case 'NAVIGATE': {
-          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: action.destination }));
+          let dest = action.destination;
+          if (dest.startsWith('/')) {
+            if (['/tasks', '/calendar', '/notes'].includes(dest)) {
+              dest = dest.substring(1);
+            }
+          }
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: dest }));
           toast({ title: "Navigating", description: `Taking you to ${action.destination}...` });
           break;
         }
