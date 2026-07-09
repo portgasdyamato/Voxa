@@ -73,6 +73,10 @@ export async function executeVoiceCommand(
           break;
         }
         case 'UPDATE_TASK': {
+          if (!action.id || !tasks.find(t => t.id === action.id)) {
+            toast({ title: "Task Not Found", description: "I couldn't find a task matching that command.", variant: "destructive" });
+            break;
+          }
           const updates = { ...action.updates };
           if (updates.deadline) {
             updates.dueDate = ensureAbsoluteDate(updates.deadline);
@@ -91,6 +95,10 @@ export async function executeVoiceCommand(
           break;
         }
         case 'DELETE_TASK': {
+          if (!action.id || !tasks.find(t => t.id === action.id)) {
+            toast({ title: "Task Not Found", description: "I couldn't find a task matching that command.", variant: "destructive" });
+            break;
+          }
           await deleteTask.mutateAsync(action.id);
           toast({ title: "Task Deleted", description: "The task was deleted." });
           break;
@@ -105,18 +113,30 @@ export async function executeVoiceCommand(
           break;
         }
         case 'UPDATE_NOTE': {
-          await apiRequest('PATCH', `/api/notes/${action.id}`, action.updates);
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
+          await apiRequest('PATCH', `/api/notes/${action.id}`, { content: action.content });
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Updated", description: "The note was updated." });
           break;
         }
         case 'DELETE_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
           await apiRequest('DELETE', `/api/notes/${action.id}`);
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Deleted", description: "The note was deleted." });
           break;
         }
         case 'PIN_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
           await apiRequest('PATCH', `/api/notes/${action.id}`, { isPinned: true });
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Pinned", description: "The note was pinned to the top." });
@@ -124,6 +144,10 @@ export async function executeVoiceCommand(
         }
         case 'SUMMARIZE_NOTE':
         case 'POLISH_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
           const note = notes.find(n => n.id === action.id);
           if (note) {
             const formatAction = action.action === 'SUMMARIZE_NOTE' ? 'summarize' : 'polish';
@@ -158,6 +182,10 @@ export async function executeVoiceCommand(
           break;
         }
         case 'UPDATE_EVENT': {
+          if (!action.id || !events.find(e => e.id === action.id)) {
+            toast({ title: "Event Not Found", description: "I couldn't find an event matching that command.", variant: "destructive" });
+            break;
+          }
           const updates = { ...action.updates };
           if (updates.startTime) updates.startTime = ensureAbsoluteDate(updates.startTime);
           if (updates.endTime) updates.endTime = ensureAbsoluteDate(updates.endTime);
@@ -168,9 +196,13 @@ export async function executeVoiceCommand(
           break;
         }
         case 'DELETE_EVENT': {
+          if (!action.id || !events.find(e => e.id === action.id)) {
+            toast({ title: "Event Not Found", description: "I couldn't find an event matching that command.", variant: "destructive" });
+            break;
+          }
           await apiRequest('DELETE', `/api/events/${action.id}`);
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
-          toast({ title: "Event Canceled", description: "The event was canceled." });
+          toast({ title: "Event Deleted", description: "The event was successfully removed." });
           break;
         }
 
