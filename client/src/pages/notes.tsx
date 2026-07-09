@@ -126,6 +126,7 @@ export default function NotesPage() {
       content: '',
       isPinned: false
     });
+    setIsPreviewMode(false);
   };
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
@@ -293,7 +294,10 @@ export default function NotesPage() {
               onDrop={(e: any) => handleDrop(e, note.id)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setSelectedNoteId(note.id)}
+              onClick={() => {
+                setSelectedNoteId(note.id);
+                setIsPreviewMode(true);
+              }}
               className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
                 selectedNoteId === note.id 
                   ? 'bg-white/10 border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' 
@@ -411,13 +415,14 @@ export default function NotesPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant={isPreviewMode ? "default" : "secondary"}
+                  size="sm"
                   onClick={() => setIsPreviewMode(!isPreviewMode)}
-                  className={`hover:bg-white/10 ${isPreviewMode ? 'text-blue-400 hover:text-blue-300' : 'text-white/40 hover:text-white'}`}
+                  className={`gap-2 ${isPreviewMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                   title={isPreviewMode ? "Switch to Edit Mode" : "Switch to Preview Mode"}
                 >
-                  {isPreviewMode ? <Edit3 className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {isPreviewMode ? <Edit3 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {isPreviewMode ? "Edit Note" : "Preview Note"}
                 </Button>
                 <div className="w-px h-6 bg-white/10 mx-1" />
                 <Button 
