@@ -18,6 +18,15 @@ export async function executeVoiceCommand(
     return;
   }
 
+  // Helper to ensure AI-generated dates (which represent local time) are properly converted to UTC absolute time for the backend.
+  // By stripping 'Z', the browser's new Date() parses it as local time, then .toISOString() converts it to absolute UTC.
+  const ensureAbsoluteDate = (dateStr: string | undefined) => {
+    if (!dateStr) return undefined;
+    const cleanStr = dateStr.replace(/Z$/, '');
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  };
+
   try {
     // Build lightweight context to avoid exceeding token limits
     const context = {
@@ -58,13 +67,18 @@ export async function executeVoiceCommand(
             title: action.title,
             priority: action.priority || 'medium',
             categoryId: action.categoryId || null,
-            dueDate: action.deadline || undefined,
+            dueDate: ensureAbsoluteDate(action.deadline) || undefined,
           });
           toast({ title: "Task Created", description: `Added "${action.title}"` });
           break;
         }
         case 'UPDATE_TASK': {
-          await updateTask.mutateAsync({ id: action.id, updates: action.updates });
+          const updates = { ...action.updates };
+          if (updates.deadline) {
+            updates.dueDate = ensureAbsoluteDate(updates.deadline);
+            delete updates.deadline;
+          }
+          await updateTask.mutateAsync({ id: action.id, updates });
           
           if (action.updates && action.updates.completed !== undefined) {
             toast({ 
@@ -126,8 +140,8 @@ export async function executeVoiceCommand(
         case 'CREATE_EVENT': {
           await apiRequest('POST', '/api/events', {
             title: action.title,
-            startTime: action.startTime,
-            endTime: action.endTime,
+            startTime: ensureAbsoluteDate(action.startTime) || new Date().toISOString(),
+            endTime: ensureAbsoluteDate(action.endTime) || new Date(Date.now() + 3600000).toISOString(),
             allDay: action.allDay || false,
           });
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
@@ -136,7 +150,11 @@ export async function executeVoiceCommand(
           break;
         }
         case 'UPDATE_EVENT': {
-          await apiRequest('PATCH', `/api/events/${action.id}`, action.updates);
+          const updates = { ...action.updates };
+          if (updates.startTime) updates.startTime = ensureAbsoluteDate(updates.startTime);
+          if (updates.endTime) updates.endTime = ensureAbsoluteDate(updates.endTime);
+          
+          await apiRequest('PATCH', `/api/events/${action.id}`, updates);
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
           toast({ title: "Event Updated", description: "The event was successfully updated." });
           break;
