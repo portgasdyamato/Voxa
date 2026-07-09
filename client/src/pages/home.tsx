@@ -262,53 +262,67 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
 
         {/* Dynamic Activity Wing - Bento Box Refinement */}
         <aside className="space-y-6 lg:sticky lg:top-32 hidden xl:block">
-           <div className="relative p-10 rounded-[2.5rem] overflow-hidden border border-white/[0.12] bg-[#080809] backdrop-blur-[60px] shadow-[0_45px_100px_rgba(0,0,0,0.8)] group">
+           <div className="relative p-10 rounded-[2.5rem] overflow-hidden border border-white/[0.08] bg-gradient-to-b from-white/[0.03] to-transparent backdrop-blur-[60px] shadow-[0_20px_80px_rgba(0,0,0,0.8)] group transition-all duration-700 hover:border-white/[0.15]">
               {/* Bevel Top Highlight */}
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent z-20 pointer-events-none" />
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-400/30 to-transparent z-20 pointer-events-none group-hover:via-blue-400/60 transition-colors duration-700" />
               <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none" />
               
-              <div className="flex items-center gap-4 mb-10 relative z-10 font-medium">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-blue-400" />
+              <div className="flex items-center justify-between mb-12 relative z-10 font-medium">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                    <Activity className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <h4 className="text-sm font-semibold tracking-wide text-white/80 uppercase">Efficiency</h4>
                 </div>
-                <h4 className="text-sm font-semibold tracking-tight text-white/70">Efficiency</h4>
+                <div className="px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.05] text-xs font-medium text-white/40 tracking-wide">REAL-TIME</div>
               </div>
               
               <div className="flex flex-col items-center justify-center py-6 relative z-10">
                  <div className="relative flex items-center justify-center">
                     {/* Background Pulse */}
                     <motion.div 
-                      animate={{ scale: [1, 1.05, 1], opacity: [0.1, 0.2, 0.1] }}
-                      transition={{ duration: 4, repeat: Infinity }}
-                      className="absolute inset-0 bg-blue-500/10 rounded-full blur-3xl"
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 bg-blue-500/20 rounded-full blur-[40px]"
                     />
                     
-                    <svg className="w-40 h-40 transform -rotate-90 relative z-10">
+                    <svg viewBox="0 0 176 176" className="w-44 h-44 transform -rotate-90 relative z-10 overflow-visible">
                        <defs>
                           <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                             <stop offset="0%" stopColor="#3b82f6" />
-                             <stop offset="100%" stopColor="#22d3ee" />
+                             <stop offset="0%" stopColor="#60a5fa" />
+                             <stop offset="100%" stopColor="#3b82f6" />
                           </linearGradient>
+                          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="6" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                          </filter>
                        </defs>
-                       <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/[0.03]" />
+                       <circle cx="88" cy="88" r="76" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/[0.04]" />
                        <motion.circle 
-                         cx="80" cy="80" r="70" 
+                         cx="88" cy="88" r="76" 
                          stroke="url(#progressGradient)" 
-                         strokeWidth="10" 
+                         strokeWidth="8" 
                          fill="transparent" 
-                         strokeDasharray="439.82" 
-                         initial={{ strokeDashoffset: 439.82 }}
-                         animate={{ strokeDashoffset: 439.82 - (439.82 * completionRate) / 100 }}
-                         transition={{ duration: 2, ease: "easeOut" }}
-                         className="drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+                         strokeDasharray="477.52" 
+                         initial={{ strokeDashoffset: 477.52 }}
+                         animate={{ strokeDashoffset: 477.52 - (477.52 * completionRate) / 100 }}
+                         transition={{ duration: 2.5, ease: [0.22, 1, 0.36, 1] }}
+                         className="drop-shadow-[0_0_12px_rgba(59,130,246,0.6)]" 
                          strokeLinecap="round"
+                         filter="url(#glow)"
                        />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                       <span className="text-5xl font-bold text-white tracking-tighter">{completionRate}<span className="text-xl text-white/40 ml-0.5">%</span></span>
+                       <span className="text-5xl font-bold text-white tracking-tighter drop-shadow-md">
+                         {completionRate}
+                         <span className="text-xl text-white/40 font-medium ml-1">%</span>
+                       </span>
                     </div>
                  </div>
-                 <p className="text-sm text-white/40 font-semibold pt-12 tracking-wide uppercase">Success Rate</p>
+                 <div className="mt-12 text-center space-y-2">
+                   <p className="text-xs text-blue-400 font-bold tracking-[0.2em] uppercase">Success Rate</p>
+                   <p className="text-sm text-white/40 font-medium">Optimal workspace throughput</p>
+                 </div>
                </div>
              </div>
            </aside>
