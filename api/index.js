@@ -119,6 +119,7 @@ var notes = pgTable("notes", {
   title: varchar("title", { length: 255 }).notNull().default("Untitled Note"),
   content: jsonb("content"),
   isPinned: boolean("is_pinned").notNull().default(false),
+  isArchived: boolean("is_archived").notNull().default(false),
   order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
