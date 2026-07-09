@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCreateTask, useUpdateTask, useDeleteTask, useTasks } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { executeVoiceCommand } from '@/lib/voiceCommandExecutor';
+import { useQuery } from '@tanstack/react-query';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type PermissionState = 'unknown' | 'requesting' | 'granted' | 'denied';
@@ -29,6 +30,9 @@ export function WakeWordWidget() {
   const createTask                         = useCreateTask();
   const updateTask                         = useUpdateTask();
   const deleteTask                         = useDeleteTask();
+
+  const { data: notes = [] } = useQuery({ queryKey: ['/api/notes'] });
+  const { data: events = [] } = useQuery({ queryKey: ['/api/events'] });
 
   // Keep stateRef in sync
   const setLS = (s: ListenerState) => {
@@ -57,16 +61,15 @@ export function WakeWordWidget() {
     setLS('processing');
     setCommandText('Processing…');
     await executeVoiceCommand(
-      cmd, tasks, '', null, true, 'default', '09:00',
+      cmd, tasks, notes, events, categories,
       createTask, updateTask, deleteTask, toast,
       () => {
         setLS('idle');
         setCommandText('');
         setLiveText('');
-      },
-      '', categories
+      }
     );
-  }, [tasks, categories, createTask, updateTask, deleteTask, toast]);
+  }, [tasks, notes, events, categories, createTask, updateTask, deleteTask, toast]);
 
   // ── Cancel awake mode ──────────────────────────────────────────────────────
   const cancelAwake = useCallback(() => {
@@ -302,8 +305,8 @@ export function WakeWordWidget() {
             <span className="text-[10px] font-bold uppercase tracking-widest">
               {isDenied         ? 'Mic Denied'
                : permission === 'requesting' ? 'Requesting…'
-               : isEnabled     ? 'Ambient On'
-               :                 'Ambient Off'}
+               : isEnabled     ? 'Full Voice Mode On'
+               :                 'Full Voice Mode Off'}
             </span>
             {isEnabled && !isDenied && (
               <span className="text-[8px] font-medium opacity-60 tracking-wide normal-case max-w-[120px] truncate">

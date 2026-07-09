@@ -1095,6 +1095,60 @@ async function handler(req, res) {
       return;
     }
 
+    if (url.pathname === "/api/ai/command" && req.method === "POST") {
+      const { transcript, context } = req.body;
+      
+      if (!process.env.GROQ_API_KEY) {
+        return res.status(500).json({ error: "GROQ_API_KEY is not configured." });
+      }
+
+      const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant. Your job is to translate a user's voice command into a structured JSON array of actions.
+You have access to the following actions:
+- { "action": "CREATE_TASK", "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "categoryId": number (optional) }
+- { "action": "UPDATE_TASK", "id": number, "updates": { "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "completed": boolean } }
+- { "action": "DELETE_TASK", "id": number }
+- { "action": "CREATE_NOTE", "title": string, "content": string }
+- { "action": "UPDATE_NOTE", "id": number, "updates": { "title": string, "content": string } }
+- { "action": "DELETE_NOTE", "id": number }
+- { "action": "PIN_NOTE", "id": number }
+- { "action": "SUMMARIZE_NOTE", "id": number }
+- { "action": "POLISH_NOTE", "id": number }
+- { "action": "CREATE_EVENT", "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean }
+- { "action": "DELETE_EVENT", "id": number }
+- { "action": "NAVIGATE", "destination": "/home"|"/tasks"|"/calendar"|"/notes"|"/stats" }
+- { "action": "OPEN_MODAL", "modalName": "new_task"|"settings"|"notifications" }
+- { "action": "UPDATE_PROFILE", "firstName": string, "lastName": string }
+- { "action": "TOGGLE_SETTING", "setting": "alarm_sound", "value": boolean }
+
+Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs.
+Output ONLY a JSON object with a single key "actions" containing an array of action objects. Do not add any markdown formatting.`;
+
+      const userPrompt = `Context: ${JSON.stringify(context)}
+      
+User Command: "${transcript}"`;
+
+      try {
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          model: "llama-3.1-8b-instant",
+          temperature: 0.1,
+          response_format: { type: "json_object" }
+        });
+        
+        const aiOutput = chatCompletion.choices[0]?.message?.content || '{"actions":[]}';
+        const parsed = JSON.parse(aiOutput);
+        res.status(200).json(parsed);
+      } catch (error) {
+        console.error("Groq AI Command Error:", error);
+        res.status(500).json({ error: error.message || "Failed to process AI command" });
+      }
+      return;
+    }
+
     res.status(404).json({ error: `Endpoint not found: ${req.method} ${url.pathname}` });
   } catch (error) {
     console.error("Handler error:", error);

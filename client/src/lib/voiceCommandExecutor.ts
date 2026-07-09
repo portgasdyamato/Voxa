@@ -1,413 +1,167 @@
-// Voice Command Execution Handler
-// This file contains the comprehensive handler for executing all voice commands
-
-import { parseVoiceCommand, findTaskByIdentifier } from '@/lib/voiceCommands';
-import { parseTaskFromSpeech } from '@/lib/dateDetection';
-import { parseCategoryFromText } from '@/lib/categoryDetection';
+// Voice Command Execution Handler using Groq AI Full Voice Mode
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export async function executeVoiceCommand(
   transcript: string,
   tasks: any[],
-  selectedCategory: string,
-  selectedDeadline: Date | null,
-  reminderEnabled: boolean,
-  reminderType: string,
-  reminderTime: string,
+  notes: any[],
+  events: any[],
+  categories: any[],
   createTask: any,
   updateTask: any,
   deleteTask: any,
   toast: any,
-  onSuccess: () => void,
-  overriddenTitle?: string,
-  categories?: any[]
+  onSuccess: () => void
 ) {
   if (!transcript.trim()) {
     toast({ title: "No Voice Input", description: "Please speak a command.", variant: "destructive" });
     return;
   }
 
-  const command = parseVoiceCommand(transcript, categories || [], tasks || []);
-
   try {
-    switch (command.type) {
-      case 'add': {
-        const { taskName: parsedName, deadline, priority } = parseTaskFromSpeech(transcript);
-        let taskName = (overriddenTitle || parsedName || '').trim();
-        const finalDeadline = selectedDeadline || deadline;
-        
-        let finalCategoryId: number | undefined = undefined;
-        if (selectedCategory && selectedCategory !== 'none' && selectedCategory !== '') {
-          const parsed = parseInt(selectedCategory);
-          if (!isNaN(parsed)) {
-            finalCategoryId = parsed;
-          }
-        }
+    // Build lightweight context to avoid exceeding token limits
+    const context = {
+      tasks: tasks.map(t => ({ id: t.id, title: t.title, completed: t.completed, priority: t.priority })),
+      notes: notes.map(n => ({ id: n.id, title: n.title, isPinned: n.isPinned })),
+      events: events.map(e => ({ id: e.id, title: e.title, startTime: e.startTime })),
+      categories: categories.map(c => ({ id: c.id, name: c.name }))
+    };
 
-        // Auto-detect category if not explicitly selected
-        if (finalCategoryId === undefined && categories) {
-          const { categoryId: detectedId, cleanedText: finalCleanedName } = parseCategoryFromText(taskName, categories);
-          if (detectedId) {
-            finalCategoryId = detectedId;
-            taskName = finalCleanedName;
-          }
-        }
-        
-        if (!taskName || taskName.length < 2) {
-          toast({ 
-            title: "Invalid Task", 
-            description: "Could not understand the task name. Please try again.", 
-            variant: "destructive" 
+    // Call the AI command endpoint
+    const response = await fetch('/api/ai/command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript, context })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to parse command: ${response.statusText}`);
+    }
+
+    const { actions } = await response.json();
+
+    if (!actions || actions.length === 0) {
+      toast({ title: "No Actions", description: "I couldn't understand what to do.", variant: "destructive" });
+      return;
+    }
+
+    // Execute each action sequentially
+    for (const action of actions) {
+      switch (action.action) {
+        // --- TASKS ---
+        case 'CREATE_TASK': {
+          await createTask.mutateAsync({
+            title: action.title,
+            priority: action.priority || 'medium',
+            categoryId: action.categoryId || null,
+            dueDate: action.deadline || undefined,
           });
-          return;
+          toast({ title: "Task Created", description: `Added "${action.title}"` });
+          break;
         }
-        
-        await createTask.mutateAsync({
-          title: taskName,
-          description: undefined,
-          priority,
-          categoryId: finalCategoryId || null,
-          dueDate: finalDeadline ? finalDeadline.toISOString() : undefined,
-          reminderEnabled,
-          reminderType,
-          reminderTime: reminderType === 'manual' ? reminderTime : undefined,
-        });
-
-        toast({
-          title: "Task Created",
-          description: `Added "${taskName.slice(0, 40)}${taskName.length > 40 ? '...' : ''}"`,
-        });
-        break;
-      }
-
-      case 'delete': {
-        if (command.targetReference === 'last') {
-          const count = command.targetCount || 1;
-          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
-          const targetTasks = sorted.slice(0, count);
-          if (!targetTasks.length) return;
-          for (const t of targetTasks) await deleteTask.mutateAsync(t.id);
-          toast({ title: "Tasks Deleted", description: `Deleted last ${count} task(s)` });
-          if (onSuccess) onSuccess();
-          return;
+        case 'UPDATE_TASK': {
+          await updateTask.mutateAsync({ id: action.id, updates: action.updates });
+          toast({ title: "Task Updated", description: "The task was updated." });
+          break;
         }
-
-        if (!command.taskIdentifier) {
-          toast({ title: "Error", description: "Please specify which task to delete.", variant: "destructive" });
-          return;
-        }
-
-        const task = findTaskByIdentifier(tasks || [], command.taskIdentifier);
-        if (!task) {
-          toast({ 
-            title: "Task Not Found", 
-            description: `Could not find task "${command.taskIdentifier}"`, 
-            variant: "destructive" 
-          });
-          return;
-        }
-
-        await deleteTask.mutateAsync(task.id);
-        toast({
-          title: "Task Deleted",
-          description: `Deleted "${task.title}"`,
-        });
-        break;
-      }
-
-      case 'complete': {
-        if (command.targetReference === 'last') {
-          const count = command.targetCount || 1;
-          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
-          const targetTasks = sorted.slice(0, count);
-          if (!targetTasks.length) return;
-          for (const t of targetTasks) await updateTask.mutateAsync({ id: t.id, updates: { completed: true } });
-          toast({ title: "Tasks Completed", description: `Completed last ${count} task(s)` });
-          if (onSuccess) onSuccess();
-          return;
-        }
-
-        if (!command.taskIdentifier) {
-          toast({ title: "Error", description: "Please specify which task to complete.", variant: "destructive" });
-          return;
-        }
-
-        const task = findTaskByIdentifier(tasks || [], command.taskIdentifier);
-        if (!task) {
-          toast({ 
-            title: "Task Not Found", 
-            description: `Could not find task "${command.taskIdentifier}"`, 
-            variant: "destructive" 
-          });
-          return;
-        }
-
-        await updateTask.mutateAsync({
-          id: task.id,
-          updates: { completed: true }
-        });
-
-        toast({
-          title: "Task Completed",
-          description: `Marked "${task.title}" as complete`,
-        });
-        break;
-      }
-
-      case 'uncomplete': {
-        if (command.targetReference === 'last') {
-          const count = command.targetCount || 1;
-          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
-          const targetTasks = sorted.slice(0, count);
-          if (!targetTasks.length) return;
-          for (const t of targetTasks) await updateTask.mutateAsync({ id: t.id, updates: { completed: false } });
-          toast({ title: "Tasks Reopened", description: `Reopened last ${count} task(s)` });
-          if (onSuccess) onSuccess();
-          return;
-        }
-
-        if (!command.taskIdentifier) {
-          toast({ title: "Error", description: "Please specify which task to reopen.", variant: "destructive" });
-          return;
-        }
-
-        const task = findTaskByIdentifier(tasks || [], command.taskIdentifier);
-        if (!task) {
-          toast({ 
-            title: "Task Not Found", 
-            description: `Could not find task "${command.taskIdentifier}"`, 
-            variant: "destructive" 
-          });
-          return;
-        }
-
-        await updateTask.mutateAsync({
-          id: task.id,
-          updates: { completed: false }
-        });
-
-        toast({
-          title: "Task Reopened",
-          description: `Reopened "${task.title}"`,
-        });
-        break;
-      }
-
-      case 'update': {
-        if (command.targetReference === 'last') {
-          const count = command.targetCount || 1;
-          const sorted = [...(tasks || [])].sort((a, b) => b.id - a.id);
-          const targetTasks = sorted.slice(0, count);
-          if (!targetTasks.length) return;
-          const updates: any = {};
-          if (command.updates?.title) updates.title = command.updates.title;
-          if (command.updates?.deadline) updates.dueDate = command.updates.deadline.toISOString();
-          for (const t of targetTasks) await updateTask.mutateAsync({ id: t.id, updates });
-          toast({ title: "Tasks Updated", description: `Updated last ${count} task(s)` });
-          if (onSuccess) onSuccess();
-          return;
-        }
-
-        if (!command.taskIdentifier || (!command.updates?.title && !command.updates?.deadline)) {
-          toast({ title: "Error", description: "Please specify the task and what to change (name or time).", variant: "destructive" });
-          return;
-        }
-
-        const task = findTaskByIdentifier(tasks || [], command.taskIdentifier);
-        if (!task) {
-          toast({ 
-            title: "Task Not Found", 
-            description: `Could not find task "${command.taskIdentifier}"`, 
-            variant: "destructive" 
-          });
-          return;
-        }
-
-        const updates: any = {};
-        if (command.updates?.title) updates.title = command.updates.title;
-        if (command.updates?.deadline) updates.dueDate = command.updates.deadline.toISOString();
-
-        await updateTask.mutateAsync({
-          id: task.id,
-          updates
-        });
-
-        toast({
-          title: "Task Updated",
-          description: command.updates?.title 
-            ? `Renamed to "${command.updates.title}"` 
-            : `Rescheduled for ${command.updates?.deadline?.toLocaleString()}`,
-        });
-        break;
-      }
-
-      case 'schedule_event': {
-        if (!command.eventDetails) {
-          toast({ title: "Error", description: "Missing event details.", variant: "destructive" });
-          return;
-        }
-        try {
-          await apiRequest('POST', '/api/events', {
-            title: command.eventDetails.title,
-            startTime: command.eventDetails.startTime.toISOString(),
-            endTime: command.eventDetails.endTime.toISOString(),
-            allDay: command.eventDetails.allDay || false,
-          });
-          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
-          toast({
-            title: "Event Scheduled",
-            description: `Scheduled "${command.eventDetails.title}" for ${command.eventDetails.startTime.toLocaleDateString()}`,
-          });
-          // Dispatch a navigation event to calendar to show the newly added event
-          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/calendar' }));
-          if (onSuccess) onSuccess();
-        } catch (e: any) {
-          toast({ title: "Failed to schedule", description: e.message, variant: "destructive" });
-        }
-        break;
-      }
-
-      case 'create_note': {
-        if (!command.noteDetails) {
-          toast({ title: "Error", description: "Missing note details.", variant: "destructive" });
-          return;
-        }
-        try {
-          await apiRequest('POST', '/api/notes', {
-            title: command.noteDetails.title,
-            content: command.noteDetails.content,
-            isPinned: false
-          });
-          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
-          toast({
-            title: "Note Created",
-            description: `Saved note: "${command.noteDetails.title}"`,
-          });
-          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/notes' }));
-          if (onSuccess) onSuccess();
-        } catch (e: any) {
-          toast({ title: "Failed to create note", description: e.message, variant: "destructive" });
-        }
-        break;
-      }
-
-      case 'list': {
-        const taskCount = tasks?.length || 0;
-        const completedCount = tasks?.filter((t: any) => t.completed).length || 0;
-        const pendingCount = taskCount - completedCount;
-
-        toast({
-          title: "Your Tasks",
-          description: `You have ${pendingCount} pending and ${completedCount} completed tasks.`,
-        });
-        break;
-      }
-
-      case 'clear_completed': {
-        const completedTasks = tasks?.filter((t: any) => t.completed) || [];
-        
-        if (completedTasks.length === 0) {
-          toast({
-            title: "No Completed Tasks",
-            description: "There are no completed tasks to clear.",
-          });
-          return;
-        }
-
-        for (const task of completedTasks) {
-          await deleteTask.mutateAsync(task.id);
-        }
-
-        toast({
-          title: "Completed Tasks Cleared",
-          description: `Deleted ${completedTasks.length} completed tasks`,
-        });
-        break;
-      }
-
-      case 'navigate': {
-        if (!command.destination) return;
-        window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: command.destination }));
-        toast({
-          title: "Navigating",
-          description: `Taking you to ${command.destination === '/stats' ? 'Analytics' : 'Workspace'}...`,
-        });
-        break;
-      }
-
-      case 'open_modal': {
-        if (!command.modalName) return;
-        
-        if (command.modalName === 'settings') {
-          window.dispatchEvent(new CustomEvent('voxa-open-profile-settings'));
-          toast({ title: "Settings", description: "Opening account settings..." });
-        } else if (command.modalName === 'notifications') {
-          window.dispatchEvent(new CustomEvent('voxa-open-notifications'));
-          toast({ title: "Notifications", description: "Opening notifications..." });
-        } else {
-          window.dispatchEvent(new CustomEvent('voxa-open-modal', { detail: command.modalName }));
-          toast({ title: "Opening", description: `Opening New Task dialog...` });
-        }
-        break;
-      }
-
-      case 'toggle_sound': {
-        const current = localStorage.getItem('voxa_alarm_sound') !== 'false';
-        const nextState = !current;
-        localStorage.setItem('voxa_alarm_sound', nextState.toString());
-        window.dispatchEvent(new CustomEvent('voxa-toggle-sound', { detail: nextState }));
-        
-        // Update DOM element for dropdown if it exists
-        const el = document.getElementById('alarm-sound-status');
-        if (el) el.textContent = nextState ? 'On' : 'Off';
-        
-        toast({
-          title: "Sound Preferences",
-          description: `Alarm sound is now ${nextState ? 'ON' : 'OFF'}`,
-        });
-        break;
-      }
-
-      case 'set_filter': {
-        if (command.categoryId !== undefined) {
-          window.dispatchEvent(new CustomEvent('voxa-set-category', { detail: command.categoryId }));
-          const catName = categories?.find(c => c.id === command.categoryId)?.name || 'Category';
-          toast({
-            title: "Filtering",
-            description: `Showing ${catName} tasks`,
-          });
+        case 'DELETE_TASK': {
+          await deleteTask.mutateAsync(action.id);
+          toast({ title: "Task Deleted", description: "The task was deleted." });
           break;
         }
 
-        if (!command.filterId) return;
-        window.dispatchEvent(new CustomEvent('voxa-set-filter', { detail: command.filterId }));
-        let filterName = 'All tasks';
-        if (command.filterId === 'today') filterName = "Today's tasks";
-        if (command.filterId === 'overdue') filterName = "Priority/Overdue tasks";
-        toast({
-          title: "Filtering",
-          description: `Showing ${filterName}`,
-        });
-        break;
-      }
+        // --- NOTES ---
+        case 'CREATE_NOTE': {
+          await apiRequest('POST', '/api/notes', { title: action.title, content: action.content, isPinned: false });
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Created", description: `Saved "${action.title}"` });
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/notes' }));
+          break;
+        }
+        case 'UPDATE_NOTE': {
+          await apiRequest('PATCH', `/api/notes/${action.id}`, action.updates);
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Updated", description: "The note was updated." });
+          break;
+        }
+        case 'DELETE_NOTE': {
+          await apiRequest('DELETE', `/api/notes/${action.id}`);
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Deleted", description: "The note was deleted." });
+          break;
+        }
+        case 'PIN_NOTE': {
+          await apiRequest('PATCH', `/api/notes/${action.id}`, { isPinned: true });
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Note Pinned", description: "The note was pinned to the top." });
+          break;
+        }
+        case 'SUMMARIZE_NOTE':
+        case 'POLISH_NOTE': {
+          const note = notes.find(n => n.id === action.id);
+          if (note) {
+            const formatAction = action.action === 'SUMMARIZE_NOTE' ? 'summarize' : 'polish';
+            const aiRes = await apiRequest('POST', '/api/ai/format', { content: note.content, action: formatAction });
+            const aiData = await aiRes.json();
+            await apiRequest('PATCH', `/api/notes/${action.id}`, { content: aiData.content });
+            queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+            toast({ title: `Note ${formatAction}d`, description: "The AI has processed your note." });
+          }
+          break;
+        }
 
-      case 'search': {
-        if (!command.searchQuery) return;
-        window.dispatchEvent(new CustomEvent('voxa-search', { detail: command.searchQuery }));
-        toast({
-          title: "Searching",
-          description: `Looking for "${command.searchQuery}"`,
-        });
-        break;
-      }
+        // --- EVENTS ---
+        case 'CREATE_EVENT': {
+          await apiRequest('POST', '/api/events', {
+            title: action.title,
+            startTime: action.startTime,
+            endTime: action.endTime,
+            allDay: action.allDay || false,
+          });
+          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+          toast({ title: "Event Scheduled", description: `Scheduled "${action.title}"` });
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: '/calendar' }));
+          break;
+        }
+        case 'DELETE_EVENT': {
+          await apiRequest('DELETE', `/api/events/${action.id}`);
+          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+          toast({ title: "Event Canceled", description: "The event was canceled." });
+          break;
+        }
 
-      default: {
-        toast({ 
-          title: "Unknown Command", 
-          description: "I didn't understand that command. Try 'add', 'delete', 'complete', or 'list tasks'.", 
-          variant: "destructive" 
-        });
-        return;
+        // --- UI & NAVIGATION ---
+        case 'NAVIGATE': {
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: action.destination }));
+          toast({ title: "Navigating", description: `Taking you to ${action.destination}...` });
+          break;
+        }
+        case 'OPEN_MODAL': {
+          if (action.modalName === 'settings') {
+            window.dispatchEvent(new CustomEvent('voxa-open-profile-settings'));
+          } else if (action.modalName === 'notifications') {
+            window.dispatchEvent(new CustomEvent('voxa-open-notifications'));
+          } else {
+            window.dispatchEvent(new CustomEvent('voxa-open-modal', { detail: action.modalName }));
+          }
+          break;
+        }
+        case 'UPDATE_PROFILE': {
+          await apiRequest('PATCH', '/api/profile', { firstName: action.firstName, lastName: action.lastName });
+          queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+          toast({ title: "Profile Updated", description: "Your profile has been updated." });
+          break;
+        }
+        case 'TOGGLE_SETTING': {
+          if (action.setting === 'alarm_sound') {
+            localStorage.setItem('voxa_alarm_sound', action.value.toString());
+            window.dispatchEvent(new CustomEvent('voxa-toggle-sound', { detail: action.value }));
+            toast({ title: "Sound Settings", description: `Alarm sound is now ${action.value ? 'ON' : 'OFF'}` });
+          }
+          break;
+        }
+        default:
+          console.warn('Unknown action from AI:', action);
       }
     }
 
@@ -415,8 +169,8 @@ export async function executeVoiceCommand(
   } catch (error) {
     console.error('Voice command error:', error);
     toast({ 
-      title: "Error", 
-      description: "Failed to execute command. Please try again.", 
+      title: "Command Failed", 
+      description: error.message || "Failed to execute command. Please try again.", 
       variant: "destructive" 
     });
   }
