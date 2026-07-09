@@ -579,9 +579,10 @@ export default function CalendarPage() {
                       </div>
                     )}
                   </div>
+                </div>
                   
-                  <div className="space-y-4 pt-4 border-t border-white/5">
-                    <ReminderSettings
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                  <ReminderSettings
                       reminderEnabled={true}
                       reminderType={'default'}
                       reminderTime={'09:00'}
