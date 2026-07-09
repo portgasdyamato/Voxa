@@ -99,7 +99,7 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
   const completionRate = tasks?.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-4 pb-64">
+    <div className={cn("w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pt-4", activeWorkspaceTab === 'tasks' ? 'pb-64' : 'pb-8')}>
       {/* Workspace Area */}
 
       {activeWorkspaceTab === 'calendar' && (
