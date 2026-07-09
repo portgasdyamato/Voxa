@@ -94,7 +94,7 @@ export function useAlarms(tasks: any[] = [], events: any[] = []) {
           
           // Dispatch custom event for the AlarmModal audio playback
           window.dispatchEvent(new CustomEvent('voxa-alarm-trigger', { 
-            detail: { task: item, title, body } 
+            detail: { task: item, title, body, isEvent } 
           }));
           
           showNotification(item, title, body, isEvent);

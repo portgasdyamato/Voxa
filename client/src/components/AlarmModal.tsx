@@ -9,6 +9,7 @@ interface AlarmData {
   task: any;
   title: string;
   body: string;
+  isEvent?: boolean;
 }
 
 export function AlarmModal() {
@@ -54,9 +55,19 @@ export function AlarmModal() {
   };
 
   const handleDone = async () => {
-    if (!alarmData?.task?.id) return;
-    
     stopAudio();
+    
+    // If it's a calendar event, we just acknowledge and dismiss it (no 'completed' state)
+    if (alarmData?.isEvent) {
+      setAlarmData(null);
+      return;
+    }
+
+    if (!alarmData?.task?.id) {
+      setAlarmData(null);
+      return;
+    }
+    
     try {
       await updateTask.mutateAsync({
         id: alarmData.task.id,
@@ -110,14 +121,16 @@ export function AlarmModal() {
                 Cancel Alarm
               </button>
 
-              {/* Small Done Button */}
-              <button
-                onClick={handleDone}
-                className="w-full py-3 bg-white/[0.05] hover:bg-white/[0.1] text-white/50 hover:text-white/80 rounded-xl text-sm font-medium border border-white/[0.05] transition-all flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                Mark as Done
-              </button>
+              {/* Small Done Button (Only for Tasks) */}
+              {!alarmData.isEvent && (
+                <button
+                  onClick={handleDone}
+                  className="w-full py-3 bg-white/[0.05] hover:bg-white/[0.1] text-white/50 hover:text-white/80 rounded-xl text-sm font-medium border border-white/[0.05] transition-all flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Mark as Done
+                </button>
+              )}
             </div>
           </motion.div>
         </div>
