@@ -7,7 +7,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Calendar as CalendarIcon, Clock, Type, AlignLeft, Download, Users, User, Trash2 } from 'lucide-react';
+import { Plus, X, Calendar as CalendarIcon, Clock, Type, AlignLeft, Download, Users, User, Trash2, Video } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -451,6 +451,23 @@ export default function CalendarPage() {
                   <div className="flex items-center gap-3 py-2">
                     <Checkbox id="allDay" checked={form.watch('allDay')} onCheckedChange={(val) => form.setValue('allDay', val as boolean)} />
                     <label htmlFor="allDay" className="text-sm text-white/80">All day event</label>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <Video className="w-4 h-4 text-white/40" />
+                        <label className="text-sm text-white/60">Meeting Link</label>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => form.setValue('meetingLink', `https://meet.jit.si/VoXa-${Math.random().toString(36).substring(2, 10)}`)}
+                        className="text-xs text-blue-400 hover:text-blue-300"
+                      >
+                        Generate Jitsi Link
+                      </button>
+                    </div>
+                    <Input {...form.register('meetingLink')} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
                   </div>
 
                   <div>
