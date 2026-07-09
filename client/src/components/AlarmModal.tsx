@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUpdateTask } from '@/hooks/useTasks';
-import { BellRing, CheckCircle2, X } from 'lucide-react';
+import { Bell, CheckCircle2, X, Sparkles } from 'lucide-react';
 
-const ALARM_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
+const ALARM_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
 interface AlarmData {
   task: any;
@@ -28,7 +28,7 @@ export function AlarmModal() {
         if (!audioRef.current) {
           audioRef.current = new Audio(ALARM_SOUND_URL);
           audioRef.current.loop = true;
-          audioRef.current.volume = 0.5;
+          audioRef.current.volume = 0.4; // Softer volume
         }
         audioRef.current.play().catch(e => {
           console.warn("Audio play blocked by browser (requires user interaction first)", e);
@@ -94,41 +94,60 @@ export function AlarmModal() {
 
           {/* Modal */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md bg-[#0a0c10] border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+            exit={{ scale: 0.95, opacity: 0, y: 10 }}
+            className="relative w-full max-w-md bg-[#09090b] border border-white/[0.08] rounded-[2.5rem] p-10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col items-center text-center group"
           >
-            {/* Ringing Bell Icon */}
-            <motion.div
-              animate={{ rotate: [-10, 10, -10] }}
-              transition={{ repeat: Infinity, duration: 0.5, ease: "easeInOut" }}
-              className="w-24 h-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(239,68,68,0.3)]"
-            >
-              <BellRing className="w-12 h-12 text-red-500" />
-            </motion.div>
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/[0.06] rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/[0.06] rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+            
+            {/* Subtle top edge highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.15] to-transparent pointer-events-none" />
 
-            <h2 className="text-3xl font-bold text-white mb-2">{alarmData.title}</h2>
-            <p className="text-xl text-white/70 mb-10">{alarmData.body}</p>
+            {/* Floating Soft Icon */}
+            <div className="relative mb-8">
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 bg-blue-500/20 rounded-full blur-[30px]"
+              />
+              <motion.div
+                animate={{ y: [-3, 3, -3] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/[0.05] to-transparent border border-white/[0.08] flex items-center justify-center backdrop-blur-xl shadow-2xl shadow-blue-500/10"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-400/[0.1] to-transparent rounded-2xl pointer-events-none" />
+                <Bell className="w-8 h-8 text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]" />
+              </motion.div>
+            </div>
 
-            <div className="flex flex-col w-full gap-4">
-              {/* Massive Cancel Button */}
+            <h2 className="text-2xl font-semibold tracking-tight text-white mb-3">
+              {alarmData.title.replace(/⏰ |📅 |🌅 |🔔 /g, '')}
+            </h2>
+            <p className="text-sm font-medium text-white/50 mb-10 tracking-wide max-w-[80%] leading-relaxed">
+              {alarmData.body}
+            </p>
+
+            <div className="flex flex-col w-full gap-3 relative z-10">
+              {/* Primary Action Button (Dismiss) */}
               <button
                 onClick={handleCancel}
-                className="w-full py-6 bg-red-500 hover:bg-red-600 text-white rounded-2xl text-2xl font-bold shadow-lg shadow-red-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+                className="group/btn relative w-full h-14 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-2xl text-sm font-medium border border-white/[0.05] transition-all overflow-hidden flex items-center justify-center gap-3"
               >
-                <X className="w-8 h-8" />
-                Cancel Alarm
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                <span className="relative z-10 tracking-wide">Dismiss Reminder</span>
               </button>
 
-              {/* Small Done Button (Only for Tasks) */}
+              {/* Secondary Action Button (Done) */}
               {!alarmData.isEvent && (
                 <button
                   onClick={handleDone}
-                  className="w-full py-3 bg-white/[0.05] hover:bg-white/[0.1] text-white/50 hover:text-white/80 rounded-xl text-sm font-medium border border-white/[0.05] transition-all flex items-center justify-center gap-2"
+                  className="group/done relative w-full h-12 text-white/40 hover:text-white/80 rounded-xl text-xs font-medium transition-colors flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Mark as Done
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span className="tracking-widest uppercase">Mark as Completed</span>
                 </button>
               )}
             </div>
