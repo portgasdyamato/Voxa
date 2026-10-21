@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Mic, CheckCircle, Trash2, List, Eye, Plus, Calendar, Clock, Edit3, Bell, Activity } from 'lucide-react';
+import { HelpCircle, Mic, CheckCircle, Trash2, List, Eye, Plus, Calendar, Clock, Edit3, Bell, Activity, Users, Sparkles, FileText, Globe } from 'lucide-react';
 
 export function VoiceCommandsHelp() {
   const [open, setOpen] = useState(false);
@@ -310,6 +310,104 @@ export function VoiceCommandsHelp() {
           command: "Tell me my tasks",
           example: "Tell me my tasks",
           description: "Alternative way to list tasks"
+        }
+      ]
+    },
+    {
+      title: "Calendar & Event Mastery",
+      icon: Users,
+      color: "text-purple-400",
+      commands: [
+        {
+          command: "Schedule meeting with guests",
+          example: "Schedule Team Sync tomorrow at 3pm with alex@example.com",
+          description: "Creates calendar event and automatically emails calendar invites"
+        },
+        {
+          command: "Add guest to event",
+          example: "Add sarah@example.com to my meeting tomorrow",
+          description: "Adds a guest post-creation to an existing calendar event"
+        },
+        {
+          command: "Update event details",
+          example: "Set description for tomorrow's standup to 'Discuss Q3 OKRs'",
+          description: "Edits title, time, description, location, or meeting link"
+        },
+        {
+          command: "Switch calendar view",
+          example: "Switch to week view / Switch to month view",
+          description: "Changes calendar layout to month, week, or day"
+        }
+      ]
+    },
+    {
+      title: "AI Note Superpowers",
+      icon: Sparkles,
+      color: "text-amber-400",
+      commands: [
+        {
+          command: "Polish note",
+          example: "Polish my meeting notes",
+          description: "AI refines grammar, vocabulary, and flow while preserving structure"
+        },
+        {
+          command: "Summarize note",
+          example: "Summarize the project brief note",
+          description: "Generates an intelligent 3-bullet summary inside your note"
+        },
+        {
+          command: "Extract tasks from note",
+          example: "Extract tasks from my roadmap note",
+          description: "Pulls action items directly into your active Task Dashboard"
+        },
+        {
+          command: "Empty trash",
+          example: "Empty the trash",
+          description: "Permanently clears all discarded notes from trash"
+        }
+      ]
+    },
+    {
+      title: "Batch Task Power",
+      icon: CheckCircle,
+      color: "text-emerald-400",
+      commands: [
+        {
+          command: "Complete all tasks",
+          example: "Mark all tasks complete",
+          description: "Checks off all active tasks in one command"
+        },
+        {
+          command: "Clear completed tasks",
+          example: "Delete all completed tasks",
+          description: "Purges completed tasks to keep your workspace clutter-free"
+        }
+      ]
+    },
+    {
+      title: "Live Internet & Current News",
+      icon: Globe,
+      color: "text-cyan-400",
+      commands: [
+        {
+          command: "Current News in [Topic]",
+          example: "What's the current news in AI?",
+          description: "Searches the live web and delivers real-time news headlines spoken verbally"
+        },
+        {
+          command: "Latest World Updates",
+          example: "What's the latest news today?",
+          description: "Fetches live breaking news summaries across tech, world, and business"
+        },
+        {
+          command: "Web Search / Fact Lookup",
+          example: "Who is the CEO of Google? / Tell me about SpaceX Starship",
+          description: "Conducts real-time web research and synthesizes quick spoken answers"
+        },
+        {
+          command: "Research & Action Combo",
+          example: "What's the news in AI and save it to a note",
+          description: "Looks up live facts or news on the internet and immediately stores them into your workspace"
         }
       ]
     }

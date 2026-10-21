@@ -64,6 +64,19 @@ export default function NotesPage() {
   const { data: notes = [] } = useQuery<any[]>({ queryKey: ['/api/notes'] });
   const { data: folders = [] } = useQuery<any[]>({ queryKey: ['/api/folders'] });
 
+  useEffect(() => {
+    const handleOpenTrash = () => setShowTrash(true);
+    const handleSearch = (e: CustomEvent) => {
+      if (e.detail?.query) setSearchQuery(e.detail.query);
+    };
+    window.addEventListener('voxa-open-trash', handleOpenTrash);
+    window.addEventListener('voxa-search', handleSearch as EventListener);
+    return () => {
+      window.removeEventListener('voxa-open-trash', handleOpenTrash);
+      window.removeEventListener('voxa-search', handleSearch as EventListener);
+    };
+  }, []);
+
   const createNoteMutation = useMutation({
     mutationFn: async (newNote: any) => {
       const res = await apiRequest('POST', '/api/notes', newNote);

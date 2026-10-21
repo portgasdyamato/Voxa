@@ -57,19 +57,35 @@ async function getBestGroqModel(groq) {
     console.log("Available Groq models for this API key:", JSON.stringify(available));
 
     const decommissioned = new Set([
-      'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'
+      'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768', 
+      'gemma-7b-it', 'gemma2-9b-it', 'groq/compound', 'groq/compound-mini'
     ]);
 
-    const activeModels = available.filter(id => !decommissioned.has(id));
+    const activeModels = rawList
+      .filter(m => m.active !== false)
+      .map(m => m.id)
+      .filter(id => {
+        if (decommissioned.has(id)) return false;
+        const lower = id.toLowerCase();
+        if (lower.includes('whisper')) return false; // audio only
+        if (lower.includes('guard')) return false;   // safety moderation only
+        if (lower.includes('gemma')) return false;   // older decommissioned gemma
+        if (lower.includes('vision') && !lower.includes('chat')) return false;
+        return true;
+      });
+
+    console.log("Available active text models for this API key:", JSON.stringify(activeModels));
 
     const priorityChecks = [
       (id) => id.includes('llama-3.3-70b'),
+      (id) => id.includes('gpt-oss-120b'),
+      (id) => id.includes('gpt-oss-20b'),
       (id) => id.includes('llama-3.1-70b'),
       (id) => id.includes('llama-3.1-8b'),
       (id) => id.includes('llama-3.2') && !id.includes('vision'),
-      (id) => id.includes('qwen-2.5'),
-      (id) => id.includes('gemma2-9b'),
-      (id) => !id.includes('whisper') && !id.includes('vision') && !id.includes('guard')
+      (id) => id.includes('qwen'),
+      (id) => id.includes('deepseek'),
+      (id) => id.includes('llama')
     ];
 
     for (const check of priorityChecks) {
@@ -100,10 +116,11 @@ async function createGroqChatCompletion(groq, params) {
   const candidateModels = [
     bestModel,
     "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "gemma2-9b-it"
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "llama-3.1-8b-instant"
   ];
-  const uniqueModels = [...new Set(candidateModels)];
+  const uniqueModels = [...new Set(candidateModels.filter(Boolean))];
 
   let lastError = null;
   for (const model of uniqueModels) {
@@ -810,67 +827,194 @@ app.post("/api/ai/format", async (req, res) => {
     }
 });
 
+async function fetchLiveWebContext(transcript) {
+  if (!transcript || typeof transcript !== 'string') return null;
+  const clean = transcript.toLowerCase();
+  const isNews = /\b(news|headline|headlines|breaking|latest updates?|current events?|what's new|whats new)\b/i.test(clean);
+  const isWebSearch = isNews || /\b(who is|what is|where is|when was|why is|how does|search for|look up|tell me about|what are|explain|current|today|recent|price of|score of|ceo|founder|net worth|weather|stock|release date)\b/i.test(clean) || clean.endsWith('?');
+
+  if (!isWebSearch) return null;
+
+  let searchResults = [];
+
+  let topic = transcript
+    .replace(/^(can you|please|could you)?\s*(tell me|give me|what is|what's|whats|search for|look up|find|show me)\s*(the|about)?/i, '')
+    .replace(/\b(current news in|latest news about|news about|news in|news on|updates on)\b/i, '')
+    .trim();
+  if (!topic || topic.length < 2) topic = transcript;
+
+  // 1. If it's news-related, fetch live Google News RSS
+  if (isNews || /\b(happening|news|today|latest)\b/i.test(clean)) {
+    try {
+      const newsQuery = encodeURIComponent(topic);
+      const newsUrl = topic && topic !== 'news' 
+        ? `https://news.google.com/rss/search?q=${newsQuery}&hl=en-US&gl=US&ceid=US:en`
+        : `https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`;
+      
+      const res = await fetch(newsUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+      });
+      if (res.ok) {
+        const xml = await res.text();
+        const items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+        for (const item of items.slice(0, 4)) {
+          const title = (item.match(/<title>(.*?)<\/title>/)?.[1] || '').replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
+          const source = (item.match(/<source[^>]*>(.*?)<\/source>/)?.[1] || '').replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
+          const date = item.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] || '';
+          if (title) {
+            searchResults.push(`[News] ${title} (${source ? source + ', ' : ''}${date})`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Live news fetch error:", e.message);
+    }
+  }
+
+  // 2. Fetch DuckDuckGo HTML for general search snippets
+  try {
+    const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(topic)}`;
+    const res = await fetch(ddgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
+      }
+    });
+    if (res.ok) {
+      const html = await res.text();
+      const blocks = html.split('<div class="result results_links');
+      for (let i = 1; i < Math.min(blocks.length, 4); i++) {
+        const b = blocks[i];
+        const title = (b.match(/<h2 class="result__title">([\s\S]*?)<\/h2>/)?.[1] || '').replace(/<[^>]+>/g, '').trim();
+        const snippetMatch = b.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+        const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+        if (title || snippet) {
+          searchResults.push(`[Web] ${title}: ${snippet}`);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Live DDG search error:", e.message);
+  }
+
+  // 3. Fallback to Wikipedia summary if needed
+  if (searchResults.length === 0) {
+    try {
+      const wikiSearchUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(topic)}&limit=1&namespace=0&format=json`;
+      const wikiRes = await fetch(wikiSearchUrl, { headers: { 'User-Agent': 'VoXaAssistant/1.0' } });
+      if (wikiRes.ok) {
+        const wikiData = await wikiRes.json();
+        const matchedTitle = wikiData[1]?.[0];
+        if (matchedTitle) {
+          const sumRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(matchedTitle)}`, {
+            headers: { 'User-Agent': 'VoXaAssistant/1.0' }
+          });
+          if (sumRes.ok) {
+            const sumData = await sumRes.json();
+            if (sumData.extract) {
+              searchResults.push(`[Wikipedia] ${sumData.title}: ${sumData.extract}`);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Live Wikipedia search error:", e.message);
+    }
+  }
+
+  return searchResults.length > 0 ? searchResults.join('\n') : null;
+}
+
 app.post("/api/ai/command", async (req, res) => {
   try {
     const { transcript, context, localTime, conversationHistory = [] } = req.body;
+    const liveWebInfo = await fetchLiveWebContext(transcript);
 
-    const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant. Understand the user's request, translate commands into actions, and write a concise, friendly spoken reply.
-The user's current local date and time is: ${localTime || new Date().toString()}. Please use this as the reference point for resolving relative dates like "tomorrow", "next week", etc.
-Speak naturally and briefly. For questions, use only the supplied context and clearly say when the app does not contain the answer. For commands, make the response match the requested action and do not add unsupported details.
+    const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant with FULL EMPOWERED CONTROL over the entire application and REAL-TIME INTERNET ACCESS.
+Understand the user's intent deeply, resolve references to existing items, translate instructions into actions, and provide a concise, friendly spoken response.
+The user's current local date and time is: ${localTime || new Date().toString()}. Use this as the reference point for relative dates like "tomorrow", "this Friday at 3pm", etc.
+Speak naturally and briefly.
+
 You have access to the following actions:
-- { "action": "CREATE_TASK", "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "categoryId": number (optional) }
-- { "action": "UPDATE_TASK", "id": number, "updates": { "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "completed": boolean } }
+TASKS:
+- { "action": "CREATE_TASK", "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "categoryId": number (optional), "description": string (optional) }
+- { "action": "UPDATE_TASK", "id": number, "updates": { "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "completed": boolean, "description": string, "categoryId": number } }
 - { "action": "DELETE_TASK", "id": number }
+- { "action": "COMPLETE_ALL_TASKS" }
+- { "action": "DELETE_COMPLETED_TASKS" }
+
+NOTES:
 - { "action": "CREATE_NOTE", "title": string, "content": string, "isPinned": boolean }
-- { "action": "UPDATE_NOTE", "id": number, "content": string }
+- { "action": "UPDATE_NOTE", "id": number, "title": string (optional), "content": string (optional) }
 - { "action": "APPEND_NOTE", "id": number, "content": string }
-- { "action": "DELETE_NOTE", "id": number } (This soft-deletes the note to the trash)
-- { "action": "RESTORE_NOTE", "id": number } (This recovers a note from the trash)
+- { "action": "POLISH_NOTE", "id": number } (Rewrites and elevates note grammar, tone, and vocabulary while keeping rich HTML)
+- { "action": "SUMMARIZE_NOTE", "id": number } (Generates concise 3-bullet summary)
+- { "action": "EXTRACT_TASKS_FROM_NOTE", "id": number } (Extracts actionable tasks from note directly into the user's Task list)
 - { "action": "PIN_NOTE", "id": number }
 - { "action": "UNPIN_NOTE", "id": number }
-- { "action": "SUMMARIZE_NOTE", "id": number }
-- { "action": "POLISH_NOTE", "id": number }
-- { "action": "CREATE_EVENT", "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean }
-- { "action": "UPDATE_EVENT", "id": number, "updates": { "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean } }
+- { "action": "DELETE_NOTE", "id": number } (Soft-deletes note to trash)
+- { "action": "RESTORE_NOTE", "id": number } (Restores note from trash)
+- { "action": "EMPTY_TRASH" } (Permanently empties trash)
+
+CALENDAR & EVENTS:
+- { "action": "CREATE_EVENT", "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean, "description": string (optional), "location": string (optional), "meetingLink": string (optional), "guests": [ { "name": string, "email": string } ] (optional) }
+- { "action": "UPDATE_EVENT", "id": number, "updates": { "title": string, "startTime": string (ISO), "endTime": string (ISO), "allDay": boolean, "description": string, "location": string, "meetingLink": string, "guests": [ { "name": string, "email": string } ] } }
+- { "action": "ADD_EVENT_GUEST", "id": number, "guest": { "name": string, "email": string } } (Adds a guest with name and email to an existing event)
+- { "action": "REMOVE_EVENT_GUEST", "id": number, "email": string } (Removes a guest by email from an existing event)
 - { "action": "DELETE_EVENT", "id": number }
 - { "action": "CHANGE_CALENDAR_VIEW", "view": "month"|"week"|"day" }
+
+NAVIGATION & APP CONTROL:
+- { "action": "SEARCH", "query": string, "target": "tasks"|"notes"|"calendar" }
 - { "action": "NAVIGATE", "destination": "/home"|"/tasks"|"/calendar"|"/notes"|"/stats" }
-- { "action": "OPEN_MODAL", "modalName": "new_task"|"settings"|"notifications" }
+- { "action": "OPEN_MODAL", "modalName": "new_task"|"settings"|"notifications"|"trash" }
 - { "action": "UPDATE_PROFILE", "firstName": string, "lastName": string }
 - { "action": "TOGGLE_SETTING", "setting": "alarm_sound", "value": boolean }
 
-Use the provided context (tasks, notes, events, categories) to resolve references (e.g., 'the last task', 'my meeting note') to their actual IDs. Note that notes have an 'isArchived' flag showing if they are in the trash.
-Important: The user's command is transcribed from speech and may contain phonetic misspellings or homophones (e.g., "right a note" instead of "write a note", or "cancel meat in" instead of "cancel meeting"). Infer the most logical intent based on the context.
-CRITICAL EXCLUSIONS: If the user uses words like "except", "excluding", or "but not", you MUST explicitly EXCLUDE those specific items from your actions. Double check your IDs to ensure you do not act on items they told you to exclude!
-CRITICAL: Actively copy-edit and fix any speech-to-text typos, missing capitalization, or missing punctuation in titles and content before generating the JSON. The output text should look professionally typed.
-Important: To mark a task as complete, use UPDATE_TASK with { completed: true }. To rename a task, use UPDATE_TASK with { title: new_title }.
-Important: To add text to an existing note, use APPEND_NOTE so you do not overwrite its existing content.
-CRITICAL TIMEZONE INSTRUCTION: When generating ISO strings for dates (startTime, endTime, deadline, dueDate), NEVER append the 'Z' (UTC) suffix. Always output exactly in the format YYYY-MM-DDTHH:mm:ss so it is properly parsed in the user's local timezone.
-Output ONLY a JSON object with exactly two keys: "actions", an array of action objects, and "response", a concise natural spoken reply for the user. If the request is conversational or unclear, return an empty actions array and respond helpfully. Never claim an action succeeded in the response; phrase it as a brief acknowledgement that is spoken only after execution.`;
+RULES:
+1. Context resolution: Match descriptions like "my dentist appointment", "the note about budget", "the grocery task" to actual IDs in context (tasks, notes, events, categories).
+2. Event guests & descriptions: If the user says "add Alex to my meeting" or "set description for tomorrow's standup to 'Sprint planning'", emit ADD_EVENT_GUEST or UPDATE_EVENT.
+3. Exclusions: If the user says "except", "excluding", or "don't touch", NEVER execute actions on those items.
+4. Speech correction: Clean up speech-to-text phonetics ("meat in" -> "meeting", "right a note" -> "write a note").
+5. Timezone: Output ISO timestamps as YYYY-MM-DDTHH:mm:ss WITHOUT 'Z' so they parse in the user's local timezone.
+6. Live Web & Real-Time News: You have active internet access! If the user asks for news, current affairs, facts, websites, or general information (e.g. "What's the current news in AI?", "Tell me about...", "Who is..."), synthesize the provided real-time search results into an accurate, engaging, natural spoken answer in "response" (1-3 sentences). Only emit workspace actions if they explicitly asked to create/modify a task, note, or event.
+7. Return format: Output ONLY a JSON object with keys "actions" (array) and "response" (natural spoken confirmation).`;
 
-  const userPrompt = `Context: ${JSON.stringify(context)}
+  let userPrompt = `Context: ${JSON.stringify(context)}
   
-User Command: "${transcript}"`;
+User Command/Question: "${transcript}"`;
+
+  if (liveWebInfo) {
+    userPrompt += `\n\nREAL-TIME LIVE WEB & NEWS SEARCH RESULTS (Retrieved from the internet right now):
+${liveWebInfo}
+
+Use these real-time web results to provide an accurate, up-to-date, friendly spoken answer in "response". If no application actions (creating tasks/events/notes) are needed, return "actions": [].`;
+  }
 
   const groq = getGroqClient();
-    const messages = [
-      { role: "system", content: systemPrompt },
-      ...conversationHistory.slice(-10), // keep last 10 messages for context
-      { role: "user", content: userPrompt }
-    ];
-    
-    const chatCompletion = await createGroqChatCompletion(groq, {
-      messages,
-      temperature: 0.1,
-      response_format: { type: "json_object" }
-    });
-    
-    const aiOutput = chatCompletion.choices[0]?.message?.content || '{"actions":[]}';
-    const parsed = JSON.parse(aiOutput);
-    res.status(200).json(parsed);
-  } catch (error) {
-    res.status(500).json({ error: error.message || "Failed to process AI command" });
-  }
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...conversationHistory.slice(-10), // keep last 10 messages for context
+    { role: "user", content: userPrompt }
+  ];
+  
+  const chatCompletion = await createGroqChatCompletion(groq, {
+    messages,
+    temperature: 0.1,
+    response_format: { type: "json_object" }
+  });
+  
+  const aiOutput = chatCompletion.choices[0]?.message?.content || '{"actions":[]}';
+  const parsed = JSON.parse(aiOutput);
+  res.status(200).json(parsed);
+} catch (error) {
+  console.error("Groq AI Command Error:", error);
+  res.status(200).json({
+    actions: [],
+    response: "AI voice engine is currently adjusting model capacity. Please try your command again in a moment."
+  });
+}
 });
 
 app.post("/api/ai/dictate", async (req, res) => {

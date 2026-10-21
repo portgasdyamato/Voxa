@@ -30,11 +30,32 @@ export async function executeVoiceCommand(
   };
 
   try {
-    // Build lightweight context to avoid exceeding token limits
+    // Build comprehensive context so the AI can match events, guests, notes, and tasks
     const context = {
-      tasks: tasks.map(t => ({ id: t.id, title: t.title, completed: t.completed, priority: t.priority })),
-      notes: notes.map(n => ({ id: n.id, title: n.title, isPinned: n.isPinned, isArchived: n.isArchived })),
-      events: events.map(e => ({ id: e.id, title: e.title, startTime: e.startTime })),
+      tasks: tasks.map(t => ({ 
+        id: t.id, 
+        title: t.title, 
+        completed: t.completed, 
+        priority: t.priority,
+        dueDate: t.dueDate 
+      })),
+      notes: notes.map(n => ({ 
+        id: n.id, 
+        title: n.title, 
+        snippet: (n.content || '').replace(/<[^>]*>/g, ' ').substring(0, 160).trim(),
+        isPinned: n.isPinned, 
+        isArchived: n.isArchived 
+      })),
+      events: events.map(e => ({ 
+        id: e.id, 
+        title: e.title, 
+        startTime: e.startTime,
+        endTime: e.endTime,
+        description: e.description,
+        location: e.location,
+        meetingLink: e.meetingLink,
+        guests: e.guests
+      })),
       categories: categories.map(c => ({ id: c.id, name: c.name }))
     };
 
@@ -73,6 +94,7 @@ export async function executeVoiceCommand(
             title: action.title,
             priority: action.priority || 'medium',
             categoryId: action.categoryId || null,
+            description: action.description || undefined,
             dueDate: ensureAbsoluteDate(action.deadline || action.dueDate) || undefined,
           });
           toast({ title: "Task Created", description: `Added "${action.title}"` });
@@ -110,10 +132,30 @@ export async function executeVoiceCommand(
           toast({ title: "Task Deleted", description: "The task was deleted." });
           break;
         }
+        case 'COMPLETE_ALL_TASKS': {
+          const incomplete = tasks.filter(t => !t.completed);
+          for (const t of incomplete) {
+            await updateTask.mutateAsync({ id: t.id, updates: { completed: true } });
+          }
+          toast({ title: "Tasks Completed", description: `Marked ${incomplete.length} tasks complete!` });
+          break;
+        }
+        case 'DELETE_COMPLETED_TASKS': {
+          const completed = tasks.filter(t => t.completed);
+          for (const t of completed) {
+            await deleteTask.mutateAsync(t.id);
+          }
+          toast({ title: "Tasks Cleared", description: `Deleted ${completed.length} completed tasks.` });
+          break;
+        }
 
         // --- NOTES ---
         case 'CREATE_NOTE': {
-          await apiRequest('POST', '/api/notes', { title: action.title, content: action.content, isPinned: false });
+          await apiRequest('POST', '/api/notes', { 
+            title: action.title, 
+            content: action.content || '', 
+            isPinned: Boolean(action.isPinned) 
+          });
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Created", description: `Saved "${action.title}"` });
           window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'notes' }));
@@ -124,7 +166,10 @@ export async function executeVoiceCommand(
             toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
             break;
           }
-          await apiRequest('PATCH', `/api/notes/${action.id}`, { content: action.content });
+          const updates: Record<string, any> = {};
+          if (action.title !== undefined) updates.title = action.title;
+          if (action.content !== undefined) updates.content = action.content;
+          await apiRequest('PATCH', `/api/notes/${action.id}`, updates);
           queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
           toast({ title: "Note Updated", description: "The note was updated." });
           break;
@@ -196,8 +241,52 @@ export async function executeVoiceCommand(
             const aiData = await aiRes.json();
             await apiRequest('PATCH', `/api/notes/${action.id}`, { content: aiData.content });
             queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
-            toast({ title: `Note ${formatAction}d`, description: "The AI has processed your note." });
+            toast({ title: `Note ${formatAction === 'summarize' ? 'Summarized' : 'Polished'}`, description: "The AI has enhanced your note." });
           }
+          break;
+        }
+        case 'EXTRACT_TASKS_FROM_NOTE': {
+          if (!action.id || !notes.find(n => n.id === action.id)) {
+            toast({ title: "Note Not Found", description: "I couldn't find a note matching that command.", variant: "destructive" });
+            break;
+          }
+          const note = notes.find(n => n.id === action.id);
+          if (note) {
+            const aiRes = await apiRequest('POST', '/api/ai/format', { content: note.content, action: 'task' });
+            const aiData = await aiRes.json();
+            await apiRequest('PATCH', `/api/notes/${action.id}`, { content: aiData.content });
+            queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+            
+            // Extract individual actionable tasks to task list
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(aiData.content, 'text/html');
+            const taskElements = doc.querySelectorAll('li[data-type="taskItem"], li');
+            let count = 0;
+            for (const el of Array.from(taskElements).slice(0, 5)) {
+              const text = el.textContent?.trim();
+              if (text && text.length > 2 && !tasks.some(t => t.title.toLowerCase() === text.toLowerCase())) {
+                try {
+                  await createTask.mutateAsync({ title: text, priority: 'medium' });
+                  count++;
+                } catch (e) {
+                  console.error("Failed to extract task:", e);
+                }
+              }
+            }
+            toast({ 
+              title: "Tasks Extracted", 
+              description: count > 0 
+                ? `Created ${count} task(s) on your dashboard and updated note.` 
+                : "Action items added to your note." 
+            });
+            window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'tasks' }));
+          }
+          break;
+        }
+        case 'EMPTY_TRASH': {
+          await apiRequest('DELETE', '/api/notes/trash');
+          queryClient.invalidateQueries({ queryKey: ['/api/notes'] });
+          toast({ title: "Trash Emptied", description: "All trashed notes have been permanently deleted." });
           break;
         }
 
@@ -216,9 +305,14 @@ export async function executeVoiceCommand(
             startTime: start,
             endTime: end,
             allDay: action.allDay || false,
+            description: action.description || undefined,
+            location: action.location || undefined,
+            meetingLink: action.meetingLink || undefined,
+            guests: Array.isArray(action.guests) ? action.guests : undefined,
           });
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
-          toast({ title: "Event Scheduled", description: `Scheduled "${action.title}"` });
+          const guestCount = action.guests?.length ? ` with ${action.guests.length} guest(s)` : '';
+          toast({ title: "Event Scheduled", description: `Scheduled "${action.title}"${guestCount}` });
           window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'calendar' }));
           break;
         }
@@ -234,6 +328,42 @@ export async function executeVoiceCommand(
           await apiRequest('PATCH', `/api/events/${action.id}`, updates);
           queryClient.invalidateQueries({ queryKey: ['/api/events'] });
           toast({ title: "Event Updated", description: "The event was successfully updated." });
+          break;
+        }
+        case 'ADD_EVENT_GUEST': {
+          const targetEvent = events.find(e => e.id === action.id);
+          if (!targetEvent) {
+            toast({ title: "Event Not Found", description: "I couldn't find an event matching that command.", variant: "destructive" });
+            break;
+          }
+          const currentGuests = Array.isArray(targetEvent.guests) ? [...targetEvent.guests] : [];
+          const newGuest = action.guest;
+          if (!newGuest || !newGuest.email) {
+            toast({ title: "Guest Required", description: "Please provide a valid guest email.", variant: "destructive" });
+            break;
+          }
+          if (currentGuests.some((g: any) => g.email?.toLowerCase() === newGuest.email?.toLowerCase())) {
+            toast({ title: "Already Invited", description: `${newGuest.email} is already on this event's guest list.` });
+            break;
+          }
+          const updatedGuests = [...currentGuests, newGuest];
+          await apiRequest('PATCH', `/api/events/${targetEvent.id}`, { guests: updatedGuests });
+          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+          toast({ title: "Guest Added", description: `Added ${newGuest.name || newGuest.email} to "${targetEvent.title}".` });
+          break;
+        }
+        case 'REMOVE_EVENT_GUEST': {
+          const targetEvent = events.find(e => e.id === action.id);
+          if (!targetEvent) {
+            toast({ title: "Event Not Found", description: "I couldn't find an event matching that command.", variant: "destructive" });
+            break;
+          }
+          const currentGuests = Array.isArray(targetEvent.guests) ? [...targetEvent.guests] : [];
+          const targetEmail = action.email?.toLowerCase();
+          const updatedGuests = currentGuests.filter((g: any) => g.email?.toLowerCase() !== targetEmail);
+          await apiRequest('PATCH', `/api/events/${targetEvent.id}`, { guests: updatedGuests });
+          queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+          toast({ title: "Guest Removed", description: `Removed guest from "${targetEvent.title}".` });
           break;
         }
         case 'DELETE_EVENT': {
@@ -254,10 +384,17 @@ export async function executeVoiceCommand(
         }
 
         // --- UI & NAVIGATION ---
+        case 'SEARCH': {
+          const target = action.target || 'tasks';
+          window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: target }));
+          window.dispatchEvent(new CustomEvent('voxa-search', { detail: { query: action.query, target } }));
+          toast({ title: "Search", description: `Searching for "${action.query}"...` });
+          break;
+        }
         case 'NAVIGATE': {
           let dest = action.destination;
           if (dest.startsWith('/')) {
-            if (['/tasks', '/calendar', '/notes'].includes(dest)) {
+            if (['/tasks', '/calendar', '/notes', '/stats', '/home'].includes(dest)) {
               dest = dest.substring(1);
             }
           }
@@ -270,6 +407,9 @@ export async function executeVoiceCommand(
             window.dispatchEvent(new CustomEvent('voxa-open-profile-settings'));
           } else if (action.modalName === 'notifications') {
             window.dispatchEvent(new CustomEvent('voxa-open-notifications'));
+          } else if (action.modalName === 'trash') {
+            window.dispatchEvent(new CustomEvent('voxa-navigate', { detail: 'notes' }));
+            window.dispatchEvent(new CustomEvent('voxa-open-trash'));
           } else {
             window.dispatchEvent(new CustomEvent('voxa-open-modal', { detail: action.modalName }));
           }
@@ -316,11 +456,15 @@ function buildCommandReply(actions: any[]) {
   const title = first.title ? `: ${first.title}` : '';
   const actionNames: Record<string, string> = {
     CREATE_TASK: 'I added the task', UPDATE_TASK: 'I updated the task', DELETE_TASK: 'I deleted the task',
+    COMPLETE_ALL_TASKS: 'I marked all tasks complete', DELETE_COMPLETED_TASKS: 'I cleared all completed tasks',
     CREATE_NOTE: 'I saved the note', UPDATE_NOTE: 'I updated the note', APPEND_NOTE: 'I added that to the note',
     DELETE_NOTE: 'I moved the note to the trash', RESTORE_NOTE: 'I restored the note', PIN_NOTE: 'I pinned the note',
     UNPIN_NOTE: 'I unpinned the note', SUMMARIZE_NOTE: 'I summarized the note', POLISH_NOTE: 'I polished the note',
+    EXTRACT_TASKS_FROM_NOTE: 'I extracted actionable tasks from your note', EMPTY_TRASH: 'I emptied your trash',
     CREATE_EVENT: 'I scheduled the event', UPDATE_EVENT: 'I updated the event', DELETE_EVENT: 'I deleted the event',
+    ADD_EVENT_GUEST: 'I added the guest to your event', REMOVE_EVENT_GUEST: 'I removed the guest from your event',
     NAVIGATE: `I opened ${first.destination || 'that page'}`, CHANGE_CALENDAR_VIEW: `I switched to ${first.view || 'that'} calendar view`,
+    SEARCH: `I searched for ${first.query || 'that'}`,
     OPEN_MODAL: `I opened ${first.modalName || 'that panel'}`, UPDATE_PROFILE: 'I updated your profile', TOGGLE_SETTING: 'I changed that setting'
   };
   const summary = actionNames[first.action] || 'Done';
