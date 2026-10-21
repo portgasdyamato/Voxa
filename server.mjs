@@ -31,6 +31,36 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
+async function createGroqChatCompletion(groq, params) {
+  const primaryModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+  const candidateModels = [
+    primaryModel,
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "llama3-70b-8192",
+    "mixtral-8x7b-32768"
+  ];
+  const uniqueModels = [...new Set(candidateModels)];
+
+  let lastError = null;
+  for (const model of uniqueModels) {
+    try {
+      return await groq.chat.completions.create({
+        ...params,
+        model,
+      });
+    } catch (err) {
+      lastError = err;
+      const isModelNotFound = err?.status === 404 || err?.error?.code === 'model_not_found' || err?.message?.includes('does not exist');
+      if (!isModelNotFound) {
+        throw err;
+      }
+      console.warn(`Groq model '${model}' not available, trying fallback...`);
+    }
+  }
+  throw lastError;
+}
+
 // ─── Schema (same as api/index.js) ──────────────────────────────────────────
 neonConfig.webSocketConstructor = ws;
 neonConfig.fetchConnectionCache = true;
@@ -680,12 +710,11 @@ app.post("/api/ai/format", async (req, res) => {
       prompt = `Extract all actionable tasks from the following text. Output ONLY a <ul data-type="taskList"> containing <li data-type="taskItem" data-checked="false"><p>Task text</p></li> elements.\n\nText: ${rawText}`;
     }
     
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await createGroqChatCompletion(groq, {
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
-      model: "llama-3.1-8b-instant",
       temperature: 0.2,
     });
     
@@ -757,9 +786,8 @@ User Command: "${transcript}"`;
       { role: "user", content: userPrompt }
     ];
     
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await createGroqChatCompletion(groq, {
       messages,
-      model: "llama-3.1-8b-instant",
       temperature: 0.1,
       response_format: { type: "json_object" }
     });
@@ -788,12 +816,11 @@ RULES:
 4. Output ONLY the raw HTML string. Do NOT wrap it in markdown code blocks (\`\`\`html). Do NOT include <head> or <body> tags. Just the content.`;
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await createGroqChatCompletion(groq, {
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: rawText }
       ],
-      model: "llama-3.1-8b-instant",
       temperature: 0.2,
     });
     
