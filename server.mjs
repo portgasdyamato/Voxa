@@ -31,31 +31,104 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
+let cachedGroqModel = null;
+let lastModelCheckTime = 0;
+
+function getGroqClient() {
+  const rawKey = process.env.GROQ_API_KEY || "";
+  const apiKey = rawKey.trim().replace(/^["']|["']$/g, "");
+  return new Groq({ apiKey });
+}
+
+async function getBestGroqModel(groq) {
+  const now = Date.now();
+  if (cachedGroqModel && now - lastModelCheckTime < 10 * 60 * 1000) {
+    return cachedGroqModel;
+  }
+
+  if (process.env.GROQ_MODEL) {
+    cachedGroqModel = process.env.GROQ_MODEL.trim();
+    return cachedGroqModel;
+  }
+
+  try {
+    const listRes = await groq.models.list();
+    const available = (listRes.data || []).map(m => m.id);
+    console.log("Available Groq models for this API key:", JSON.stringify(available));
+
+    const decommissioned = new Set([
+      'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'
+    ]);
+
+    const activeModels = available.filter(id => !decommissioned.has(id));
+
+    const priorityChecks = [
+      (id) => id.includes('llama-3.3-70b'),
+      (id) => id.includes('llama-3.1-70b'),
+      (id) => id.includes('llama-3.1-8b'),
+      (id) => id.includes('llama-3.2') && !id.includes('vision'),
+      (id) => id.includes('qwen-2.5'),
+      (id) => id.includes('gemma2-9b'),
+      (id) => !id.includes('whisper') && !id.includes('vision') && !id.includes('guard')
+    ];
+
+    for (const check of priorityChecks) {
+      const match = activeModels.find(check);
+      if (match) {
+        cachedGroqModel = match;
+        lastModelCheckTime = now;
+        console.log(`Auto-selected active Groq model: ${match}`);
+        return match;
+      }
+    }
+
+    if (activeModels.length > 0) {
+      cachedGroqModel = activeModels[0];
+      lastModelCheckTime = now;
+      console.log(`Fallback to first active Groq model: ${cachedGroqModel}`);
+      return cachedGroqModel;
+    }
+  } catch (err) {
+    console.warn("Could not query Groq models list dynamically:", err.message);
+  }
+
+  return "llama-3.3-70b-versatile";
+}
+
 async function createGroqChatCompletion(groq, params) {
-  const primaryModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+  const bestModel = await getBestGroqModel(groq);
   const candidateModels = [
-    primaryModel,
+    bestModel,
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "llama3-70b-8192",
-    "mixtral-8x7b-32768"
+    "gemma2-9b-it"
   ];
   const uniqueModels = [...new Set(candidateModels)];
 
   let lastError = null;
   for (const model of uniqueModels) {
     try {
+      console.log(`Executing Groq completion with model: ${model}`);
       return await groq.chat.completions.create({
         ...params,
         model,
       });
     } catch (err) {
       lastError = err;
-      const isModelNotFound = err?.status === 404 || err?.error?.code === 'model_not_found' || err?.message?.includes('does not exist');
-      if (!isModelNotFound) {
+      const isRecoverable = 
+        err?.status === 404 || 
+        err?.status === 400 ||
+        err?.error?.code === 'model_not_found' || 
+        err?.error?.code === 'model_decommissioned' ||
+        err?.message?.includes('does not exist') ||
+        err?.message?.includes('decommissioned') ||
+        err?.message?.includes('do not have access');
+
+      if (!isRecoverable) {
         throw err;
       }
-      console.warn(`Groq model '${model}' not available, trying fallback...`);
+      console.warn(`Groq model '${model}' not usable (${err.message}), trying fallback candidate...`);
+      cachedGroqModel = null;
     }
   }
   throw lastError;
@@ -698,7 +771,7 @@ app.post("/api/ai/format", async (req, res) => {
   }
 
   try {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const groq = getGroqClient();
     let prompt = "";
     let systemPrompt = "You are a helpful AI formatting assistant. You must ONLY output the requested HTML, nothing else. Do not wrap it in markdown code blocks. Just raw HTML.";
 
@@ -779,7 +852,7 @@ Output ONLY a JSON object with exactly two keys: "actions", an array of action o
   
 User Command: "${transcript}"`;
 
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const groq = getGroqClient();
     const messages = [
       { role: "system", content: systemPrompt },
       ...conversationHistory.slice(-10), // keep last 10 messages for context
@@ -815,7 +888,7 @@ RULES:
 3. If they emphasize something or it sounds like a heading, use <h3> or <strong>.
 4. Output ONLY the raw HTML string. Do NOT wrap it in markdown code blocks (\`\`\`html). Do NOT include <head> or <body> tags. Just the content.`;
 
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const groq = getGroqClient();
     const chatCompletion = await createGroqChatCompletion(groq, {
       messages: [
         { role: "system", content: systemPrompt },
