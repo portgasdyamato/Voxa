@@ -56,6 +56,7 @@ export default function CalendarPage() {
       allDay: false,
       startTime: '',
       endTime: '',
+      meetingLink: '',
     }
   });
 

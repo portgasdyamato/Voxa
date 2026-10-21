@@ -61,8 +61,8 @@ export default function NotesPage() {
   const dictationRef = useRef<any>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   
-  const { data: notes = [] as any[] } = useQuery({ queryKey: ['/api/notes'] });
-  const { data: folders = [] } = useQuery({ queryKey: ['/api/folders'] });
+  const { data: notes = [] } = useQuery<any[]>({ queryKey: ['/api/notes'] });
+  const { data: folders = [] } = useQuery<any[]>({ queryKey: ['/api/folders'] });
 
   const createNoteMutation = useMutation({
     mutationFn: async (newNote: any) => {
@@ -653,7 +653,7 @@ export default function NotesPage() {
                                toast({ title: "Dictation Inserted" });
                              }
                            } catch (err) {
-                             toast({ title: "Dictation Failed", description: err.message, variant: "destructive" });
+                             toast({ title: "Dictation Failed", description: (err as any)?.message || 'Failed to format dictation', variant: "destructive" });
                            }
                         }
                       };

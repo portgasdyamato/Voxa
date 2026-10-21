@@ -144,7 +144,10 @@ export default {
       },
       boxShadow: {
         '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
-      }
+      },
+      transitionDuration: {
+        '2000': '2000ms',
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],

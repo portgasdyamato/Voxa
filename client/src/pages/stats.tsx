@@ -30,7 +30,7 @@ export default function Stats() {
 
   useEffect(() => {
     if (statsError && isUnauthorizedError(statsError)) {
-      window.location.href = '/api/login';
+      window.location.href = '/login';
     }
   }, [statsError]);
 

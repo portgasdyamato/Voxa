@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring, useInView, useMotionValue } from 'framer-motion';
 import { useRef, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import heroGif from '@/assets/hero.gif';
 import processGif from '@/assets/process.gif';
 
@@ -212,7 +213,8 @@ const RadarScan = () => (
 );
 
 export default function Landing() {
-  const handleLogin = () => { window.location.href = '/api/login'; };
+  const [, setLocation] = useLocation();
+  const handleLogin = () => { setLocation('/login'); };
   const videoRef = useHlsVideo('https://stream.mux.com/r6pXRAJb3005XEEbl1hYU1x01RFJDSn7KQApwNGgAHHbU.m3u8');
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -245,26 +247,35 @@ export default function Landing() {
                   <span className="text-[18px] md:text-[22px] font-black tracking-[0.2em] text-white/95 uppercase">VoXa</span>
                </div>
 
-               <nav className="flex items-center gap-4 md:gap-8 px-5 md:px-10 py-3 md:py-5 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-3xl shadow-2xl pointer-events-auto relative overflow-hidden">
-                  <div className="absolute inset-x-0 top-0 h-px bg-white/30 rounded-full" />
-                  {[
-                    { icon: Zap, target: 'hero' },
-                    { icon: Box, target: 'features' },
-                    { icon: ArrowRight, target: 'cta' }
-                  ].map((item, i) => (
-                    <div 
-                      key={`nav-ic-v4-${i}`} 
-                      onClick={() => {
-                        const target = document.getElementById(item.target);
-                        if (target) target.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="group/nav relative flex items-center justify-center p-1 md:p-2 cursor-pointer z-20"
-                    >
-                      <item.icon className="w-5 h-5 md:w-6 md:h-6 text-white/40 group-hover/nav:text-white group-hover/nav:scale-110 transition-all duration-300" />
-                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-px bg-white group-hover/nav:w-4 transition-all duration-300" />
-                    </div>
-                  ))}
-               </nav>
+               <div className="flex items-center gap-3 md:gap-4 pointer-events-auto">
+                 <nav className="flex items-center gap-4 md:gap-8 px-5 md:px-10 py-3 md:py-4 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+                    <div className="absolute inset-x-0 top-0 h-px bg-white/30 rounded-full" />
+                    {[
+                      { icon: Zap, target: 'hero' },
+                      { icon: Box, target: 'features' },
+                      { icon: ArrowRight, target: 'cta' }
+                    ].map((item, i) => (
+                      <div 
+                        key={`nav-ic-v4-${i}`} 
+                        onClick={() => {
+                          const target = document.getElementById(item.target);
+                          if (target) target.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="group/nav relative flex items-center justify-center p-1 md:p-2 cursor-pointer z-20"
+                      >
+                        <item.icon className="w-5 h-5 md:w-6 md:h-6 text-white/40 group-hover/nav:text-white group-hover/nav:scale-110 transition-all duration-300" />
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-px bg-white group-hover/nav:w-4 transition-all duration-300" />
+                      </div>
+                    ))}
+                 </nav>
+
+                 <button
+                   onClick={handleLogin}
+                   className="px-5 md:px-7 py-3 md:py-4 rounded-full border border-white/25 bg-white/[0.08] hover:bg-white/[0.18] active:scale-95 backdrop-blur-3xl text-white text-xs md:text-sm font-semibold tracking-wider uppercase transition-all shadow-xl"
+                 >
+                   Log In
+                 </button>
+               </div>
           </div>
         </header>
 
@@ -311,7 +322,7 @@ export default function Landing() {
                       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent z-20" />
                       <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
                       <div className="aspect-square w-full rounded-[1.8rem] md:rounded-[2.2rem] overflow-hidden bg-black/40 border border-white/10 mb-4 md:mb-5 relative shadow-inner">
-                         <img src={n.gif} className="w-full h-full object-cover opacity-70 mix-blend-screen scale-110 group-hover:scale-120 transition-all duration-[2000ms]" />
+                         <img src={n.gif} className="w-full h-full object-cover opacity-70 mix-blend-screen scale-110 group-hover:scale-120 transition-all duration-2000" />
                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-4 md:pb-5">
                             <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">{n.label}</span>
                          </div>

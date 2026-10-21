@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type PermissionState = 'unknown' | 'requesting' | 'granted' | 'denied';
-type ListenerState  = 'idle' | 'listening' | 'awake' | 'processing';
+type ListenerState  = 'idle' | 'listening' | 'awake' | 'processing' | 'speaking';
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 export function WakeWordWidget() {
@@ -17,6 +17,7 @@ export function WakeWordWidget() {
   const [listenerState, setListenerState] = useState<ListenerState>('idle');
   const [liveText, setLiveText]           = useState('');
   const [commandText, setCommandText]     = useState('');
+  const [replyText, setReplyText]         = useState('');
   const [conversationHistory, setConversationHistory] = useState<{role: string, content: string}[]>([]);
 
   const recognitionRef   = useRef<any>(null);
@@ -24,6 +25,8 @@ export function WakeWordWidget() {
   const awakeTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enabledRef       = useRef(false);      // source of truth for restart loop
   const stateRef         = useRef<ListenerState>('idle');
+  const speakingRef      = useRef(false);
+  const startRecognitionRef = useRef<(() => void) | null>(null);
 
   const { toast }                          = useToast();
   const { data: tasks = [] }              = useTasks();
@@ -32,8 +35,8 @@ export function WakeWordWidget() {
   const updateTask                         = useUpdateTask();
   const deleteTask                         = useDeleteTask();
 
-  const { data: notes = [] } = useQuery({ queryKey: ['/api/notes'] });
-  const { data: events = [] } = useQuery({ queryKey: ['/api/events'] });
+  const { data: notes = [] } = useQuery<any[]>({ queryKey: ['/api/notes'] });
+  const { data: events = [] } = useQuery<any[]>({ queryKey: ['/api/events'] });
 
   // Keep stateRef in sync
   const setLS = (s: ListenerState) => {
@@ -61,6 +64,7 @@ export function WakeWordWidget() {
     if (!cmd.trim()) return;
     setLS('processing');
     setCommandText('Processing…');
+    setReplyText('');
     
     // Add user's command to local conversation history state immediately
     const newUserMsg = { role: 'user', content: cmd };
@@ -71,10 +75,11 @@ export function WakeWordWidget() {
     await executeVoiceCommand(
       cmd, tasks, notes, events, categories,
       createTask, updateTask, deleteTask, toast,
-      (actions) => {
+      (actions, reply) => {
         // AI execution complete, add response to history
-        if (actions && actions.length > 0) {
-          const newAiMsg = { role: 'assistant', content: `Executed actions: ${JSON.stringify(actions)}` };
+        setReplyText(reply || 'Done.');
+        if (reply || (actions && actions.length > 0)) {
+          const newAiMsg = { role: 'assistant', content: reply || 'Done.' };
           setConversationHistory(prev => {
             let nextHistory = [...prev, newAiMsg];
             if (nextHistory.length > 10) nextHistory = nextHistory.slice(nextHistory.length - 10);
@@ -108,7 +113,7 @@ export function WakeWordWidget() {
     const rec = new SR();
     rec.continuous      = true;
     rec.interimResults  = true;
-    rec.lang            = 'en-US';
+    rec.lang            = navigator.language || 'en-US';
     rec.maxAlternatives = 3;
 
     rec.onstart = () => {
@@ -128,7 +133,7 @@ export function WakeWordWidget() {
 
       const isLastFinal = event.results[event.results.length - 1].isFinal;
 
-      if (isLastFinal && fullText.length >= 2) {
+      if (isLastFinal && fullText.length >= 2 && stateRef.current !== 'processing') {
         setCommandText(fullText);
         handleExecute(fullText);
       }
@@ -149,7 +154,7 @@ export function WakeWordWidget() {
       if (stateRef.current === 'listening') setLS('idle');   // briefly idle before restart
 
       // Restart unless the user has toggled off
-      if (enabledRef.current) {
+      if (enabledRef.current && !speakingRef.current) {
         restartTimerRef.current = setTimeout(() => startRecognition(), 300);
       }
     };
@@ -166,6 +171,33 @@ export function WakeWordWidget() {
   // startRecognition intentionally omitted to avoid creating a new fn every render
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleExecute, cancelAwake]);
+
+  startRecognitionRef.current = startRecognition;
+
+  // Pause the ambient microphone while VoXa speaks so its reply is not heard as a new command.
+  useEffect(() => {
+    const pauseForSpeech = () => {
+      speakingRef.current = true;
+      setLS('speaking');
+      if (restartTimerRef.current) { clearTimeout(restartTimerRef.current); restartTimerRef.current = null; }
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.abort();
+        recognitionRef.current = null;
+      }
+    };
+    const resumeAfterSpeech = () => {
+      speakingRef.current = false;
+      setLS(enabledRef.current ? 'listening' : 'idle');
+      if (enabledRef.current) restartTimerRef.current = setTimeout(() => startRecognitionRef.current?.(), 350);
+    };
+    window.addEventListener('voxa-speech-start', pauseForSpeech);
+    window.addEventListener('voxa-speech-end', resumeAfterSpeech);
+    return () => {
+      window.removeEventListener('voxa-speech-start', pauseForSpeech);
+      window.removeEventListener('voxa-speech-end', resumeAfterSpeech);
+    };
+  }, []);
 
   // ── Stop recognition completely ────────────────────────────────────────────
   const stopRecognition = useCallback(() => {
@@ -200,6 +232,17 @@ export function WakeWordWidget() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permission, requestPermission, stopRecognition, startRecognition]);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        void handleToggle();
+      }
+    };
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [handleToggle]);
 
   // ── Auto-start if previously enabled ──────────────────────────────────────
   useEffect(() => {
@@ -241,13 +284,14 @@ export function WakeWordWidget() {
   const isListening = listenerState === 'listening';
   const isAwake    = listenerState === 'awake';
   const isProc     = listenerState === 'processing';
+  const isSpeaking = listenerState === 'speaking';
   const isDenied   = permission === 'denied';
 
   return (
     <>
       {/* ── Slide-down wake panel ─────────────────────────────────────────── */}
       <AnimatePresence>
-        {(isAwake || isProc) && (
+        {(isAwake || isProc || isSpeaking) && (
           <motion.div
             key="wake-panel"
             initial={{ y: -90, opacity: 0, scale: 0.95 }}
@@ -275,10 +319,10 @@ export function WakeWordWidget() {
               {/* Text */}
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[9px] font-black uppercase tracking-[0.22em] text-indigo-400/70 mb-0.5">
-                  VoXa · {isProc ? 'Processing' : 'Listening for command'}
+                  VoXa · {isProc ? 'Thinking' : isSpeaking ? 'Speaking' : 'Listening'}
                 </span>
                 <p className="text-[14px] font-semibold text-white/90 truncate">
-                  {commandText || 'Say your command…'}
+                  {isSpeaking ? replyText : commandText || 'Say your command…'}
                 </p>
               </div>
 
@@ -297,7 +341,7 @@ export function WakeWordWidget() {
       </AnimatePresence>
 
       {/* ── Ambient status pill (bottom-left) ─────────────────────────────── */}
-      <div className="fixed bottom-6 left-6 z-[90]">
+      <div className="fixed bottom-6 right-6 z-[90]">
         <button
           onClick={handleToggle}
           className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border backdrop-blur-xl
@@ -328,9 +372,9 @@ export function WakeWordWidget() {
             </span>
             {isEnabled && !isDenied && (
               <span className="text-[8px] font-medium opacity-60 tracking-wide normal-case max-w-[120px] truncate">
-                {isProc   ? 'Running command…'
+                {isProc   ? 'Working on your request…'
                  : liveText ? liveText
-                 : 'Listening to everything…'}
+                 : 'Talk naturally. I can manage tasks, notes, and events.'}
               </span>
             )}
           </div>

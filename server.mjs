@@ -712,8 +712,9 @@ app.post("/api/ai/command", async (req, res) => {
   try {
     const { transcript, context, localTime, conversationHistory = [] } = req.body;
 
-    const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant. Your job is to translate a user's voice command into a structured JSON array of actions.
+    const systemPrompt = `You are the VoXa Full Voice Mode AI Assistant. Understand the user's request, translate commands into actions, and write a concise, friendly spoken reply.
 The user's current local date and time is: ${localTime || new Date().toString()}. Please use this as the reference point for resolving relative dates like "tomorrow", "next week", etc.
+Speak naturally and briefly. For questions, use only the supplied context and clearly say when the app does not contain the answer. For commands, make the response match the requested action and do not add unsupported details.
 You have access to the following actions:
 - { "action": "CREATE_TASK", "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "categoryId": number (optional) }
 - { "action": "UPDATE_TASK", "id": number, "updates": { "title": string, "priority": "low"|"medium"|"high", "deadline": string (ISO), "completed": boolean } }
@@ -743,14 +744,13 @@ CRITICAL: Actively copy-edit and fix any speech-to-text typos, missing capitaliz
 Important: To mark a task as complete, use UPDATE_TASK with { completed: true }. To rename a task, use UPDATE_TASK with { title: new_title }.
 Important: To add text to an existing note, use APPEND_NOTE so you do not overwrite its existing content.
 CRITICAL TIMEZONE INSTRUCTION: When generating ISO strings for dates (startTime, endTime, deadline, dueDate), NEVER append the 'Z' (UTC) suffix. Always output exactly in the format YYYY-MM-DDTHH:mm:ss so it is properly parsed in the user's local timezone.
-Output ONLY a JSON object with a single key "actions" containing an array of action objects. Do not add any markdown formatting.`;
+Output ONLY a JSON object with exactly two keys: "actions", an array of action objects, and "response", a concise natural spoken reply for the user. If the request is conversational or unclear, return an empty actions array and respond helpfully. Never claim an action succeeded in the response; phrase it as a brief acknowledgement that is spoken only after execution.`;
 
   const userPrompt = `Context: ${JSON.stringify(context)}
   
 User Command: "${transcript}"`;
 
-  try {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const messages = [
       { role: "system", content: systemPrompt },
       ...conversationHistory.slice(-10), // keep last 10 messages for context

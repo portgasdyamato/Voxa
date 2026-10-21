@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useCreateTask, useUpdateTask, useDeleteTask, useTasks } from '@/hooks/useTasks';
 import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
@@ -38,8 +39,10 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
   const [reminderTime, setReminderTime] = useState<string>('09:00');
   
   const { toast } = useToast();
-  const { data: tasks } = useTasks();
-  const { data: categories } = useCategories();
+  const { data: tasks = [] } = useTasks();
+  const { data: categories = [] } = useCategories();
+  const { data: notes = [] } = useQuery<any[]>({ queryKey: ['/api/notes'] });
+  const { data: events = [] } = useQuery<any[]>({ queryKey: ['/api/events'] });
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -119,16 +122,14 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
     startListening();
   };
 
-  const handleExecuteCommand = async (overrideCategory?: string, overrideDeadline?: Date | null, overrideTaskName?: string) => {
+  const handleExecuteCommand = async (_overrideCategory?: string, _overrideDeadline?: Date | null, _overrideTaskName?: string) => {
     const { executeVoiceCommand } = await import('@/lib/voiceCommandExecutor');
     await executeVoiceCommand(
       transcript,
-      tasks || [],
-      overrideCategory !== undefined ? overrideCategory : selectedCategory,
-      overrideDeadline !== undefined ? overrideDeadline : selectedDeadline,
-      reminderEnabled,
-      reminderType,
-      reminderTime,
+      tasks,
+      notes,
+      events,
+      categories,
       createTask,
       updateTask,
       deleteTask,
@@ -136,9 +137,7 @@ export function VoiceTaskModal({ open, onOpenChange }: VoiceTaskModalProps) {
       () => {
         onOpenChange(false);
         resetTranscript();
-      },
-      overrideTaskName !== undefined ? overrideTaskName : parsedTaskName,
-      categories || []
+      }
     );
   };
 

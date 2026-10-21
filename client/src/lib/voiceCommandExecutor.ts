@@ -1,5 +1,6 @@
 // Voice Command Execution Handler using Groq AI Full Voice Mode
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import { speakAssistantReply } from '@/lib/voiceOutput';
 
 export async function executeVoiceCommand(
   transcript: string,
@@ -11,7 +12,7 @@ export async function executeVoiceCommand(
   updateTask: any,
   deleteTask: any,
   toast: any,
-  onSuccess: (actions?: any[]) => void,
+  onSuccess: (actions?: any[], reply?: string) => void,
   conversationHistory?: {role: string, content: string}[]
 ) {
   if (!transcript.trim()) {
@@ -53,10 +54,13 @@ export async function executeVoiceCommand(
       throw new Error(`Failed to parse command: ${response.statusText}`);
     }
 
-    const { actions } = await response.json();
+    const { actions, response: assistantReply } = await response.json();
 
     if (!actions || actions.length === 0) {
-      toast({ title: "No Actions", description: "I couldn't understand what to do.", variant: "destructive" });
+      const reply = assistantReply || "I didn't catch that. You can ask me to manage tasks, notes, or calendar events.";
+      toast({ title: "Voxa", description: reply });
+      speakAssistantReply(reply);
+      onSuccess([], reply);
       return;
     }
 
@@ -290,13 +294,35 @@ export async function executeVoiceCommand(
       }
     }
 
-    onSuccess(actions);
+    const reply = assistantReply || buildCommandReply(actions);
+    speakAssistantReply(reply);
+    onSuccess(actions, reply);
   } catch (error) {
     console.error('Voice command error:', error);
+    const reply = error instanceof Error ? `I couldn't complete that. ${error.message}` : "I couldn't complete that command. Please try again.";
+    speakAssistantReply(reply);
     toast({ 
       title: "Command Failed", 
-      description: error.message || "Failed to execute command. Please try again.", 
+      description: error instanceof Error ? error.message : "Failed to execute command. Please try again.", 
       variant: "destructive" 
     });
+    onSuccess([], reply);
   }
+}
+
+function buildCommandReply(actions: any[]) {
+  if (!actions.length) return "I didn't find anything to do.";
+  const first = actions[0];
+  const title = first.title ? `: ${first.title}` : '';
+  const actionNames: Record<string, string> = {
+    CREATE_TASK: 'I added the task', UPDATE_TASK: 'I updated the task', DELETE_TASK: 'I deleted the task',
+    CREATE_NOTE: 'I saved the note', UPDATE_NOTE: 'I updated the note', APPEND_NOTE: 'I added that to the note',
+    DELETE_NOTE: 'I moved the note to the trash', RESTORE_NOTE: 'I restored the note', PIN_NOTE: 'I pinned the note',
+    UNPIN_NOTE: 'I unpinned the note', SUMMARIZE_NOTE: 'I summarized the note', POLISH_NOTE: 'I polished the note',
+    CREATE_EVENT: 'I scheduled the event', UPDATE_EVENT: 'I updated the event', DELETE_EVENT: 'I deleted the event',
+    NAVIGATE: `I opened ${first.destination || 'that page'}`, CHANGE_CALENDAR_VIEW: `I switched to ${first.view || 'that'} calendar view`,
+    OPEN_MODAL: `I opened ${first.modalName || 'that panel'}`, UPDATE_PROFILE: 'I updated your profile', TOGGLE_SETTING: 'I changed that setting'
+  };
+  const summary = actionNames[first.action] || 'Done';
+  return actions.length > 1 ? `${summary}${title}, and completed ${actions.length - 1} more action${actions.length === 2 ? '' : 's'}.` : `${summary}${title}.`;
 }

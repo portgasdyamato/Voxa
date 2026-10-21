@@ -251,7 +251,7 @@ export default function Home({ searchQuery = '', activeWorkspaceTab = 'tasks', s
                  </div>
                  <h3 className="text-2xl font-semibold text-white/20 select-none">Archive</h3>
               </div>
-              <div className="grid grid-cols-1 gap-6 opacity-40 hover:opacity-100 transition-all duration-[1000ms] grayscale hover:grayscale-0">
+              <div className="grid grid-cols-1 gap-6 opacity-40 hover:opacity-100 transition-all duration-1000 grayscale hover:grayscale-0">
                 {completedTasks.slice(0, 5).map((task) => (
                   <TaskCard key={task.id} task={task} />
                 ))}
